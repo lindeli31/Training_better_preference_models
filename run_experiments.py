@@ -1,0 +1,193 @@
+"""
+run_experiments.py
+------------------
+Top-level orchestrator.  Run all (or selected) experiments against the
+Swiss AI Stack using Qwen3-30B-A3B-Instruct-2507.
+
+Usage
+-----
+    # Run everything
+    python run_experiments.py
+
+    # Run only position bias and thinking budget
+    python run_experiments.py --experiments position_bias thinking_budget
+
+    # Use fewer pairs for a quick smoke test
+    python run_experiments.py --n-pairs 20 --experiments position_bias
+
+    # Specify a different model or thinking budget
+    python run_experiments.py --thinking-budget 1024
+
+Environment
+-----------
+    SWISSAI_API_KEY   API key for https://serving.swissai.svc.cscs.ch/
+"""
+
+import argparse
+import asyncio
+import logging
+import os
+import time
+from pathlib import Path
+
+from inference_client import InferenceConfig, SwissAIClient
+from dataset import load_dataset_pairs
+from experiments import (
+    run_position_bias,
+    run_template_sensitivity,
+    run_thinking_budget,
+    run_input_sensitivity,
+)
+from metrics import (
+    compute_position_bias,
+    compute_pairwise_agreement,
+    compute_thinking_accuracy,
+    print_summary,
+    load_results,
+)
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+)
+logger = logging.getLogger(__name__)
+
+ALL_EXPERIMENTS = ["position_bias", "template_sensitivity", "thinking_budget", "input_sensitivity"]
+
+
+# ---------------------------------------------------------------------------
+# Argument parsing
+# ---------------------------------------------------------------------------
+
+def parse_args():
+    p = argparse.ArgumentParser(description="LLM Judge Bias/Sensitivity Experiments")
+    p.add_argument("--experiments", nargs="+", default=ALL_EXPERIMENTS,
+                   choices=ALL_EXPERIMENTS, help="Which experiments to run")
+    p.add_argument("--n-pairs", type=int, default=200,
+                   help="Number of dataset pairs to evaluate")
+    p.add_argument("--dataset", default="nvidia/HelpSteer2",
+                   help="HuggingFace preference dataset to load")
+    p.add_argument("--split", default="validation",
+                   help="Dataset split (train / validation / test)")
+    p.add_argument("--criterion", default="helpful",
+                   help="Evaluation criterion (helpful / quality / accurate / ...)")
+    p.add_argument("--template", default="expert_rater",
+                   help="Judge template ID for position_bias experiment")
+    p.add_argument("--thinking-budget", type=int, default=0,
+                   help="Thinking token budget for B1/B2/B4 (0 = disabled)")
+    p.add_argument("--output-dir", type=Path, default=Path("results"),
+                   help="Root directory to save JSONL result files")
+    p.add_argument("--model", default="Qwen/Qwen3-30B-A3B-Instruct-2507",
+                   help="Model identifier on the Swiss AI stack")
+    p.add_argument("--base-url", default="https://serving.swissai.svc.cscs.ch/v1",
+                   help="Swiss AI inference base URL")
+    p.add_argument("--concurrency", type=int, default=8,
+                   help="Max concurrent requests to the API")
+    p.add_argument("--seed", type=int, default=42, help="Random seed for dataset sampling")
+    return p.parse_args()
+
+
+# ---------------------------------------------------------------------------
+# Main
+# ---------------------------------------------------------------------------
+
+async def main(args):
+    # ------------------------------------------------------------------
+    # Config
+    # ------------------------------------------------------------------
+    api_key = os.environ.get("SWISSAI_API_KEY", "")
+    if not api_key:
+        logger.warning(
+            "SWISSAI_API_KEY not set. Requests may fail unless the endpoint is open."
+        )
+
+    config = InferenceConfig(
+        base_url=args.base_url,
+        api_key=api_key,
+        model=args.model,
+        concurrent_requests=args.concurrency,
+    )
+
+    # ------------------------------------------------------------------
+    # Load dataset
+    # ------------------------------------------------------------------
+    logger.info("Loading dataset: %s | split=%s | n=%d | seed=%d",
+                args.dataset, args.split, args.n_pairs, args.seed)
+    pairs = load_dataset_pairs(
+        dataset_name=args.dataset,
+        split=args.split,
+        n=args.n_pairs,
+        seed=args.seed,
+    )
+    logger.info("Dataset ready: %d pairs", len(pairs))
+
+    # Gold labels for accuracy computation (B3)
+    gold_labels = {p.prompt_id: p.gold_label for p in pairs}
+
+    # ------------------------------------------------------------------
+    # Run experiments
+    # ------------------------------------------------------------------
+    t_start = time.perf_counter()
+
+    async with SwissAIClient(config) as client:
+
+        # ---- B1: Position Bias ----------------------------------------
+        if "position_bias" in args.experiments:
+            logger.info("=== B1: Position Bias ===")
+            pb_results = await run_position_bias(
+                client, pairs,
+                template_id=args.template,
+                criterion=args.criterion,
+                output_dir=args.output_dir / "position_bias",
+                thinking_budget=args.thinking_budget,
+            )
+            pb_metrics = compute_position_bias([r.to_dict() for r in pb_results])
+            print_summary("B1: Position Bias", pb_metrics)
+
+        # ---- B2: Template Sensitivity ----------------------------------
+        if "template_sensitivity" in args.experiments:
+            logger.info("=== B2: Template Sensitivity ===")
+            ts_results = await run_template_sensitivity(
+                client, pairs,
+                criterion=args.criterion,
+                output_dir=args.output_dir / "template_sensitivity",
+                thinking_budget=args.thinking_budget,
+            )
+            ts_metrics = compute_pairwise_agreement(
+                [r.to_dict() for r in ts_results], group_by="condition"
+            )
+            print_summary("B2: Template Sensitivity", ts_metrics)
+
+        # ---- B3: Thinking Budget ---------------------------------------
+        if "thinking_budget" in args.experiments:
+            logger.info("=== B3: Thinking Budget ===")
+            tb_results = await run_thinking_budget(
+                client, pairs,
+                criterion=args.criterion,
+                output_dir=args.output_dir / "thinking_budget",
+            )
+            tb_metrics = compute_thinking_accuracy(
+                [r.to_dict() for r in tb_results], gold_labels
+            )
+            print_summary("B3: Thinking Budget", tb_metrics)
+
+        # ---- B4: Input Sensitivity ------------------------------------
+        if "input_sensitivity" in args.experiments:
+            logger.info("=== B4: Input Sensitivity ===")
+            is_results = await run_input_sensitivity(
+                client, pairs,
+                output_dir=args.output_dir / "input_sensitivity",
+                thinking_budget=args.thinking_budget,
+            )
+            is_metrics = compute_pairwise_agreement(
+                [r.to_dict() for r in is_results], group_by="condition"
+            )
+            print_summary("B4: Input Sensitivity", is_metrics)
+
+    elapsed = time.perf_counter() - t_start
+    logger.info("All experiments completed in %.1f s", elapsed)
+
+
+if __name__ == "__main__":
+    args = parse_args()
+    asyncio.run(main(args))
