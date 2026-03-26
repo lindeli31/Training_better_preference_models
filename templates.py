@@ -94,13 +94,23 @@ CRITERIA = {
 }
 
 # ---------------------------------------------------------------------------
-# CoT / Reasoning variants  (Experiment B3 – thinking budget)
+# Reasoning variants  (Experiment B3 – reasoning depth)
 # ---------------------------------------------------------------------------
 
-SYSTEM_EXPERT_RATER_COT = (
+SYSTEM_REASON_THEN_JUDGE = (
     "You are an expert rater. You will be provided with a user prompt and two "
-    "assistant responses. Think step by step about the strengths and weaknesses "
-    "of each response before reaching your verdict.\n\n"
+    "assistant responses. Explain your reasoning about the strengths and weaknesses "
+    "of each response, then provide your final verdict.\n\n"
+    + _OUTPUT_INSTRUCTION_VERBOSE
+)
+
+SYSTEM_STRUCTURED_REASONING = (
+    "You are an expert rater. You will be provided with a user prompt and two "
+    "assistant responses. Rate each response on the following criteria:\n"
+    "1. Helpfulness: How well does the response address the user's needs?\n"
+    "2. Accuracy: Is the information factually correct?\n"
+    "3. Coherence: Is the response well-organized and easy to follow?\n\n"
+    "After rating each response on these criteria, provide your final verdict.\n\n"
     + _OUTPUT_INSTRUCTION_VERBOSE
 )
 
@@ -162,11 +172,16 @@ TEMPLATES: dict[str, TemplateEntry] = {
         "description": "Minimal one-liner template",
     },
 
-    # --- CoT / Thinking variants (B3) ---
-    "expert_rater_cot": {
-        "system": SYSTEM_EXPERT_RATER_COT,
+    # --- Reasoning variants (B3) ---
+    "reason_then_judge": {
+        "system": SYSTEM_REASON_THEN_JUDGE,
         "user_fn": _build_user_prompt,
-        "description": "Expert-rater + explicit CoT instruction (no thinking budget)",
+        "description": "Explain reasoning about strengths/weaknesses, then verdict",
+    },
+    "structured_reasoning": {
+        "system": SYSTEM_STRUCTURED_REASONING,
+        "user_fn": _build_user_prompt,
+        "description": "Rate on helpfulness/accuracy/coherence criteria, then verdict",
     },
 
     # --- Minor-wording sensitivity variants (B4) ---

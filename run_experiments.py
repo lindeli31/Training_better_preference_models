@@ -35,7 +35,7 @@ from dataset import load_dataset_pairs
 from experiments import (
     run_position_bias,
     run_template_sensitivity,
-    run_thinking_budget,
+    run_reasoning_depth,
     run_input_sensitivity,
 )
 from metrics import (
@@ -52,7 +52,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-ALL_EXPERIMENTS = ["position_bias", "template_sensitivity", "thinking_budget", "input_sensitivity"]
+ALL_EXPERIMENTS = ["position_bias", "template_sensitivity", "reasoning_depth", "input_sensitivity"]
 
 
 # ---------------------------------------------------------------------------
@@ -73,8 +73,6 @@ def parse_args():
                    help="Evaluation criterion (helpful / quality / accurate / ...)")
     p.add_argument("--template", default="expert_rater",
                    help="Judge template ID for position_bias experiment")
-    p.add_argument("--thinking-budget", type=int, default=0,
-                   help="Thinking token budget for B1/B2/B4 (0 = disabled)")
     p.add_argument("--output-dir", type=Path, default=Path("results"),
                    help="Root directory to save JSONL result files")
     p.add_argument("--model", default="Qwen/Qwen3-30B-A3B-Instruct-2507",
@@ -139,7 +137,6 @@ async def main(args):
                 template_id=args.template,
                 criterion=args.criterion,
                 output_dir=args.output_dir / "position_bias",
-                thinking_budget=args.thinking_budget,
             )
             pb_metrics = compute_position_bias([r.to_dict() for r in pb_results])
             print_summary("B1: Position Bias", pb_metrics)
@@ -151,25 +148,24 @@ async def main(args):
                 client, pairs,
                 criterion=args.criterion,
                 output_dir=args.output_dir / "template_sensitivity",
-                thinking_budget=args.thinking_budget,
             )
             ts_metrics = compute_pairwise_agreement(
                 [r.to_dict() for r in ts_results], group_by="condition"
             )
             print_summary("B2: Template Sensitivity", ts_metrics)
 
-        # ---- B3: Thinking Budget ---------------------------------------
-        if "thinking_budget" in args.experiments:
-            logger.info("=== B3: Thinking Budget ===")
-            tb_results = await run_thinking_budget(
+        # ---- B3: Reasoning Depth ----------------------------------------
+        if "reasoning_depth" in args.experiments:
+            logger.info("=== B3: Reasoning Depth ===")
+            rd_results = await run_reasoning_depth(
                 client, pairs,
                 criterion=args.criterion,
-                output_dir=args.output_dir / "thinking_budget",
+                output_dir=args.output_dir / "reasoning_depth",
             )
-            tb_metrics = compute_thinking_accuracy(
-                [r.to_dict() for r in tb_results], gold_labels
+            rd_metrics = compute_thinking_accuracy(
+                [r.to_dict() for r in rd_results], gold_labels
             )
-            print_summary("B3: Thinking Budget", tb_metrics)
+            print_summary("B3: Reasoning Depth", rd_metrics)
 
         # ---- B4: Input Sensitivity ------------------------------------
         if "input_sensitivity" in args.experiments:
@@ -177,7 +173,6 @@ async def main(args):
             is_results = await run_input_sensitivity(
                 client, pairs,
                 output_dir=args.output_dir / "input_sensitivity",
-                thinking_budget=args.thinking_budget,
             )
             is_metrics = compute_pairwise_agreement(
                 [r.to_dict() for r in is_results], group_by="condition"

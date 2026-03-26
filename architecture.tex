@@ -133,6 +133,25 @@ the local code handles only data loading, prompt construction, async
 dispatch, response parsing, and metric computation.
 \end{conceptbox}
 
+\begin{notebox}[Key Terminology]
+\begin{description}[nosep, leftmargin=1.5cm]
+  \item[System prompt] A hidden instruction sent to the model \emph{before}
+    the user's message. It sets the model's role and behaviour --- for example,
+    ``You are an expert rater.'' The user never sees this text; it tells the
+    model \emph{how} to act. In this pipeline, the system prompt defines the
+    judge persona and output format.
+  \item[User prompt] The visible message that the model responds to. It
+    contains the actual content to evaluate: the original user question and
+    the two candidate responses (A and B). The model reads both the system
+    prompt and the user prompt, but only the user prompt carries the data.
+\end{description}
+
+\medskip
+\noindent Every API call in this pipeline sends exactly one system prompt and one user
+prompt. The system prompt varies across experiments (different templates), while
+the user prompt varies across dataset pairs (different questions and responses).
+\end{notebox}
+
 \subsection{Data-Flow Diagram}
 
 \begin{center}
@@ -226,11 +245,17 @@ dispatch, response parsing, and metric computation.
         response\_a, response\_b, gold\_label).
   \item \textbf{experiments.py} builds judge call lists from pairs and template
         configurations, dispatches them via \texttt{SwissAIClient.batch\_judge}.
+        For example, the position bias experiment creates two calls per pair ---
+        one in the original A/B order and one flipped --- producing a list of
+        dictionaries like \texttt{\{system\_prompt: ..., user\_prompt: ...,
+        prompt\_id: "a3f8", condition: "AB"\}}.
   \item \textbf{inference\_client.py} sends async HTTP POST requests to the
         Swiss AI Stack's OpenAI-compatible \texttt{/v1/chat/completions}
         endpoint.
-  \item Responses are parsed (label extraction via regex), saved to JSONL, and
-        fed to \textbf{metrics.py} for analysis.
+  \item Responses are parsed using pattern matching (the code searches the
+        model's output for verdict lines like ``Verdict: A'' or a standalone
+        A/B/C at the end of the text), saved to JSONL, and fed to
+        \textbf{metrics.py} for analysis.
 \end{enumerate}
 \end{notebox}
 
@@ -258,7 +283,6 @@ handling, concurrency control, and robust retry logic.
       \item \texttt{api\_key}: Bearer token (from \texttt{SWISSAI\_API\_KEY} env var)
       \item \texttt{model}: \texttt{Qwen/Qwen3-30B-A3B-Instruct-2507}
       \item Generation params: \texttt{max\_tokens=2048}, \texttt{temperature=0.0}, \texttt{top\_p=1.0}
-      \item Thinking budget: \texttt{thinking\_budget\_tokens} (0 = disabled)
       \item Retry config: \texttt{max\_retries=5}, \texttt{retry\_base\_delay=2.0s}, \texttt{retry\_max\_delay=60.0s}
       \item Concurrency: \texttt{concurrent\_requests=8}
     \end{itemize}
@@ -271,14 +295,19 @@ handling, concurrency control, and robust retry logic.
     \texttt{parse\_ok}, \texttt{error}.
 
   \item[Label Extraction]
-    Three-tier regex cascade:
+    Three-tier pattern-matching cascade (the code searches the model's output
+    text for specific formats, trying each rule in order until one matches):
     \begin{enumerate}[nosep]
-      \item \textbf{Verdict lines}: patterns like ``Verdict: B'', ``Answer: A''
-      \item \textbf{Bare label}: single A/B/C at end of text
-      \item \textbf{Fallback}: last uppercase A/B/C token in text
+      \item \textbf{Verdict lines}: looks for explicit markers like
+            ``Verdict: B'', ``Answer: A'', ``Output: C''
+      \item \textbf{Bare label}: a single A, B, or C standing alone at the
+            end of the text
+      \item \textbf{Fallback}: scans the entire text and picks the last
+            standalone uppercase A, B, or C found
     \end{enumerate}
-    Thinking blocks (\texttt{<think>...</think>}) are stripped before label
-    extraction and stored separately.
+    If the model produced a \texttt{<think>...</think>} block (internal
+    reasoning), that block is stripped before label extraction and stored
+    separately in the result.
 
   \item[\texttt{SwissAIClient}]
     Async context manager creating an \texttt{aiohttp.ClientSession} with
@@ -309,7 +338,8 @@ builder. Each template is registered in the \texttt{TEMPLATES} dictionary.
   \texttt{neutral}        & Imperative, no persona  & B2 \\
   \texttt{academic}       & Formal quality evaluator & B2 \\
   \texttt{minimal}        & One-liner               & B2 \\
-  \texttt{expert\_rater\_cot} & Expert + step-by-step CoT & B3 \\
+  \texttt{reason\_then\_judge} & Explain reasoning, then verdict & B3 \\
+  \texttt{structured\_reasoning} & Rate on criteria, then verdict & B3 \\
   \texttt{expert\_rater\_alt1} & ``superior response'' & B4 \\
   \texttt{expert\_rater\_alt2} & ``AI-generated answers / preferable'' & B4 \\
   \texttt{expert\_rater\_alt3} & ``serves the user'' & B4 \\
@@ -398,11 +428,53 @@ definitions for each experiment.
   \midrule
   \texttt{run\_position\_bias}       & B1 & ``AB'' (original), ``BA'' (flipped) \\
   \texttt{run\_template\_sensitivity}& B2 & 5 templates: expert\_rater, llm\_judge, neutral, academic, minimal \\
-  \texttt{run\_thinking\_budget}     & B3 & 5 conditions: no\_thinking, cot\_prompted, think\_512, think\_1024, think\_2048 \\
+  \texttt{run\_reasoning\_depth}     & B3 & 3 conditions: no\_reasoning, reason\_then\_judge, structured\_reasoning \\
   \texttt{run\_input\_sensitivity}   & B4 & 4 templates $\times$ 5 criteria = 20 conditions \\
   \bottomrule
 \end{tabular}
 \end{center}
+
+\subsubsection*{How Call Lists Are Built --- Worked Example}
+
+Each experiment loops over pairs (and conditions) to build a flat list of
+dictionaries. Each dictionary contains everything needed for one API call.
+Here is a simplified example for position bias (B1) with 2 pairs:
+
+\begin{codebox}[\small B1 Call List Construction (Pseudocode)]
+\begin{lstlisting}
+pairs = [pair_1, pair_2]   # loaded from dataset
+
+calls = []
+for pair in pairs:
+    # Original order: Response A first, Response B second
+    sys_prompt, usr_prompt = build_prompt("expert_rater",
+        pair.prompt, pair.response_a, pair.response_b)
+    calls.append({
+        "system_prompt": sys_prompt,
+        "user_prompt":   usr_prompt,
+        "prompt_id":     pair.prompt_id,
+        "condition":     "AB"
+    })
+
+    # Flipped order: Response B first, Response A second
+    flipped = pair.flipped()
+    sys_prompt, usr_prompt = build_prompt("expert_rater",
+        flipped.prompt, flipped.response_a, flipped.response_b)
+    calls.append({
+        "system_prompt": sys_prompt,
+        "user_prompt":   usr_prompt,
+        "prompt_id":     pair.prompt_id,
+        "condition":     "BA"
+    })
+
+# Result: 4 calls (2 pairs x 2 orders)
+# All dispatched at once via client.batch_judge(calls)
+\end{lstlisting}
+\end{codebox}
+
+For B2, the outer loop iterates over 5 templates instead of 2 orders.
+For B3, it iterates over 3 reasoning conditions.
+For B4, it iterates over 4 template variants $\times$ 5 criteria = 20 combinations.
 
 
 % ── metrics.py ──────────────────────────────────────────────────────────────
@@ -420,8 +492,8 @@ Loads JSONL results and computes experiment-specific metrics. Provides
     per-pair agreement rate, label distribution per condition, most volatile
     pairs. Used for both B2 and B4.
   \item[\texttt{compute\_thinking\_accuracy}] Accuracy vs.\ gold labels per
-    condition, agreement vs.\ no\_thinking baseline, average latency per
-    condition.
+    condition, agreement vs.\ no\_reasoning baseline, average latency per
+    condition. Used for B3.
 \end{description}
 
 
@@ -437,20 +509,23 @@ prints summaries.
 \begin{codebox}[\small Example Invocations]
 \begin{lstlisting}
 # Run all experiments (200 pairs, default settings)
-python run_experiments.py
+python3 run_experiments.py
 
 # Quick smoke test: position bias only, 20 pairs
-python run_experiments.py --experiments position_bias --n-pairs 20
+python3 run_experiments.py --experiments position_bias --n-pairs 20
 
-# Specific model + thinking budget
-python run_experiments.py --model Qwen/Qwen3-30B-A3B-Instruct-2507 \
-                          --thinking-budget 1024
+# Run only reasoning depth experiment
+python3 run_experiments.py --experiments reasoning_depth
+
+# Full configuration
+python3 run_experiments.py --dataset nvidia/HelpSteer2 \
+    --split validation --n-pairs 200 --criterion helpful
 \end{lstlisting}
 \end{codebox}
 
 CLI flags include: \texttt{--experiments}, \texttt{--n-pairs},
 \texttt{--dataset}, \texttt{--split}, \texttt{--criterion},
-\texttt{--template}, \texttt{--thinking-budget}, \texttt{--output-dir},
+\texttt{--template}, \texttt{--output-dir},
 \texttt{--model}, \texttt{--base-url}, \texttt{--concurrency},
 \texttt{--seed}.
 
@@ -533,26 +608,38 @@ Same data, same order, same criterion --- only the system prompt changes.
 
 
 % ── B3 ──────────────────────────────────────────────────────────────────────
-\subsection{B3: Prompt-Elicited Reasoning (Thinking Budget)}\label{sec:b3}
+\subsection{B3: Prompt-Elicited Reasoning}\label{sec:b3}
 
-\begin{experimentbox}[B3 -- Thinking Budget and CoT Impact]
-\textbf{Research question:} Does explicit reasoning --- either prompt-elicited
-Chain of Thought or native thinking tokens --- improve judge accuracy?
+\begin{experimentbox}[B3 -- Reasoning Depth]
+\textbf{Research question:} Does explicitly asking the model to reason before
+giving its verdict improve accuracy against human gold labels?
+
+\medskip
+All reasoning in this experiment is \textbf{prompt-elicited}: the prompt
+itself tells the model how much (or how little) to reason. There is no
+native API thinking-budget feature involved --- the only thing that changes
+between conditions is the system prompt template.
 
 \medskip
 \textbf{Conditions:}
 
 \begin{center}
 \small
-\begin{tabular}{llcp{5.8cm}}
+\begin{tabular}{lp{8cm}}
   \toprule
-  \textbf{Label} & \textbf{Template} & \textbf{Budget} & \textbf{Description} \\
+  \textbf{Condition} & \textbf{What the prompt tells the model} \\
   \midrule
-  \texttt{no\_thinking}  & expert\_rater     & 0    & Baseline, no reasoning \\
-  \texttt{cot\_prompted} & expert\_rater\_cot & 0    & Prompt instructs step-by-step reasoning; uses verbose output format \\
-  \texttt{think\_512}    & expert\_rater     & 512  & Qwen3 native thinking, 512 token budget \\
-  \texttt{think\_1024}   & expert\_rater     & 1024 & Qwen3 native thinking, 1024 token budget \\
-  \texttt{think\_2048}   & expert\_rater     & 2048 & Qwen3 native thinking, 2048 token budget \\
+  \texttt{no\_reasoning} &
+    Just output a single letter: A, B, or C. No explanation requested.
+    Uses the baseline \texttt{expert\_rater} template. \\[4pt]
+  \texttt{reason\_then\_judge} &
+    ``Explain your reasoning about the strengths and weaknesses of each
+    response, then provide your final verdict.'' The model argues its
+    decision before answering. \\[4pt]
+  \texttt{structured\_reasoning} &
+    ``Rate each response on helpfulness, accuracy, and coherence, then
+    provide your final verdict.'' The model evaluates on specific criteria
+    before deciding. \\
   \bottomrule
 \end{tabular}
 \end{center}
@@ -562,39 +649,24 @@ Chain of Thought or native thinking tokens --- improve judge accuracy?
 \begin{description}[nosep, leftmargin=1.2cm]
   \item[\texttt{accuracy\_vs\_gold}] Agreement with human preference labels
     per condition.
-  \item[\texttt{delta\_accuracy}] Improvement of each condition over
-    \texttt{no\_thinking}.
-  \item[\texttt{agreement\_vs\_no\_thinking}] Fraction of verdicts matching
-    the baseline.
-  \item[\texttt{avg\_latency\_s}] Average response time per condition (more
-    thinking tokens = higher latency).
+  \item[\texttt{delta\_accuracy}] Improvement of each reasoning condition
+    over \texttt{no\_reasoning}.
+  \item[\texttt{agreement\_vs\_no\_reasoning}] Fraction of verdicts matching
+    the no-reasoning baseline.
+  \item[\texttt{avg\_latency\_s}] Average response time per condition
+    (reasoning conditions produce longer outputs and take more time).
 \end{description}
 \end{experimentbox}
 
-\begin{warnbox}[B3 Clarification: Prompt-Elicited CoT vs.\ Native Thinking]
-B3 tests \textbf{prompt-elicited Chain of Thought} --- the model is
-explicitly instructed in the prompt to ``think step by step about the
-strengths and weaknesses'' before answering.
-
-\medskip
-\begin{itemize}[nosep]
-  \item The \texttt{cot\_prompted} condition uses a special template
-    (\texttt{expert\_rater\_cot}) with verbose output instructions
-    (``Verdict: <A|B|C>'' format). The thinking budget is 0; any reasoning
-    appears in the main response text.
-
-  \item The \texttt{think\_512/1024/2048} conditions use \textbf{Qwen3's
-    native thinking mode} via \texttt{chat\_template\_kwargs:
-    \{enable\_thinking: true\}} and \texttt{thinking: \{type: enabled,
-    budget\_tokens: N\}} in the API request body. The model produces
-    \texttt{<think>...</think>} blocks that are extracted separately.
-
-  \item This is \textbf{NOT} a native API thinking-budget feature like
-    Anthropic's extended thinking. It is prompt-level CoT elicitation
-    combined with Qwen3's optional thinking mode, both accessed via the
-    Swiss AI Stack's OpenAI-compatible endpoint.
-\end{itemize}
-\end{warnbox}
+\begin{notebox}[B3 Design Note]
+This experiment tests \textbf{prompt-elicited Chain of Thought} --- the model
+is explicitly told in the prompt to argue its decision before answering.
+This is fundamentally different from a native API thinking-budget feature
+(like Anthropic's extended thinking or Qwen3's \texttt{enable\_thinking}
+parameter). Here, the reasoning appears directly in the model's visible
+output because the \emph{prompt} requested it, not because a special API
+mode was activated.
+\end{notebox}
 
 
 % ── B4 ──────────────────────────────────────────────────────────────────────
@@ -772,10 +844,10 @@ Each line is a single JSON object representing one judge call.
     Unique identifier for the dataset pair (MD5 hash or index-based). \\
   \texttt{experiment\_id} & \texttt{str} &
     Experiment name: \texttt{position\_bias}, \texttt{template\_sensitivity},
-    \texttt{thinking\_budget}, or \texttt{input\_sensitivity}. \\
+    \texttt{reasoning\_depth}, or \texttt{input\_sensitivity}. \\
   \texttt{condition} & \texttt{str} &
     Experimental condition (e.g.\ ``AB'', ``BA'', template name,
-    ``think\_1024'', ``expert\_rater\_alt2\_accurate''). \\
+    ``reason\_then\_judge'', ``expert\_rater\_alt2\_accurate''). \\
   \texttt{raw\_text} & \texttt{str} &
     Full model output text, unmodified. \\
   \texttt{label} & \texttt{str|null} &
@@ -808,7 +880,7 @@ results/
     expert_rater_helpful.jsonl
   template_sensitivity/
     criterion_helpful.jsonl
-  thinking_budget/
+  reasoning_depth/
     criterion_helpful.jsonl
   input_sensitivity/
     all.jsonl

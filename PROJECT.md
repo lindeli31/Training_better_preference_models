@@ -14,7 +14,7 @@ This project investigates **systematic biases and sensitivities in LLM-as-a-judg
 
 1. **Position Bias (B1)**: Does the judge prefer whichever response appears first (or second), regardless of quality?
 2. **Template Sensitivity (B2)**: Does changing the system prompt framing ("expert rater" vs "LLM judge" vs "neutral" etc.) change the verdict?
-3. **Reasoning Depth (B3)**: Does prompting the model to reason step-by-step, or giving it a native thinking-token budget, improve accuracy against human gold labels?
+3. **Reasoning Depth (B3)**: Does explicitly asking the model to reason before judging (prompt-elicited Chain of Thought) improve accuracy against human gold labels?
 4. **Input Sensitivity (B4)**: Do semantically equivalent paraphrases of the same prompt produce different verdicts? Does changing the evaluation criterion (helpful vs accurate vs concise etc.) drift the labels?
 
 ---
@@ -54,7 +54,7 @@ HuggingFace datasets
 ## File-by-File Details
 
 ### `inference_client.py`
-- **InferenceConfig** dataclass: base_url, api_key, model, generation params (max_tokens=2048, temperature=0.0, top_p=1.0), thinking_budget_tokens, retry config (max_retries=5, base_delay=2s, max_delay=60s), concurrent_requests=8
+- **InferenceConfig** dataclass: base_url, api_key, model, generation params (max_tokens=2048, temperature=0.0, top_p=1.0), retry config (max_retries=5, base_delay=2s, max_delay=60s), concurrent_requests=8
 - **JudgeResponse** dataclass: prompt_id, experiment_id, condition, raw_text, label (A/B/C/None), thinking (extracted CoT), latency_s, total_tokens, parse_ok, error
 - **Label extraction**: Three-tier regex cascade:
   1. Verdict lines: `(?i)(?:verdict|answer|response|output|better response)\s*:\s*([ABC])\b`
@@ -75,7 +75,8 @@ HuggingFace datasets
   - `neutral` — imperative, no persona (B2)
   - `academic` — formal quality evaluator (B2)
   - `minimal` — one-liner (B2)
-  - `expert_rater_cot` — expert rater + "think step by step" + verbose output instruction (B3)
+  - `reason_then_judge` — explain reasoning about strengths/weaknesses, then verdict (B3)
+  - `structured_reasoning` — rate on helpfulness/accuracy/coherence criteria, then verdict (B3)
   - `expert_rater_alt1/alt2/alt3` — minor wording variants of expert_rater (B4)
 - **Criteria**: helpful, quality, accurate, harmless, concise — mapped to natural language fragments
 - **build_prompt()**: resolves template_id + criterion → (system_prompt, user_prompt)
@@ -91,10 +92,10 @@ HuggingFace datasets
 ### `experiments.py`
 - **B1 `run_position_bias()`**: For each pair, creates two calls — condition "AB" (original order) and "BA" (flipped order via `pair.flipped()`). The `prompt_id` stays the same for both so metrics can match them.
 - **B2 `run_template_sensitivity()`**: Judges each pair with 5 template variants (expert_rater, llm_judge, neutral, academic, minimal). Same order, same data.
-- **B3 `run_thinking_budget()`**: 5 conditions:
-  - `no_thinking`: expert_rater template, budget=0
-  - `cot_prompted`: expert_rater_cot template (prompt-level CoT instruction), budget=0
-  - `think_512/1024/2048`: expert_rater template with Qwen3 native thinking enabled via `chat_template_kwargs` and `thinking` API params
+- **B3 `run_reasoning_depth()`**: 3 prompt-elicited reasoning conditions:
+  - `no_reasoning`: expert_rater template — just output A, B, or C
+  - `reason_then_judge`: explain reasoning about strengths/weaknesses, then give verdict
+  - `structured_reasoning`: rate each response on helpfulness/accuracy/coherence, then give verdict
 - **B4 `run_input_sensitivity()`**: 4 template variants × 5 criteria = 20 conditions per pair
 - All experiments save results to JSONL via `save_jsonl()`
 
@@ -121,9 +122,7 @@ HuggingFace datasets
 
 1. **Pure HTTP client** — no local model serving. All inference goes through the Swiss AI Stack's OpenAI-compatible API. This keeps the codebase simple and portable.
 
-2. **Prompt-elicited CoT vs native thinking** — B3 has two distinct mechanisms:
-   - `cot_prompted`: the *prompt* tells the model to think step-by-step (template instruction). Budget=0.
-   - `think_*`: the *API parameters* enable Qwen3's native thinking mode with a token budget. This is NOT like Anthropic's extended thinking — it's a Qwen3-specific feature activated via `chat_template_kwargs: {enable_thinking: true}` and `thinking: {type: enabled, budget_tokens: N}`.
+2. **Prompt-elicited reasoning only** — B3 uses three levels of prompt-elicited reasoning (no reasoning, free-form reasoning, structured criteria-based reasoning). All reasoning depth is controlled entirely by the prompt template — there is no native API thinking-budget feature involved. This keeps the design simple and portable across any OpenAI-compatible endpoint.
 
 3. **Label extraction cascade** — the regex tries explicit verdict lines first (most reliable), then bare labels at end of text, then falls back to the last uppercase A/B/C in the text. `<think>` blocks are stripped before extraction to avoid matching reasoning content.
 

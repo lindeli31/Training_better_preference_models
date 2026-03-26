@@ -141,13 +141,13 @@ def test_compute_pairwise_agreement_zero():
 def test_compute_thinking_accuracy():
     gold = {"p1": "A", "p2": "B"}
     results = [
-        {"prompt_id": "p1", "condition": "no_thinking", "label": "A", "latency_s": 1.0},
-        {"prompt_id": "p2", "condition": "no_thinking", "label": "B", "latency_s": 1.0},
+        {"prompt_id": "p1", "condition": "no_reasoning", "label": "A", "latency_s": 1.0},
+        {"prompt_id": "p2", "condition": "no_reasoning", "label": "B", "latency_s": 1.0},
         {"prompt_id": "p1", "condition": "think_512",   "label": "A", "latency_s": 2.0},
         {"prompt_id": "p2", "condition": "think_512",   "label": "A", "latency_s": 2.0},  # wrong
     ]
     m = compute_thinking_accuracy(results, gold)
-    assert m["accuracy_vs_gold"]["no_thinking"] == 1.0
+    assert m["accuracy_vs_gold"]["no_reasoning"] == 1.0
     assert m["accuracy_vs_gold"]["think_512"] == 0.5
 
 

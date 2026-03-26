@@ -11,7 +11,7 @@ Experiments
 -----------
   run_position_bias      (B1) - flip A/B, measure consistency
   run_template_sensitivity (B2) - vary system-prompt wording
-  run_thinking_budget    (B3) - compare no-CoT vs. different token budgets
+  run_reasoning_depth    (B3) - compare no reasoning vs. prompted reasoning styles
   run_input_sensitivity  (B4) - minor paraphrasing of templates
 
 All experiments share the same data (list[PairRecord]) and client.
@@ -52,7 +52,6 @@ async def run_position_bias(
     template_id: str = "expert_rater",
     criterion: str = "helpful",
     output_dir: Path = Path("results/position_bias"),
-    thinking_budget: int = 0,
 ) -> list[JudgeResponse]:
     """
     For each pair, judge both orders:
@@ -70,7 +69,7 @@ async def run_position_bias(
         calls.append(dict(
             system_prompt=sys_p, user_prompt=usr_p,
             prompt_id=pair.prompt_id, experiment_id="position_bias",
-            condition="AB", thinking_budget=thinking_budget,
+            condition="AB",
         ))
 
         # Flipped order
@@ -80,7 +79,7 @@ async def run_position_bias(
         calls.append(dict(
             system_prompt=sys_p2, user_prompt=usr_p2,
             prompt_id=pair.prompt_id, experiment_id="position_bias",
-            condition="BA", thinking_budget=thinking_budget,
+            condition="BA",
         ))
 
     logger.info("[B1] Dispatching %d calls (position bias, template=%s)", len(calls), template_id)
@@ -107,7 +106,6 @@ async def run_template_sensitivity(
     template_ids: Optional[list[str]] = None,
     criterion: str = "helpful",
     output_dir: Path = Path("results/template_sensitivity"),
-    thinking_budget: int = 0,
 ) -> list[JudgeResponse]:
     """
     Judge each pair with multiple system-prompt templates (same order, same data).
@@ -123,7 +121,7 @@ async def run_template_sensitivity(
             calls.append(dict(
                 system_prompt=sys_p, user_prompt=usr_p,
                 prompt_id=pair.prompt_id, experiment_id="template_sensitivity",
-                condition=tmpl, thinking_budget=thinking_budget,
+                condition=tmpl,
             ))
 
     logger.info("[B2] Dispatching %d calls (%d templates × %d pairs)",
@@ -134,34 +132,31 @@ async def run_template_sensitivity(
 
 
 # ---------------------------------------------------------------------------
-# Experiment B3: Thinking / CoT Budget
+# Experiment B3: Reasoning Depth
 # ---------------------------------------------------------------------------
 
-# (budget_tokens=0 means no thinking; >0 enables Qwen3 thinking mode)
-THINKING_CONDITIONS = [
-    {"label": "no_thinking",   "budget": 0,    "template": "expert_rater"},
-    {"label": "cot_prompted",  "budget": 0,    "template": "expert_rater_cot"},
-    {"label": "think_512",     "budget": 512,  "template": "expert_rater"},
-    {"label": "think_1024",    "budget": 1024, "template": "expert_rater"},
-    {"label": "think_2048",    "budget": 2048, "template": "expert_rater"},
+REASONING_CONDITIONS = [
+    {"label": "no_reasoning",          "template": "expert_rater"},
+    {"label": "reason_then_judge",     "template": "reason_then_judge"},
+    {"label": "structured_reasoning",  "template": "structured_reasoning"},
 ]
 
-async def run_thinking_budget(
+async def run_reasoning_depth(
     client: SwissAIClient,
     pairs: list[PairRecord],
     conditions: Optional[list[dict]] = None,
     criterion: str = "helpful",
-    output_dir: Path = Path("results/thinking_budget"),
+    output_dir: Path = Path("results/reasoning_depth"),
 ) -> list[JudgeResponse]:
     """
-    Compare four conditions:
-      - no_thinking   : base template, no CoT, no thinking tokens
-      - cot_prompted  : template instructs model to think step-by-step
-      - think_512/1024/2048 : native Qwen3 thinking with token budgets
+    Compare three prompt-elicited reasoning conditions:
+      - no_reasoning          : just output A, B, or C
+      - reason_then_judge     : explain reasoning, then give verdict
+      - structured_reasoning  : rate on specific criteria, then give verdict
 
     Agreement with gold label tells us how much reasoning helps.
     """
-    conditions = conditions or THINKING_CONDITIONS
+    conditions = conditions or REASONING_CONDITIONS
     calls = []
     for cond in conditions:
         for pair in pairs:
@@ -169,8 +164,8 @@ async def run_thinking_budget(
                                          pair.response_a, pair.response_b, criterion)
             calls.append(dict(
                 system_prompt=sys_p, user_prompt=usr_p,
-                prompt_id=pair.prompt_id, experiment_id="thinking_budget",
-                condition=cond["label"], thinking_budget=cond["budget"],
+                prompt_id=pair.prompt_id, experiment_id="reasoning_depth",
+                condition=cond["label"],
             ))
 
     logger.info("[B3] Dispatching %d calls (%d conditions × %d pairs)",
@@ -197,7 +192,6 @@ async def run_input_sensitivity(
     template_ids: Optional[list[str]] = None,
     criteria: Optional[list[str]] = None,
     output_dir: Path = Path("results/input_sensitivity"),
-    thinking_budget: int = 0,
 ) -> list[JudgeResponse]:
     """
     Minor paraphrasing of the same expert-rater template.
@@ -217,7 +211,6 @@ async def run_input_sensitivity(
                     prompt_id=pair.prompt_id,
                     experiment_id="input_sensitivity",
                     condition=f"{tmpl}_{crit}",
-                    thinking_budget=thinking_budget,
                 ))
 
     logger.info("[B4] Dispatching %d calls (%d templates × %d criteria × %d pairs)",

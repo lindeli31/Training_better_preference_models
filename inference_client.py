@@ -4,7 +4,6 @@ inference_client.py
 Async inference client for the Swiss AI Stack (OpenAI-compatible endpoint).
 Wraps Qwen3-30B-A3B-Instruct-2507 (or any model on the stack) with:
   - Rate-limit-aware retry logic with exponential back-off
-  - Configurable thinking / CoT budget
   - Structured response parsing (A / B / C label extraction)
   - Full raw-response logging for reproducibility
 """
@@ -36,9 +35,6 @@ class InferenceConfig:
     max_tokens: int = 2048                     # enough room for CoT + label
     temperature: float = 0.0                   # deterministic for reproducibility
     top_p: float = 1.0
-
-    # Thinking / CoT budget (set to 0 to disable, >0 to enable)
-    thinking_budget_tokens: int = 0            # overridden per experiment
 
     # Retry / rate-limit
     max_retries: int = 5
@@ -134,7 +130,7 @@ class SwissAIClient:
     # Core request
     # ------------------------------------------------------------------
 
-    async def _post(self, messages: list[dict], extra_body: dict) -> dict:
+    async def _post(self, messages: list[dict]) -> dict:
         url = f"{self.config.base_url}/chat/completions"
         payload = {
             "model": self.config.model,
@@ -142,7 +138,6 @@ class SwissAIClient:
             "max_tokens": self.config.max_tokens,
             "temperature": self.config.temperature,
             "top_p": self.config.top_p,
-            **extra_body,
         }
 
         delay = self.config.retry_base_delay
@@ -177,22 +172,11 @@ class SwissAIClient:
         prompt_id: str,
         experiment_id: str,
         condition: str,
-        thinking_budget: Optional[int] = None,
     ) -> JudgeResponse:
         """
         Call the model as an LLM judge. Returns a JudgeResponse.
-
-        thinking_budget=0  -> no CoT (fast)
-        thinking_budget>0  -> enable Qwen3 thinking mode
+        Reasoning depth is controlled entirely by the prompt template.
         """
-        budget = thinking_budget if thinking_budget is not None else self.config.thinking_budget_tokens
-
-        extra_body: dict = {}
-        if budget > 0:
-            # Qwen3 thinking extension (vLLM / CSCS compatible)
-            extra_body["chat_template_kwargs"] = {"enable_thinking": True}
-            extra_body["thinking"] = {"type": "enabled", "budget_tokens": budget}
-
         messages = [
             {"role": "system", "content": system_prompt},
             {"role": "user",   "content": user_prompt},
@@ -201,7 +185,7 @@ class SwissAIClient:
         async with self._semaphore:
             t0 = time.perf_counter()
             try:
-                raw = await self._post(messages, extra_body)
+                raw = await self._post(messages)
                 latency = time.perf_counter() - t0
 
                 choice = raw["choices"][0]

@@ -18,7 +18,7 @@ B2 Template Sensitivity
 B3 Thinking Budget
   - accuracy_vs_gold      : % agreement with gold label per condition
   - delta_accuracy        : improvement of thinking over no-thinking
-  - consistency_vs_no_thinking : % agreement with the no-thinking condition
+  - consistency_vs_no_reasoning : % agreement with the no-thinking condition
 
 B4 Input Sensitivity
   - pairwise_agreement across minor wording variants
@@ -175,7 +175,7 @@ def compute_thinking_accuracy(
 ) -> dict:
     """
     For each condition (thinking level), compute accuracy vs. gold labels.
-    Also compute agreement rate with the no_thinking baseline.
+    Also compute agreement rate with the no_reasoning baseline.
     """
     # pivot: condition -> prompt_id -> label
     pivot: dict[str, dict[str, str]] = defaultdict(dict)
@@ -189,11 +189,11 @@ def compute_thinking_accuracy(
                       if gold_labels.get(pid) == lbl)
         accuracy[cond] = round(correct / len(labels), 4) if labels else 0
 
-    # Agreement with no_thinking baseline
-    baseline = pivot.get("no_thinking", {})
+    # Agreement with no_reasoning baseline
+    baseline = pivot.get("no_reasoning", {})
     agreement_vs_baseline: dict[str, float] = {}
     for cond, labels in pivot.items():
-        if cond == "no_thinking":
+        if cond == "no_reasoning":
             continue
         shared = set(labels) & set(baseline)
         if shared:
@@ -209,7 +209,7 @@ def compute_thinking_accuracy(
 
     return {
         "accuracy_vs_gold": accuracy,
-        "agreement_vs_no_thinking": agreement_vs_baseline,
+        "agreement_vs_no_reasoning": agreement_vs_baseline,
         "avg_latency_s": avg_latency,
     }
 

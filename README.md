@@ -36,7 +36,7 @@ python3 run_experiments.py
 ```bash
 python3 run_experiments.py --experiments position_bias
 python3 run_experiments.py --experiments template_sensitivity
-python3 run_experiments.py --experiments thinking_budget
+python3 run_experiments.py --experiments reasoning_depth
 python3 run_experiments.py --experiments input_sensitivity
 ```
 
@@ -54,7 +54,6 @@ python3 run_experiments.py \
   --split validation \
   --n-pairs 200 \
   --criterion helpful \
-  --thinking-budget 1024 \
   --concurrency 8 \
   --output-dir results/run_001
 ```
@@ -93,23 +92,21 @@ The same pairs are judged using 5 system-prompt variants (same data, same order)
 
 **Result file**: `results/template_sensitivity/criterion_<criterion>.jsonl`
 
-### B3 — Prompt-Elicited Reasoning
+### B3 — Reasoning Depth
 
-Five conditions comparing reasoning depth:
+Three conditions comparing prompt-elicited reasoning levels:
 
-| Condition      | Mechanism                                       | Thinking tokens |
-|----------------|-------------------------------------------------|-----------------|
-| `no_thinking`  | Base template, no CoT                           | 0               |
-| `cot_prompted` | Template instructs model to reason step-by-step | 0               |
-| `think_512`    | Qwen3 native thinking mode                      | 512             |
-| `think_1024`   | Qwen3 native thinking mode                      | 1024            |
-| `think_2048`   | Qwen3 native thinking mode                      | 2048            |
+| Condition                | What the prompt tells the model |
+|--------------------------|---------------------------------|
+| `no_reasoning`           | Just output A, B, or C. No explanation. |
+| `reason_then_judge`      | Explain your reasoning about strengths and weaknesses, then give your verdict. |
+| `structured_reasoning`   | Rate each response on helpfulness, accuracy, and coherence, then give your verdict. |
 
-> **Note**: `cot_prompted` tests prompt-elicited Chain of Thought (the model is explicitly told to argue its decision before answering). This is not a native API thinking-budget feature — it is a prompt-level instruction. The `think_*` conditions use Qwen3's optional thinking mode via API parameters.
+All reasoning is prompt-elicited — the prompt itself asks the model to reason (or not). No native API thinking-budget feature is involved.
 
-**Key metrics**: accuracy vs. gold label, agreement with `no_thinking` baseline, average latency per condition.
+**Key metrics**: accuracy vs. gold label, agreement with `no_reasoning` baseline, average latency per condition.
 
-**Result file**: `results/thinking_budget/criterion_<criterion>.jsonl`
+**Result file**: `results/reasoning_depth/criterion_<criterion>.jsonl`
 
 ### B4 — Input / Wording Sensitivity
 
@@ -157,15 +154,6 @@ The client talks to the OpenAI-compatible endpoint at the Swiss AI Stack:
 
 ```
 POST https://serving.swissai.svc.cscs.ch/v1/chat/completions
-```
-
-Qwen3 thinking mode is activated via extra body parameters:
-
-```json
-{
-  "chat_template_kwargs": {"enable_thinking": true},
-  "thinking": {"type": "enabled", "budget_tokens": 1024}
-}
 ```
 
 Rate limiting: exponential backoff with up to 5 retries, capped at 60s delay. Concurrency is controlled via an asyncio semaphore (default 8 concurrent requests).
