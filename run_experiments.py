@@ -30,15 +30,15 @@ import os
 import time
 from pathlib import Path
 
-from inference_client import InferenceConfig, SwissAIClient
-from dataset import load_dataset_pairs
-from experiments import (
+from src.inference_client import InferenceConfig, SwissAIClient
+from src.dataset import load_dataset_pairs
+from src.experiments import (
     run_position_bias,
     run_template_sensitivity,
     run_reasoning_depth,
     run_input_sensitivity,
 )
-from metrics import (
+from src.metrics import (
     compute_position_bias,
     compute_pairwise_agreement,
     compute_thinking_accuracy,

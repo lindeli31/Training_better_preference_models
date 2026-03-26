@@ -4,9 +4,9 @@ test_pipeline.py
 Unit tests that verify the pipeline logic WITHOUT making any real API calls.
 
 Run with:
-    python -m pytest test_pipeline.py -v
+    python -m pytest tests/test_pipeline.py -v
     # or simply
-    python test_pipeline.py
+    python tests/test_pipeline.py
 """
 
 import asyncio
@@ -16,13 +16,13 @@ import tempfile
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
 
-# ---- Make sure the package root is on the path ----
-sys.path.insert(0, str(Path(__file__).parent))
+# ---- Make sure the project root is on the path ----
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from inference_client import extract_label, extract_thinking, JudgeResponse
-from templates import build_prompt, TEMPLATES, CRITERIA
-from dataset import PairRecord
-from metrics import compute_position_bias, compute_pairwise_agreement, compute_thinking_accuracy
+from src.inference_client import extract_label, extract_thinking, JudgeResponse
+from src.templates import build_prompt, TEMPLATES, CRITERIA
+from src.dataset import PairRecord
+from src.metrics import compute_position_bias, compute_pairwise_agreement, compute_thinking_accuracy
 
 
 # ===========================================================================

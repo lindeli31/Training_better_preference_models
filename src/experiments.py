@@ -23,9 +23,9 @@ import logging
 from pathlib import Path
 from typing import Optional
 
-from inference_client import SwissAIClient, InferenceConfig, JudgeResponse
-from templates import build_prompt, TEMPLATES, CRITERIA
-from dataset import PairRecord
+from src.inference_client import SwissAIClient, InferenceConfig, JudgeResponse
+from src.templates import build_prompt, TEMPLATES, CRITERIA
+from src.dataset import PairRecord
 
 logger = logging.getLogger(__name__)
 

@@ -18,7 +18,7 @@ Each dataset is normalised to a list of PairRecord objects with fields:
 
 Usage
 -----
-    from dataset import load_dataset_pairs, PairRecord
+    from src.dataset import load_dataset_pairs, PairRecord
     pairs = load_dataset_pairs("nvidia/HelpSteer2", split="validation", n=200)
 """
 

@@ -5,15 +5,20 @@ Research pipeline for measuring systematic biases and sensitivities in LLM-as-a-
 ## Project Structure
 
 ```
-inference_client.py   # Async HTTP client for the Swiss AI Stack (retry, backoff, label parsing)
-templates.py          # All judge prompt templates and evaluation criteria
-dataset.py            # HuggingFace dataset loaders → normalised PairRecord objects
-experiments.py        # Experiment runners (B1–B4): build calls, dispatch, save JSONL
-metrics.py            # Compute metrics from JSONL results (bias rates, agreement, accuracy)
-run_experiments.py    # CLI orchestrator — runs experiments and prints summaries
-test_pipeline.py      # Unit tests (no API calls required)
-requirements.txt      # Python dependencies
-architecture.pdf      # Detailed pipeline architecture document
+├── src/                        # Core library
+│   ├── inference_client.py     # Async HTTP client (retry, backoff, label parsing)
+│   ├── templates.py            # Judge prompt templates and evaluation criteria
+│   ├── dataset.py              # HuggingFace dataset loaders → PairRecord objects
+│   ├── experiments.py          # Experiment runners (B1–B4): build calls, dispatch, save JSONL
+│   └── metrics.py              # Metrics from JSONL results (bias rates, agreement, accuracy)
+├── tests/
+│   └── test_pipeline.py        # Unit tests (no API calls required)
+├── docs/
+│   ├── architecture.tex        # LaTeX source for architecture document
+│   └── architecture.pdf        # Compiled architecture document
+├── run_experiments.py          # CLI orchestrator — runs experiments and prints summaries
+├── requirements.txt            # Python dependencies
+└── PROJECT.md                  # Detailed project documentation
 ```
 
 ## Setup
@@ -61,9 +66,9 @@ python3 run_experiments.py \
 ### Run tests (no API key required)
 
 ```bash
-python3 test_pipeline.py
+python3 tests/test_pipeline.py
 # or
-python3 -m pytest test_pipeline.py -v
+python3 -m pytest tests/test_pipeline.py -v
 ```
 
 ## Experiments

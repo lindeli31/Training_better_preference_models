@@ -25,35 +25,35 @@ This project investigates **systematic biases and sensitivities in LLM-as-a-judg
 HuggingFace datasets
         │
         ▼
-   dataset.py          ──→  list[PairRecord]
+   src/dataset.py          ──→  list[PairRecord]
         │
         ▼
-  experiments.py        ──→  builds call dicts per experiment conditions
+  src/experiments.py        ──→  builds call dicts per experiment conditions
         │
         ▼
- inference_client.py    ──→  async HTTP POST to Swiss AI Stack
-        │                     (aiohttp, semaphore concurrency, exponential backoff)
+ src/inference_client.py    ──→  async HTTP POST to Swiss AI Stack
+        │                         (aiohttp, semaphore concurrency, exponential backoff)
         ▼
-   Swiss AI Stack       ──→  /v1/chat/completions (Qwen3-30B-A3B)
+   Swiss AI Stack           ──→  /v1/chat/completions (Qwen3-30B-A3B)
         │
         ▼
-   Label extraction     ──→  regex cascade: verdict lines → bare label → fallback
+   Label extraction         ──→  regex cascade: verdict lines → bare label → fallback
         │
         ▼
-   JSONL results        ──→  results/<experiment>/*.jsonl
+   JSONL results            ──→  results/<experiment>/*.jsonl
         │
         ▼
-    metrics.py          ──→  position consistency, pairwise agreement, accuracy vs gold
+    src/metrics.py          ──→  position consistency, pairwise agreement, accuracy vs gold
         │
         ▼
-  run_experiments.py    ──→  CLI orchestrator, prints metric summaries
+  run_experiments.py        ──→  CLI orchestrator, prints metric summaries
 ```
 
 ---
 
 ## File-by-File Details
 
-### `inference_client.py`
+### `src/inference_client.py`
 - **InferenceConfig** dataclass: base_url, api_key, model, generation params (max_tokens=2048, temperature=0.0, top_p=1.0), retry config (max_retries=5, base_delay=2s, max_delay=60s), concurrent_requests=8
 - **JudgeResponse** dataclass: prompt_id, experiment_id, condition, raw_text, label (A/B/C/None), thinking (extracted CoT), latency_s, total_tokens, parse_ok, error
 - **Label extraction**: Three-tier regex cascade:
@@ -68,7 +68,7 @@ HuggingFace datasets
   - `batch_judge()`: dispatches list of calls via `asyncio.gather`
   - Semaphore controls max concurrent requests
 
-### `templates.py`
+### `src/templates.py`
 - **System prompt variants** (9 total):
   - `expert_rater` — baseline "You are an expert rater" (used in B1, B2, B3, B4)
   - `llm_judge` — "You are an LLM used to judge" (B2)
@@ -82,14 +82,14 @@ HuggingFace datasets
 - **build_prompt()**: resolves template_id + criterion → (system_prompt, user_prompt)
 - **User prompt format**: `[User Prompt]\n{prompt}\n\n[Response A]\n{a}\n\n[Response B]\n{b}\n\nWhich response is {criterion}?`
 
-### `dataset.py`
+### `src/dataset.py`
 - **PairRecord** dataclass: prompt_id, prompt, response_a, response_b, gold_label
   - `flipped()` returns new PairRecord with A↔B swapped, gold_label adjusted (A↔B, C→C)
 - **HelpSteer2 loader**: scored dataset (not pairwise). Groups by prompt, takes best/worst by mean(helpfulness + correctness + coherence)/3. Gold label derived from score comparison.
 - **HH-RLHF loader**: pairwise dataset. Extracts last assistant turn from chosen/rejected. Gold label always "A" (chosen is preferred).
 - **load_dataset_pairs()**: loads all, shuffles with seed, truncates to n pairs
 
-### `experiments.py`
+### `src/experiments.py`
 - **B1 `run_position_bias()`**: For each pair, creates two calls — condition "AB" (original order) and "BA" (flipped order via `pair.flipped()`). The `prompt_id` stays the same for both so metrics can match them.
 - **B2 `run_template_sensitivity()`**: Judges each pair with 5 template variants (expert_rater, llm_judge, neutral, academic, minimal). Same order, same data.
 - **B3 `run_reasoning_depth()`**: 3 prompt-elicited reasoning conditions:
@@ -99,7 +99,7 @@ HuggingFace datasets
 - **B4 `run_input_sensitivity()`**: 4 template variants × 5 criteria = 20 conditions per pair
 - All experiments save results to JSONL via `save_jsonl()`
 
-### `metrics.py`
+### `src/metrics.py`
 - **`compute_position_bias()`**: Groups AB/BA by prompt_id. Consistent = flipped label matches (A↔B). Tracks bias toward first/second position, tie inconsistency.
 - **`compute_pairwise_agreement()`**: Used for B2 and B4. Pivots by prompt_id × condition, computes pairwise agreement rate, identifies most volatile pairs, tracks label distribution per condition.
 - **`compute_thinking_accuracy()`**: Used for B3. Computes accuracy vs gold labels per condition, agreement vs no_thinking baseline, average latency per condition.
@@ -111,10 +111,10 @@ HuggingFace datasets
 - Runs selected experiments (or all), computes metrics, prints summaries
 - Key CLI flags: `--experiments`, `--n-pairs`, `--dataset`, `--split`, `--criterion`, `--template`, `--thinking-budget`, `--concurrency`, `--output-dir`, `--seed`
 
-### `test_pipeline.py`
+### `tests/test_pipeline.py`
 - 15 unit tests, no API calls required
 - Tests: label extraction (bare, verdict line, thinking blocks, fallback), template building, PairRecord flipping, all three metric functions
-- Can run with `python3 test_pipeline.py` or `pytest`
+- Can run with `python3 tests/test_pipeline.py` or `pytest tests/`
 
 ---
 
@@ -182,7 +182,7 @@ python3 run_experiments.py --experiments position_bias
 python3 run_experiments.py --n-pairs 20 --experiments position_bias
 
 # Tests (no API key needed)
-python3 test_pipeline.py
+python3 tests/test_pipeline.py
 ```
 
 ---
