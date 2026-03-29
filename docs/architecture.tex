@@ -4,11 +4,10 @@
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}
-\usepackage[margin=2.4cm]{geometry}
+\usepackage[margin=2.5cm]{geometry}
 \usepackage{fancyhdr}
 \usepackage{hyperref}
 \usepackage{xcolor}
-\usepackage[most]{tcolorbox}
 \usepackage{booktabs}
 \usepackage{longtable}
 \usepackage{enumitem}
@@ -17,77 +16,46 @@
   positioning,
   arrows.meta,
   shapes.geometric,
-  shapes.multipart,
   fit,
   calc,
-  backgrounds,
-  decorations.pathreplacing
+  backgrounds
 }
 \usepackage{listings}
 \usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{amsmath}
+\usepackage{parskip}
 
 % ─── Colors ──────────────────────────────────────────────────────────────────
 \definecolor{ethblue}{RGB}{31,64,122}
-\definecolor{swissred}{RGB}{200,40,40}
-\definecolor{softgreen}{RGB}{40,140,60}
+\definecolor{swissred}{RGB}{180,40,40}
+\definecolor{softgreen}{RGB}{40,130,60}
 \definecolor{softpurple}{RGB}{100,50,150}
-\definecolor{warmgray}{RGB}{245,242,238}
-\definecolor{codebg}{RGB}{248,248,248}
-\definecolor{noteyellow}{RGB}{255,248,220}
-\definecolor{warnorange}{RGB}{255,240,220}
-
-% ─── tcolorbox styles ───────────────────────────────────────────────────────
-\newtcolorbox{conceptbox}[1][]{
-  colback=blue!4, colframe=ethblue, fonttitle=\bfseries,
-  title=#1, boxrule=0.6pt, arc=2pt, left=6pt, right=6pt,
-  top=4pt, bottom=4pt
-}
-
-\newtcolorbox{modulebox}[1][]{
-  colback=warmgray, colframe=ethblue!70!black, fonttitle=\bfseries,
-  title=#1, boxrule=0.5pt, arc=2pt, left=6pt, right=6pt,
-  top=4pt, bottom=4pt
-}
-
-\newtcolorbox{experimentbox}[1][]{
-  colback=green!3, colframe=softgreen!80!black, fonttitle=\bfseries,
-  title=#1, boxrule=0.6pt, arc=2pt, left=6pt, right=6pt,
-  top=4pt, bottom=4pt
-}
-
-\newtcolorbox{notebox}[1][]{
-  colback=noteyellow, colframe=orange!70!black, fonttitle=\bfseries,
-  title=#1, boxrule=0.5pt, arc=2pt, left=6pt, right=6pt,
-  top=4pt, bottom=4pt
-}
-
-\newtcolorbox{warnbox}[1][]{
-  colback=warnorange, colframe=swissred!80!black, fonttitle=\bfseries,
-  title=#1, boxrule=0.6pt, arc=2pt, left=6pt, right=6pt,
-  top=4pt, bottom=4pt
-}
-
-\newtcolorbox{codebox}[1][]{
-  colback=codebg, colframe=black!30, fonttitle=\bfseries\ttfamily,
-  title=#1, boxrule=0.4pt, arc=1pt, left=4pt, right=4pt,
-  top=3pt, bottom=3pt
-}
+\definecolor{codebg}{RGB}{246,246,246}
 
 % ─── Listings ────────────────────────────────────────────────────────────────
 \lstset{
   basicstyle=\small\ttfamily,
   backgroundcolor=\color{codebg},
   breaklines=true,
-  frame=none,
+  frame=single,
+  framerule=0.3pt,
+  rulecolor=\color{black!20},
   columns=fullflexible,
   keepspaces=true,
-  showstringspaces=false
+  showstringspaces=false,
+  xleftmargin=4pt,
+  xrightmargin=4pt,
+  aboveskip=8pt,
+  belowskip=8pt
 }
 
 % ─── Header / Footer ────────────────────────────────────────────────────────
 \pagestyle{fancy}
 \fancyhf{}
-\fancyhead[L]{\small\textsc{LLM Judge Bias/Sensitivity Pipeline}}
+\fancyhead[L]{\small\textsc{LLM Judge Bias and Sensitivity}}
 \fancyhead[R]{\small\textsc{Architecture Document}}
 \fancyfoot[C]{\thepage}
 \renewcommand{\headrulewidth}{0.4pt}
@@ -99,239 +67,225 @@
   linkcolor=ethblue,
   urlcolor=swissred,
   citecolor=softgreen,
-  pdftitle={LLM Judge Bias/Sensitivity Pipeline -- Architecture},
+  pdftitle={LLM Judge Bias/Sensitivity -- Architecture},
   pdfauthor={ETH Zurich},
 }
 
 % ─── Title ───────────────────────────────────────────────────────────────────
 \title{%
   \vspace{-1cm}
-  \textbf{LLM Judge Bias and Sensitivity}\\[4pt]
-  \Large Inference Pipeline Architecture Document\\[6pt]
-  \normalsize Swiss AI Stack \,$\cdot$\, Qwen3-30B-A3B-Instruct-2507
+  \textbf{LLM Judge Bias and Sensitivity}\\[6pt]
+  \large Inference Pipeline --- Architecture Document
 }
-\author{ETH Z\"urich -- Training Better Preference Models}
+\author{
+  ETH Z\"urich --- Training Better Preference Models\\[2pt]
+  \small Swiss AI Stack \,$\cdot$\, Multi-Model Support
+}
 \date{March 2026}
 
 % ═════════════════════════════════════════════════════════════════════════════
 \begin{document}
 \maketitle
 \thispagestyle{fancy}
+
+\begin{abstract}
+This document describes the architecture of a research pipeline for measuring
+systematic biases and sensitivities in LLM-as-a-judge evaluations. The system
+is a pure HTTP client that dispatches judge queries to the Swiss~AI~Stack,
+an OpenAI-compatible inference endpoint hosted at CSCS. We detail the data
+pipeline, the four core experiments (position bias, template sensitivity,
+reasoning depth, and input sensitivity), and an OPRO-based prompt optimisation
+module that automatically discovers system prompts with reduced positional bias.
+\end{abstract}
+
 \tableofcontents
 \newpage
+
 
 % ─────────────────────────────────────────────────────────────────────────────
 \section{Overall Architecture}\label{sec:architecture}
 % ─────────────────────────────────────────────────────────────────────────────
 
-\begin{conceptbox}[Design Philosophy]
 The pipeline is a \textbf{pure HTTP client} that sends judge queries to the
-\textbf{Swiss AI Stack} (\url{https://serving.swissai.svc.cscs.ch/v1}).
-There is no local cluster, no Slurm scheduler, and no local vLLM instance.
-All inference is performed remotely via OpenAI-compatible REST requests;
-the local code handles only data loading, prompt construction, async
-dispatch, response parsing, and metric computation.
-\end{conceptbox}
+Swiss~AI~Stack at \url{https://api.swissai.cscs.ch/v1}. There is no local
+GPU cluster, no Slurm scheduler, and no local vLLM instance. All inference
+is performed remotely via OpenAI-compatible REST requests; the local code
+handles data loading, prompt construction, asynchronous dispatch, response
+parsing, metric computation, and prompt optimisation.
 
-\begin{notebox}[Key Terminology]
-\begin{description}[nosep, leftmargin=1.5cm]
-  \item[System prompt] A hidden instruction sent to the model \emph{before}
-    the user's message. It sets the model's role and behaviour --- for example,
-    ``You are an expert rater.'' The user never sees this text; it tells the
-    model \emph{how} to act. In this pipeline, the system prompt defines the
-    judge persona and output format.
-  \item[User prompt] The visible message that the model responds to. It
-    contains the actual content to evaluate: the original user question and
-    the two candidate responses (A and B). The model reads both the system
-    prompt and the user prompt, but only the user prompt carries the data.
-\end{description}
+\paragraph{Key terminology.}
+Every API call sends exactly one \emph{system prompt} and one
+\emph{user prompt}. The system prompt is a hidden instruction that defines the
+judge's persona and output format (e.g.\ ``You are an expert rater\ldots'').
+The user prompt contains the evaluation data: the original user question and
+two candidate responses labelled~A and~B. The system prompt varies across
+experiments; the user prompt varies across dataset pairs.
 
-\medskip
-\noindent Every API call in this pipeline sends exactly one system prompt and one user
-prompt. The system prompt varies across experiments (different templates), while
-the user prompt varies across dataset pairs (different questions and responses).
-\end{notebox}
 
-\subsection{Data-Flow Diagram}
+\subsection{Data-Flow Overview}
 
-\begin{center}
+Figure~\ref{fig:dataflow} illustrates the high-level data flow. The dataset
+module downloads and caches preference data locally. At experiment time, pairs
+are loaded from disk, combined with prompt templates, and dispatched as
+asynchronous HTTP requests. Responses are parsed, saved as JSONL, and fed
+to the metrics module for analysis.
+
+\begin{figure}[htbp]
+\centering
 \begin{tikzpicture}[
   >=Stealth,
   node distance=1.0cm and 1.6cm,
-  % --- node styles ---
   datasrc/.style={
-    draw=ethblue, fill=blue!6, rounded corners=3pt,
-    minimum width=3.0cm, minimum height=1.0cm,
+    draw=ethblue, fill=blue!4, rounded corners=3pt,
+    minimum width=3.0cm, minimum height=0.9cm,
     font=\small\bfseries, align=center, text=ethblue
   },
   module/.style={
-    draw=ethblue!80!black, fill=warmgray, rounded corners=2pt,
-    minimum width=3.4cm, minimum height=1.0cm,
+    draw=ethblue!70!black, fill=gray!6, rounded corners=2pt,
+    minimum width=3.4cm, minimum height=0.9cm,
     font=\small\bfseries, align=center
   },
   api/.style={
-    draw=swissred!80!black, fill=red!6, rounded corners=3pt,
-    minimum width=3.6cm, minimum height=1.1cm,
-    font=\small\bfseries, align=center, text=swissred!80!black
+    draw=swissred!70!black, fill=red!4, rounded corners=3pt,
+    minimum width=3.6cm, minimum height=1.0cm,
+    font=\small\bfseries, align=center, text=swissred!70!black
   },
   output/.style={
-    draw=softgreen!80!black, fill=green!6, rounded corners=2pt,
-    minimum width=3.0cm, minimum height=1.0cm,
-    font=\small\bfseries, align=center, text=softgreen!80!black
+    draw=softgreen!70!black, fill=green!4, rounded corners=2pt,
+    minimum width=3.0cm, minimum height=0.9cm,
+    font=\small\bfseries, align=center, text=softgreen!70!black
   },
-  arr/.style={->, thick, ethblue!80!black},
+  arr/.style={->, thick, ethblue!70!black},
   arrlbl/.style={font=\scriptsize, midway, fill=white, inner sep=1pt},
 ]
 
-% Row 1: Data sources
 \node[datasrc] (hf1) {HuggingFace\\nvidia/HelpSteer2};
-\node[datasrc, right=2.5cm of hf1] (hf2) {HuggingFace\\Anthropic/hh-rlhf};
-
-% Row 2: dataset.py
-\node[module, below=1.2cm of $(hf1)!0.5!(hf2)$] (dataset) {dataset.py\\{\scriptsize PairRecord normalisation}};
-
-% Row 3: templates + experiments
+\node[datasrc, right=2.5cm of hf1] (local) {data/\\{\scriptsize Local JSON + CSV}};
+\node[module, below=1.2cm of $(hf1)!0.5!(local)$] (dataset) {dataset.py\\{\scriptsize Pair building + caching}};
 \node[module, below left=1.4cm and 0.8cm of dataset] (templates) {templates.py\\{\scriptsize Prompt construction}};
 \node[module, below=1.4cm of dataset] (experiments) {experiments.py\\{\scriptsize Experiment runners}};
-
-% Row 4: inference client
 \node[module, below=1.4cm of experiments] (client) {inference\_client.py\\{\scriptsize Async HTTP + retry}};
-
-% Row 5: Swiss AI Stack
-\node[api, below=1.4cm of client] (swissai) {Swiss AI Stack\\{\scriptsize /v1/chat/completions}\\{\scriptsize Qwen3-30B-A3B}};
-
-% Row 6: outputs
-\node[output, below left=1.6cm and 1.0cm of swissai] (jsonl) {JSONL Results\\{\scriptsize results/*.jsonl}};
-\node[output, below right=1.6cm and 1.0cm of swissai] (metrics) {metrics.py\\{\scriptsize Analysis \& metrics}};
-
-% Row 7: CLI
+\node[api, below=1.4cm of client] (swissai) {Swiss AI Stack\\{\scriptsize /v1/chat/completions}};
+\node[module, left=2.0cm of experiments] (opro) {opro\_position\_bias.py\\{\scriptsize OPRO optimisation}};
+\node[output, below left=1.6cm and 1.0cm of swissai] (jsonl) {JSONL Results};
+\node[output, below right=1.6cm and 1.0cm of swissai] (metrics) {metrics.py\\{\scriptsize Analysis}};
 \node[module, above right=1.4cm and 2.8cm of experiments] (cli) {run\_experiments.py\\{\scriptsize CLI orchestrator}};
 
-% ─── Arrows ──────────────────────────────────────────────────────────────
-\draw[arr] (hf1.south) -- (dataset.north west) node[arrlbl, above right] {\texttt{load\_dataset}};
-\draw[arr] (hf2.south) -- (dataset.north east) node[arrlbl, above left] {\texttt{load\_dataset}};
-\draw[arr] (dataset.south) -- (experiments.north) node[arrlbl, right] {list[PairRecord]};
-\draw[arr] (templates.east) -- (experiments.west) node[arrlbl, above] {(sys, usr)};
+\draw[arr] (hf1.south) -- (dataset.north west) node[arrlbl, above right] {\texttt{download}};
+\draw[arr] (dataset.north east) -- (local.south) node[arrlbl, right] {save};
+\draw[arr] (local.south) -- (dataset.north east);
+\draw[arr] (dataset.south) -- (experiments.north) node[arrlbl, right] {PairRecords};
+\draw[arr] (templates.east) -- (experiments.west) node[arrlbl, above] {prompts};
 \draw[arr] (experiments.south) -- (client.north) node[arrlbl, right] {call dicts};
-\draw[arr] (client.south) -- (swissai.north) node[arrlbl, right] {async HTTP POST};
-\draw[arr] (swissai.south west) -- (jsonl.north east) node[arrlbl, above left=-1pt] {raw JSON};
-\draw[arr] (swissai.south) -- (client.south east) node {} ;
-
-% Return path: SwissAI -> client -> experiments -> JSONL
-\draw[arr, dashed, softgreen!70!black]
+\draw[arr] (client.south) -- (swissai.north) node[arrlbl, right] {HTTP POST};
+\draw[arr, dashed, softgreen!60!black]
   ([xshift=-6pt]swissai.west) -- +(-1.0,0) |- ([yshift=-4pt]client.west)
   node[arrlbl, pos=0.25, left] {response};
-\draw[arr, dashed, softgreen!70!black]
+\draw[arr, dashed, softgreen!60!black]
   ([xshift=-6pt]client.west) -- +(-0.6,0) |- ([yshift=-4pt]experiments.west)
   node[arrlbl, pos=0.25, left] {JudgeResponse};
-
-\draw[arr] (experiments.south east) -- ++(0.8,-0.8) -- (jsonl.north -| {$(experiments.south east)+(0.8,-0.8)$})
-  node {} ;
 \draw[arr] ([yshift=-3pt]experiments.south east) to[out=-30, in=120] (jsonl.north);
-
-\draw[arr] (jsonl.east) -- (metrics.west) node[arrlbl, above] {\texttt{load\_results}};
-
-% CLI orchestration arrows
-\draw[arr, densely dotted, ethblue!50] (cli.south west) to[out=210,in=30] (experiments.north east);
-\draw[arr, densely dotted, ethblue!50] (cli.south) to[out=250,in=60] (dataset.east);
+\draw[arr] (jsonl.east) -- (metrics.west) node[arrlbl, above] {load};
+\draw[arr, densely dotted, ethblue!40] (cli.south west) to[out=210,in=30] (experiments.north east);
+\draw[arr, densely dotted, ethblue!40] (cli.south) to[out=250,in=60] (dataset.east);
+\draw[arr, softpurple] (opro.east) -- (experiments.west) node[arrlbl, above] {best prompt};
+\draw[arr, softpurple] (opro.south) to[out=-90,in=180] (client.west);
 
 \end{tikzpicture}
-\end{center}
-
-\begin{notebox}[Data-Flow Summary]
-\begin{enumerate}[leftmargin=*, nosep]
-  \item \textbf{dataset.py} loads from HuggingFace (HelpSteer2 or hh-rlhf),
-        normalises each sample to a \texttt{PairRecord} (prompt\_id, prompt,
-        response\_a, response\_b, gold\_label).
-  \item \textbf{experiments.py} builds judge call lists from pairs and template
-        configurations, dispatches them via \texttt{SwissAIClient.batch\_judge}.
-        For example, the position bias experiment creates two calls per pair ---
-        one in the original A/B order and one flipped --- producing a list of
-        dictionaries like \texttt{\{system\_prompt: ..., user\_prompt: ...,
-        prompt\_id: "a3f8", condition: "AB"\}}.
-  \item \textbf{inference\_client.py} sends async HTTP POST requests to the
-        Swiss AI Stack's OpenAI-compatible \texttt{/v1/chat/completions}
-        endpoint.
-  \item Responses are parsed using pattern matching (the code searches the
-        model's output for verdict lines like ``Verdict: A'' or a standalone
-        A/B/C at the end of the text), saved to JSONL, and fed to
-        \textbf{metrics.py} for analysis.
-\end{enumerate}
-\end{notebox}
+\caption{High-level data flow of the evaluation pipeline. Solid arrows
+indicate the forward path; dashed arrows show the return path. Purple arrows
+represent the OPRO prompt optimisation loop.}
+\label{fig:dataflow}
+\end{figure}
 
 
 % ─────────────────────────────────────────────────────────────────────────────
 \newpage
-\section{Module Responsibilities}\label{sec:modules}
+\section{Module Descriptions}\label{sec:modules}
 % ─────────────────────────────────────────────────────────────────────────────
 
-% ── inference_client.py ─────────────────────────────────────────────────────
-\subsection{inference\_client.py}
+\subsection{\texttt{dataset.py} --- Data Pipeline}
 
-\begin{modulebox}[Async HTTP Client for the Swiss AI Stack]
-Wraps the remote OpenAI-compatible endpoint with structured request/response
-handling, concurrency control, and robust retry logic.
-\end{modulebox}
+This module handles all interactions with the HelpSteer2 dataset. The
+pipeline operates in two phases:
 
-\subsubsection*{Key Components}
+\paragraph{Download phase.}
+The \texttt{download\_dataset()} function fetches HelpSteer2 from HuggingFace,
+groups responses by prompt, and constructs \emph{all pairwise combinations}
+within each group. For each pair, a composite quality score is computed as
+\[
+  s = \frac{\text{helpfulness} + \text{correctness} + \text{coherence}}{3}.
+\]
+The higher-scoring response is placed as~A (gold label~=~``A''); pairs with
+equal scores receive gold label~``C''. Results are saved locally as both
+JSON and CSV in the \texttt{data/} directory.
 
-\begin{description}[style=nextline, leftmargin=1.5cm]
-  \item[\texttt{InferenceConfig}]
-    Dataclass holding all configuration:
-    \begin{itemize}[nosep]
-      \item \texttt{base\_url}: \url{https://serving.swissai.svc.cscs.ch/v1}
-      \item \texttt{api\_key}: Bearer token (from \texttt{SWISSAI\_API\_KEY} env var)
-      \item \texttt{model}: \texttt{Qwen/Qwen3-30B-A3B-Instruct-2507}
-      \item Generation params: \texttt{max\_tokens=2048}, \texttt{temperature=0.0}, \texttt{top\_p=1.0}
-      \item Retry config: \texttt{max\_retries=5}, \texttt{retry\_base\_delay=2.0s}, \texttt{retry\_max\_delay=60.0s}
-      \item Concurrency: \texttt{concurrent\_requests=8}
-    \end{itemize}
+Two versions are produced per split:
+\begin{itemize}[nosep]
+  \item \textbf{Standard}: \texttt{prompt\_id}, \texttt{prompt},
+        \texttt{response\_a}, \texttt{response\_b}, \texttt{gold\_label}.
+  \item \textbf{Full}: additionally includes per-response scores
+        (helpfulness, correctness, coherence, complexity, verbosity for
+        both A and B), composite scores, score gap, response lengths, and
+        a \texttt{difficulty} label (easy if gap~$> 1.0$, medium if~$> 0.33$,
+        hard otherwise).
+\end{itemize}
 
-  \item[\texttt{JudgeResponse}]
-    Dataclass for structured results:
-    \texttt{prompt\_id}, \texttt{experiment\_id}, \texttt{condition},
-    \texttt{raw\_text}, \texttt{label} (A/B/C/null), \texttt{thinking}
-    (extracted CoT or null), \texttt{latency\_s}, \texttt{total\_tokens},
-    \texttt{parse\_ok}, \texttt{error}.
+\paragraph{Load phase.}
+At experiment time, \texttt{load\_dataset\_pairs()} reads from local JSON,
+applies a seeded shuffle, and returns up to~$n$ \texttt{PairRecord} objects.
+No network access is required at this stage.
 
-  \item[Label Extraction]
-    Three-tier pattern-matching cascade (the code searches the model's output
-    text for specific formats, trying each rule in order until one matches):
-    \begin{enumerate}[nosep]
-      \item \textbf{Verdict lines}: looks for explicit markers like
-            ``Verdict: B'', ``Answer: A'', ``Output: C''
-      \item \textbf{Bare label}: a single A, B, or C standing alone at the
-            end of the text
-      \item \textbf{Fallback}: scans the entire text and picks the last
-            standalone uppercase A, B, or C found
-    \end{enumerate}
-    If the model produced a \texttt{<think>...</think>} block (internal
-    reasoning), that block is stripped before label extraction and stored
-    separately in the result.
-
-  \item[\texttt{SwissAIClient}]
-    Async context manager creating an \texttt{aiohttp.ClientSession} with
-    300\,s timeout. Uses \texttt{asyncio.Semaphore} for concurrency limiting.
-    The \texttt{judge()} method sends a single judge call; \texttt{batch\_judge()}
-    dispatches a list of calls via \texttt{asyncio.gather}.
-\end{description}
+The \texttt{PairRecord} dataclass contains five fields: \texttt{prompt\_id},
+\texttt{prompt}, \texttt{response\_a}, \texttt{response\_b}, and
+\texttt{gold\_label}. The \texttt{flipped()} method returns a copy with
+A and~B swapped and the gold label inverted
+($\text{A} \leftrightarrow \text{B}$, $\text{C}$ unchanged).
 
 
-% ── templates.py ────────────────────────────────────────────────────────────
-\subsection{templates.py}
+\subsection{\texttt{inference\_client.py} --- Async HTTP Client}
 
-\begin{modulebox}[Judge Prompt Templates]
-Defines all system-prompt variants, criteria, and the shared user-prompt
-builder. Each template is registered in the \texttt{TEMPLATES} dictionary.
-\end{modulebox}
+This module wraps the Swiss~AI~Stack's OpenAI-compatible endpoint with
+structured request/response handling, concurrency control, and retry logic.
 
-\subsubsection*{System Prompt Variants}
+\paragraph{Configuration.}
+The \texttt{InferenceConfig} dataclass holds the endpoint URL, API key, model
+identifier, generation parameters (\texttt{max\_tokens}=2048,
+\texttt{temperature}=0.0), and retry settings. The model is configurable;
+\texttt{check\_models.py} queries the \texttt{/v1/models} endpoint to list
+currently available models.
 
-\begin{center}
+\paragraph{Label extraction.}
+After receiving a response, the module extracts the judge verdict through a
+three-tier cascade:
+\begin{enumerate}[nosep]
+  \item Explicit verdict lines (e.g.\ ``Verdict: B'', ``Answer: A'').
+  \item A bare A, B, or C at the end of the text.
+  \item Fallback: the last standalone A/B/C anywhere in the text.
+\end{enumerate}
+If the model produced a \texttt{<think>...</think>} block, it is stripped
+before extraction and stored separately.
+
+\paragraph{Concurrency and retries.}
+The \texttt{SwissAIClient} uses an \texttt{asyncio.Semaphore} (default~8) to
+bound the number of concurrent HTTP requests. On rate-limit responses (HTTP~429)
+or connection errors, it retries with exponential backoff: delays of 2, 4, 8,
+16, 32 seconds, capped at 60~seconds, for up to 5~attempts.
+
+
+\subsection{\texttt{templates.py} --- Prompt Templates}
+
+All system prompts are defined here and registered in a \texttt{TEMPLATES}
+dictionary. Table~\ref{tab:templates} lists the available templates.
+
+\begin{table}[htbp]
+\centering
 \small
-\begin{tabular}{lll}
+\caption{System prompt templates used across experiments.}
+\label{tab:templates}
+\begin{tabular}{@{}llc@{}}
   \toprule
-  \textbf{ID} & \textbf{Framing} & \textbf{Used In} \\
+  \textbf{Template ID} & \textbf{Framing} & \textbf{Experiment} \\
   \midrule
   \texttt{expert\_rater}  & Baseline expert rater   & B1, B2, B3, B4 \\
   \texttt{llm\_judge}     & ``LLM used to judge''   & B2 \\
@@ -340,26 +294,18 @@ builder. Each template is registered in the \texttt{TEMPLATES} dictionary.
   \texttt{minimal}        & One-liner               & B2 \\
   \texttt{reason\_then\_judge} & Explain reasoning, then verdict & B3 \\
   \texttt{structured\_reasoning} & Rate on criteria, then verdict & B3 \\
-  \texttt{expert\_rater\_alt1} & ``superior response'' & B4 \\
-  \texttt{expert\_rater\_alt2} & ``AI-generated answers / preferable'' & B4 \\
-  \texttt{expert\_rater\_alt3} & ``serves the user'' & B4 \\
+  \texttt{expert\_rater\_alt1--3} & Minor wording variants & B4 \\
+  \texttt{opro} & OPRO-optimised (low position bias) & B1 \\
   \bottomrule
 \end{tabular}
-\end{center}
+\end{table}
 
-\subsubsection*{Criteria Variants}
+Five evaluation criteria are supported: \texttt{helpful}, \texttt{quality},
+\texttt{accurate}, \texttt{harmless}, and \texttt{concise}, each mapping to
+a natural-language phrase. The \texttt{build\_prompt()} function resolves a
+template ID and criterion into a (system prompt, user prompt) pair. The user
+prompt follows a fixed format:
 
-Five criteria defined in the \texttt{CRITERIA} dict: \texttt{helpful},
-\texttt{quality}, \texttt{accurate}, \texttt{harmless}, \texttt{concise}.
-Each maps to a natural-language fragment (e.g.\ ``more helpful to the user'').
-
-\subsubsection*{\texttt{build\_prompt()}}
-
-Resolves a \texttt{template\_id} + \texttt{criterion} into a
-\texttt{(system\_prompt, user\_prompt)} tuple. The user prompt follows a
-fixed structure:
-
-\begin{codebox}[\small User Prompt Format]
 \begin{lstlisting}
 [User Prompt]
 {prompt}
@@ -372,559 +318,454 @@ fixed structure:
 
 Which response is {criterion}?
 \end{lstlisting}
-\end{codebox}
 
 
-% ── dataset.py ──────────────────────────────────────────────────────────────
-\subsection{dataset.py}
+\subsection{\texttt{experiments.py} --- Experiment Runners}
 
-\begin{modulebox}[Dataset Loading and Normalisation]
-Loads HuggingFace preference datasets and normalises them into a unified
-\texttt{PairRecord} format suitable for pairwise judge evaluation.
-\end{modulebox}
+Four asynchronous functions implement the core experiments. Each builds a list
+of call dictionaries, dispatches them via \texttt{batch\_judge()}, and saves
+results to JSONL. Table~\ref{tab:experiments} summarises the experimental
+conditions.
 
-\subsubsection*{\texttt{PairRecord} Dataclass}
-
-\begin{description}[style=nextline, leftmargin=1.5cm, nosep]
-  \item[\texttt{prompt\_id}] Unique identifier (MD5 hash or index-based)
-  \item[\texttt{prompt}] The original user query
-  \item[\texttt{response\_a}] First response (chosen / higher-rated in original data)
-  \item[\texttt{response\_b}] Second response (rejected / lower-rated)
-  \item[\texttt{gold\_label}] ``A'', ``B'', or ``C'' derived from human preference
-\end{description}
-
-The \texttt{flipped()} method returns a new record with A/B swapped and the
-gold label adjusted (\texttt{A}$\leftrightarrow$\texttt{B}, \texttt{C} unchanged).
-
-\subsubsection*{Dataset Loaders}
-
-\begin{description}[style=nextline, leftmargin=1.5cm]
-  \item[HelpSteer2 (\texttt{nvidia/HelpSteer2})]
-    A scored (not pairwise) dataset. Pairs are constructed by grouping
-    responses by prompt and taking the highest-scored vs.\ lowest-scored
-    response. Score = mean(helpfulness + correctness + coherence) / 3.
-
-  \item[HH-RLHF (\texttt{Anthropic/hh-rlhf})]
-    A pairwise dataset with chosen/rejected columns. The loader extracts
-    the last assistant turn from each multi-turn conversation. Gold label
-    is always ``A'' (chosen is preferred).
-\end{description}
-
-
-% ── experiments.py ──────────────────────────────────────────────────────────
-\subsection{experiments.py}
-
-\begin{modulebox}[Experiment Runners (B1--B4)]
-Four async functions, each building call dicts, dispatching via
-\texttt{batch\_judge}, and saving JSONL results. Contains condition
-definitions for each experiment.
-\end{modulebox}
-
-\begin{center}
+\begin{table}[htbp]
+\centering
 \small
-\begin{tabular}{llp{6.5cm}}
+\caption{Experiment functions and their conditions.}
+\label{tab:experiments}
+\begin{tabular}{@{}llp{6.5cm}@{}}
   \toprule
   \textbf{Function} & \textbf{ID} & \textbf{Conditions} \\
   \midrule
-  \texttt{run\_position\_bias}       & B1 & ``AB'' (original), ``BA'' (flipped) \\
-  \texttt{run\_template\_sensitivity}& B2 & 5 templates: expert\_rater, llm\_judge, neutral, academic, minimal \\
-  \texttt{run\_reasoning\_depth}     & B3 & 3 conditions: no\_reasoning, reason\_then\_judge, structured\_reasoning \\
-  \texttt{run\_input\_sensitivity}   & B4 & 4 templates $\times$ 5 criteria = 20 conditions \\
+  \texttt{run\_position\_bias} & B1 & AB (original), BA (flipped) \\
+  \texttt{run\_template\_sensitivity} & B2 & 5 templates \\
+  \texttt{run\_reasoning\_depth} & B3 & 3 reasoning conditions \\
+  \texttt{run\_input\_sensitivity} & B4 & $4 \times 5 = 20$ (templates $\times$ criteria) \\
   \bottomrule
 \end{tabular}
-\end{center}
-
-\subsubsection*{How Call Lists Are Built --- Worked Example}
-
-Each experiment loops over pairs (and conditions) to build a flat list of
-dictionaries. Each dictionary contains everything needed for one API call.
-Here is a simplified example for position bias (B1) with 2 pairs:
-
-\begin{codebox}[\small B1 Call List Construction (Pseudocode)]
-\begin{lstlisting}
-pairs = [pair_1, pair_2]   # loaded from dataset
-
-calls = []
-for pair in pairs:
-    # Original order: Response A first, Response B second
-    sys_prompt, usr_prompt = build_prompt("expert_rater",
-        pair.prompt, pair.response_a, pair.response_b)
-    calls.append({
-        "system_prompt": sys_prompt,
-        "user_prompt":   usr_prompt,
-        "prompt_id":     pair.prompt_id,
-        "condition":     "AB"
-    })
-
-    # Flipped order: Response B first, Response A second
-    flipped = pair.flipped()
-    sys_prompt, usr_prompt = build_prompt("expert_rater",
-        flipped.prompt, flipped.response_a, flipped.response_b)
-    calls.append({
-        "system_prompt": sys_prompt,
-        "user_prompt":   usr_prompt,
-        "prompt_id":     pair.prompt_id,
-        "condition":     "BA"
-    })
-
-# Result: 4 calls (2 pairs x 2 orders)
-# All dispatched at once via client.batch_judge(calls)
-\end{lstlisting}
-\end{codebox}
-
-For B2, the outer loop iterates over 5 templates instead of 2 orders.
-For B3, it iterates over 3 reasoning conditions.
-For B4, it iterates over 4 template variants $\times$ 5 criteria = 20 combinations.
+\end{table}
 
 
-% ── metrics.py ──────────────────────────────────────────────────────────────
-\subsection{metrics.py}
+\subsection{\texttt{metrics.py} --- Metric Computation}
 
-\begin{modulebox}[Metric Computation and Reporting]
-Loads JSONL results and computes experiment-specific metrics. Provides
-\texttt{print\_summary()} for console output.
-\end{modulebox}
-
-\begin{description}[style=nextline, leftmargin=1.5cm]
-  \item[\texttt{compute\_position\_bias}] Position consistency, bias rates,
-    positional preference breakdown.
-  \item[\texttt{compute\_pairwise\_agreement}] Overall pairwise agreement,
-    per-pair agreement rate, label distribution per condition, most volatile
-    pairs. Used for both B2 and B4.
-  \item[\texttt{compute\_thinking\_accuracy}] Accuracy vs.\ gold labels per
-    condition, agreement vs.\ no\_reasoning baseline, average latency per
-    condition. Used for B3.
-\end{description}
+This module loads JSONL results and computes experiment-specific metrics:
+\begin{itemize}[nosep]
+  \item \texttt{compute\_position\_bias}: consistency rate, bias direction,
+        and positional preference breakdown.
+  \item \texttt{compute\_pairwise\_agreement}: overall and per-pair agreement
+        across conditions (used for B2 and B4).
+  \item \texttt{compute\_thinking\_accuracy}: accuracy versus gold labels,
+        agreement with the no-reasoning baseline, and average latency per
+        condition (used for B3).
+\end{itemize}
 
 
-% ── run_experiments.py ──────────────────────────────────────────────────────
-\subsection{run\_experiments.py}
+\subsection{CLI Orchestrators}
 
-\begin{modulebox}[CLI Orchestrator]
-Top-level entry point with \texttt{argparse}. Loads dataset, configures
-the inference client, runs selected experiments, computes metrics, and
-prints summaries.
-\end{modulebox}
+\paragraph{\texttt{run\_experiments.py}} is the main entry point. It loads
+the dataset, configures the inference client, runs selected experiments,
+computes metrics, and prints summaries. Key flags include
+\texttt{--experiments}, \texttt{--n-pairs}, \texttt{--template} (including
+\texttt{opro}), \texttt{--model}, and \texttt{--concurrency}.
 
-\begin{codebox}[\small Example Invocations]
-\begin{lstlisting}
-# Run all experiments (200 pairs, default settings)
-python3 run_experiments.py
+\paragraph{\texttt{run\_opro.py}} runs the OPRO optimisation loop
+(Section~\ref{sec:opro}). It loads training and validation pairs, invokes
+the optimiser, and prints the best prompt with its scores.
 
-# Quick smoke test: position bias only, 20 pairs
-python3 run_experiments.py --experiments position_bias --n-pairs 20
-
-# Run only reasoning depth experiment
-python3 run_experiments.py --experiments reasoning_depth
-
-# Full configuration
-python3 run_experiments.py --dataset nvidia/HelpSteer2 \
-    --split validation --n-pairs 200 --criterion helpful
-\end{lstlisting}
-\end{codebox}
-
-CLI flags include: \texttt{--experiments}, \texttt{--n-pairs},
-\texttt{--dataset}, \texttt{--split}, \texttt{--criterion},
-\texttt{--template}, \texttt{--output-dir},
-\texttt{--model}, \texttt{--base-url}, \texttt{--concurrency},
-\texttt{--seed}.
+\paragraph{\texttt{check\_models.py}} queries the \texttt{/v1/models} endpoint
+and lists all currently available models on the Swiss~AI~Stack---useful since
+model availability changes frequently.
 
 
 % ─────────────────────────────────────────────────────────────────────────────
 \newpage
-\section{The Four Experiments}\label{sec:experiments}
+\section{Experiments}\label{sec:experiments}
 % ─────────────────────────────────────────────────────────────────────────────
 
-% ── B1 ──────────────────────────────────────────────────────────────────────
 \subsection{B1: Position Bias}\label{sec:b1}
 
-\begin{experimentbox}[B1 -- Position Bias Detection]
-\textbf{Research question:} Does the LLM judge prefer whichever response
-appears in a particular position (first or second), regardless of content?
+\paragraph{Research question.}
+Does the LLM judge prefer whichever response appears in a particular position,
+regardless of content quality?
 
-\medskip
-\textbf{Method:} For each pair, judge both orders:
+\paragraph{Method.}
+For each pair, the judge is queried twice: once with the original ordering
+(condition~AB) and once with responses swapped (condition~BA). A consistent
+judge should prefer the same underlying response in both orderings---if the
+AB~verdict is ``A'', the BA~verdict should be ``B''.
+
+\paragraph{Metrics.}
 \begin{itemize}[nosep]
-  \item \textbf{AB} (original): Response A first, Response B second
-  \item \textbf{BA} (flipped): Response B first, Response A second
+  \item \textit{Position consistency}: fraction of pairs where the flipped
+        verdict matches the expected inversion.
+  \item \textit{Bias toward first/second position}: fraction where the model
+        always selects the response in position~A (or~B), regardless of content.
+  \item \textit{Tie inconsistency}: cases where one ordering produces a tie
+        and the other does not.
 \end{itemize}
-A \emph{consistent} judge should prefer the same underlying response in both
-orderings. If the AB verdict is ``A'', the BA verdict should be ``B''
-(the same response, now in position B).
-
-\medskip
-\textbf{Metrics:}
-\begin{description}[nosep, leftmargin=1.2cm]
-  \item[\texttt{position\_consistency}] Percentage of pairs where the flipped
-    label matches the expected inversion.
-  \item[\texttt{position\_bias\_rate}] $1 - \text{consistency}$; the fraction
-    where the model's verdict changed with position.
-  \item[\texttt{bias\_toward\_first\_position}] Both AB and BA say ``A''
-    (always picks first).
-  \item[\texttt{bias\_toward\_second\_position}] Both AB and BA say ``B''
-    (always picks second).
-\end{description}
-\end{experimentbox}
 
 
-% ── B2 ──────────────────────────────────────────────────────────────────────
 \subsection{B2: Template Sensitivity}\label{sec:b2}
 
-\begin{experimentbox}[B2 -- Template Sensitivity Analysis]
-\textbf{Research question:} How sensitive is the judge's verdict to the
-framing of the system prompt, given identical data and response ordering?
+\paragraph{Research question.}
+How sensitive is the judge's verdict to the framing of the system prompt,
+given identical data and response ordering?
 
-\medskip
-\textbf{Method:} Judge each pair with 5 different system prompt templates:
+\paragraph{Method.}
+Each pair is judged with five system prompt templates (Table~\ref{tab:templates}),
+keeping data, order, and criterion constant. Only the judge persona changes.
 
-\begin{center}
-\small
-\begin{tabular}{ll}
-  \toprule
-  \textbf{Template} & \textbf{Character} \\
-  \midrule
-  \texttt{expert\_rater} & ``You are an expert rater\ldots'' \\
-  \texttt{llm\_judge}    & ``You are an LLM used to judge\ldots'' \\
-  \texttt{neutral}       & ``Compare the following two responses\ldots'' \\
-  \texttt{academic}      & ``You are a quality evaluator\ldots'' \\
-  \texttt{minimal}       & ``Pick the better response: A, B, or C (tie).'' \\
-  \bottomrule
-\end{tabular}
-\end{center}
-
-Same data, same order, same criterion --- only the system prompt changes.
-
-\medskip
-\textbf{Metrics:}
-\begin{description}[nosep, leftmargin=1.2cm]
-  \item[\texttt{overall\_pairwise\_agreement}] Average pairwise agreement
-    across all template pairs for each prompt.
-  \item[\texttt{label\_distribution\_per\_condition}] A/B/C breakdown for
-    each template.
-  \item[\texttt{most\_volatile\_pairs}] The 10 pairs with lowest agreement
-    across templates.
-\end{description}
-\end{experimentbox}
+\paragraph{Metrics.}
+Overall pairwise agreement across templates, label distribution per template,
+and identification of the most volatile pairs (lowest cross-template agreement).
 
 
-% ── B3 ──────────────────────────────────────────────────────────────────────
-\subsection{B3: Prompt-Elicited Reasoning}\label{sec:b3}
+\subsection{B3: Reasoning Depth}\label{sec:b3}
 
-\begin{experimentbox}[B3 -- Reasoning Depth]
-\textbf{Research question:} Does explicitly asking the model to reason before
-giving its verdict improve accuracy against human gold labels?
+\paragraph{Research question.}
+Does explicitly prompting the model to reason before giving its verdict improve
+accuracy against human gold labels?
 
-\medskip
-All reasoning in this experiment is \textbf{prompt-elicited}: the prompt
-itself tells the model how much (or how little) to reason. There is no
-native API thinking-budget feature involved --- the only thing that changes
-between conditions is the system prompt template.
+\paragraph{Method.}
+Three conditions are compared, differing only in the system prompt:
+\begin{enumerate}[nosep]
+  \item \textit{No reasoning}: output only A, B, or C.
+  \item \textit{Reason then judge}: explain strengths and weaknesses, then
+        give a verdict.
+  \item \textit{Structured reasoning}: rate each response on helpfulness,
+        accuracy, and coherence, then give a verdict.
+\end{enumerate}
+All reasoning is prompt-elicited---the prompt itself requests the reasoning.
+No native API thinking-budget feature is used.
 
-\medskip
-\textbf{Conditions:}
-
-\begin{center}
-\small
-\begin{tabular}{lp{8cm}}
-  \toprule
-  \textbf{Condition} & \textbf{What the prompt tells the model} \\
-  \midrule
-  \texttt{no\_reasoning} &
-    Just output a single letter: A, B, or C. No explanation requested.
-    Uses the baseline \texttt{expert\_rater} template. \\[4pt]
-  \texttt{reason\_then\_judge} &
-    ``Explain your reasoning about the strengths and weaknesses of each
-    response, then provide your final verdict.'' The model argues its
-    decision before answering. \\[4pt]
-  \texttt{structured\_reasoning} &
-    ``Rate each response on helpfulness, accuracy, and coherence, then
-    provide your final verdict.'' The model evaluates on specific criteria
-    before deciding. \\
-  \bottomrule
-\end{tabular}
-\end{center}
-
-\medskip
-\textbf{Metrics:}
-\begin{description}[nosep, leftmargin=1.2cm]
-  \item[\texttt{accuracy\_vs\_gold}] Agreement with human preference labels
-    per condition.
-  \item[\texttt{delta\_accuracy}] Improvement of each reasoning condition
-    over \texttt{no\_reasoning}.
-  \item[\texttt{agreement\_vs\_no\_reasoning}] Fraction of verdicts matching
-    the no-reasoning baseline.
-  \item[\texttt{avg\_latency\_s}] Average response time per condition
-    (reasoning conditions produce longer outputs and take more time).
-\end{description}
-\end{experimentbox}
-
-\begin{notebox}[B3 Design Note]
-This experiment tests \textbf{prompt-elicited Chain of Thought} --- the model
-is explicitly told in the prompt to argue its decision before answering.
-This is fundamentally different from a native API thinking-budget feature
-(like Anthropic's extended thinking or Qwen3's \texttt{enable\_thinking}
-parameter). Here, the reasoning appears directly in the model's visible
-output because the \emph{prompt} requested it, not because a special API
-mode was activated.
-\end{notebox}
+\paragraph{Metrics.}
+Accuracy versus gold labels per condition, delta accuracy over the
+no-reasoning baseline, and average latency (reasoning conditions produce
+longer outputs).
 
 
-% ── B4 ──────────────────────────────────────────────────────────────────────
 \subsection{B4: Input Sensitivity}\label{sec:b4}
 
-\begin{experimentbox}[B4 -- Input / Wording Sensitivity]
-\textbf{Research question:} How sensitive is the judge to minor paraphrasing
-of the system prompt and changes in evaluation criterion?
+\paragraph{Research question.}
+How sensitive is the judge to minor paraphrasing of the system prompt and
+changes in the evaluation criterion?
 
-\medskip
-\textbf{Method:} Cross 4 minor wording variants of the expert\_rater
-template with 5 evaluation criteria:
+\paragraph{Method.}
+Four semantically equivalent variants of the \texttt{expert\_rater} template
+are crossed with five evaluation criteria, yielding $4 \times 5 = 20$
+conditions per pair.
 
-\begin{center}
-\small
-\begin{tabular}{lp{7cm}}
-  \toprule
-  \textbf{Template Variant} & \textbf{Key Wording Difference} \\
-  \midrule
-  \texttt{expert\_rater}      & Baseline: ``determine which response is better'' \\
-  \texttt{expert\_rater\_alt1} & ``identify the superior response'' \\
-  \texttt{expert\_rater\_alt2} & ``AI-generated answers'' + ``which answer is preferable'' \\
-  \texttt{expert\_rater\_alt3} & ``Evaluate both\ldots select the one that better serves the user'' \\
-  \bottomrule
-\end{tabular}
-\end{center}
+\paragraph{Metrics.}
+Pairwise agreement across conditions and criterion drift (how much the
+label changes when only the criterion changes, with the template held fixed).
 
-\begin{center}
-\small
-\begin{tabular}{ll}
-  \toprule
-  \textbf{Criterion} & \textbf{Phrase} \\
-  \midrule
-  \texttt{helpful}  & ``more helpful to the user'' \\
-  \texttt{quality}  & ``of higher overall quality'' \\
-  \texttt{accurate} & ``more accurate and factually correct'' \\
-  \texttt{harmless} & ``safer and more appropriate'' \\
-  \texttt{concise}  & ``more concise while still fully answering the question'' \\
-  \bottomrule
-\end{tabular}
-\end{center}
 
-Total: $4 \times 5 = 20$ conditions per pair.
+% ─────────────────────────────────────────────────────────────────────────────
+\subsection{OPRO: Prompt Optimisation for Position Bias}\label{sec:opro}
+% ─────────────────────────────────────────────────────────────────────────────
 
-\medskip
-\textbf{Metrics:}
-\begin{description}[nosep, leftmargin=1.2cm]
-  \item[\texttt{pairwise\_agreement}] Agreement rate across all 20 conditions.
-  \item[\texttt{criterion\_drift}] How much the label changes when only the
-    criterion changes (template held fixed).
-\end{description}
-\end{experimentbox}
+\paragraph{Goal.}
+Automatically discover a system prompt that minimises position bias, using
+the LLM itself to iteratively generate and refine candidates.
+
+\paragraph{Method.}
+The optimisation follows the OPRO framework (Optimization by PROmpting):
+\begin{enumerate}[nosep]
+  \item Evaluate two seed prompts (\texttt{expert\_rater} and
+        \texttt{llm\_judge}) on a fixed subset of training pairs, measuring
+        position consistency.
+  \item For $N$~iterations: present the LLM with the full history of
+        (prompt~$\to$~score) pairs and ask it to generate a new system prompt.
+        Evaluate the candidate on the same training subset.
+  \item Select the prompt with the highest training score.
+  \item Validate on a held-out set to assess generalisation.
+\end{enumerate}
+
+A fixed subset of training pairs (default~80) is used for all evaluations,
+ensuring that scores are comparable across iterations. The best prompt is
+saved to \texttt{results/opro/opro\_results.json} and registered as the
+\texttt{opro} template.
+
+\paragraph{Transferability.}
+OPRO-generated prompts are model-specific. A prompt optimised for one model
+(e.g.\ Qwen) may not generalise to another (e.g.\ Llama), as different
+architectures respond differently to debiasing instructions. When switching
+models, the optimisation should be re-run.
+
+\begin{lstlisting}[title={\small OPRO usage}]
+# Default: 10 iterations, 80 eval pairs, 150 validation pairs
+python run_opro.py
+
+# Use the optimised prompt in experiments
+python run_experiments.py --template opro --experiments position_bias
+\end{lstlisting}
 
 
 % ─────────────────────────────────────────────────────────────────────────────
 \newpage
-\section{Async Concurrency and Retry/Backoff Logic}\label{sec:concurrency}
+\section{Concurrency and Retry Logic}\label{sec:concurrency}
 % ─────────────────────────────────────────────────────────────────────────────
 
-\begin{conceptbox}[Concurrency Model]
-The pipeline uses Python's \texttt{asyncio} event loop with
-\texttt{aiohttp} for non-blocking HTTP. All experiment calls are dispatched
-simultaneously via \texttt{asyncio.gather}, bounded by a semaphore.
-\end{conceptbox}
+The pipeline uses Python's \texttt{asyncio} event loop with \texttt{aiohttp}
+for non-blocking HTTP. All experiment calls are dispatched simultaneously
+via \texttt{asyncio.gather()}, bounded by an \texttt{asyncio.Semaphore}.
 
-\subsection{Concurrency Control}
+\paragraph{Concurrency control.}
+The semaphore (default~8) ensures that at most 8~HTTP requests are in flight
+at any time, preventing server overload while maintaining high throughput.
 
-\begin{center}
+\paragraph{Exponential backoff.}
+On HTTP~429 (rate limit) or connection errors, the client waits
+$\min(\text{base\_delay} \times 2^{\text{attempt}},\; 60)$~seconds before
+retrying. With a base delay of~2\,s, the sequence is 2, 4, 8, 16, 32\,s
+(capped at~60\,s). After 5~failed attempts, a \texttt{RuntimeError} is raised.
+
+Figure~\ref{fig:retry} illustrates the retry flow.
+
+\begin{figure}[htbp]
+\centering
 \begin{tikzpicture}[
   >=Stealth,
-  box/.style={draw=ethblue, fill=blue!5, rounded corners=2pt,
-              minimum width=2.8cm, minimum height=0.9cm,
-              font=\small, align=center},
-  arr/.style={->, thick, ethblue!80!black},
-]
-
-\node[box] (gather) {\texttt{asyncio.gather}\\dispatches $N$ calls};
-\node[box, right=2.0cm of gather] (sem) {\texttt{Semaphore(8)}\\limits to 8 active};
-\node[box, right=2.0cm of sem] (http) {\texttt{aiohttp POST}\\to Swiss AI Stack};
-
-\draw[arr] (gather) -- (sem) node[midway, above, font=\scriptsize] {$N$ tasks};
-\draw[arr] (sem) -- (http) node[midway, above, font=\scriptsize] {$\leq 8$ concurrent};
-
-\end{tikzpicture}
-\end{center}
-
-\begin{itemize}[nosep]
-  \item \texttt{SwissAIClient} creates an \texttt{aiohttp.ClientSession} as
-    an async context manager with a 300\,s total timeout per request.
-  \item An \texttt{asyncio.Semaphore(concurrent\_requests)} (default 8)
-    ensures no more than 8 HTTP requests are in flight simultaneously.
-  \item \texttt{batch\_judge(calls)} wraps all calls in \texttt{asyncio.gather}
-    for maximum parallelism within the semaphore bound.
-\end{itemize}
-
-\subsection{Exponential Backoff Retry}
-
-\begin{center}
-\begin{tikzpicture}[
-  >=Stealth,
-  state/.style={draw=ethblue, fill=blue!5, rounded corners=3pt,
-                minimum width=2.2cm, minimum height=0.8cm,
+  state/.style={draw=ethblue, fill=blue!3, rounded corners=3pt,
+                minimum width=2.0cm, minimum height=0.7cm,
                 font=\small, align=center},
-  decision/.style={draw=swissred!80!black, fill=red!5,
+  decision/.style={draw=swissred!70!black, fill=red!3,
                    diamond, aspect=2, inner sep=1pt,
                    font=\small, align=center},
-  arr/.style={->, thick, ethblue!70!black},
+  arr/.style={->, thick, ethblue!60!black},
   lbl/.style={font=\scriptsize, fill=white, inner sep=1pt},
 ]
 
-\node[state] (req) {Send POST};
-\node[decision, right=1.8cm of req] (check) {Status?};
-\node[state, above right=0.8cm and 1.8cm of check] (ok) {Parse\\response};
-\node[state, below right=0.8cm and 1.8cm of check] (wait) {Sleep\\$d \cdot 2^a$ s};
-\node[decision, below=1.2cm of wait] (retry) {$a < 5$?};
-\node[state, left=1.8cm of retry] (fail) {Raise\\RuntimeError};
+\node[state] (req) {POST};
+\node[decision, right=1.6cm of req] (check) {Status?};
+\node[state, above right=0.7cm and 1.6cm of check] (ok) {Parse};
+\node[state, below right=0.7cm and 1.6cm of check] (wait) {Sleep $d \cdot 2^a$};
+\node[decision, below=1.0cm of wait] (retry) {$a < 5$?};
+\node[state, left=1.6cm of retry] (fail) {Error};
 
 \draw[arr] (req) -- (check);
-\draw[arr] (check) -- (ok) node[lbl, pos=0.4, above left] {200 OK};
-\draw[arr] (check) -- (wait) node[lbl, pos=0.4, below left] {429 / error};
+\draw[arr] (check) -- (ok) node[lbl, pos=0.4, above left] {200};
+\draw[arr] (check) -- (wait) node[lbl, pos=0.4, below left] {429/err};
 \draw[arr] (wait) -- (retry);
-\draw[arr] (retry.west) -- (fail) node[lbl, midway, above] {No};
-\draw[arr] (retry.west) to[out=180, in=270] node[lbl, pos=0.5, left] {Yes} (req.south);
+\draw[arr] (retry.west) -- (fail) node[lbl, midway, above] {no};
+\draw[arr] (retry.west) to[out=180, in=270] node[lbl, pos=0.5, left] {yes} (req.south);
 
 \end{tikzpicture}
-\end{center}
-
-\begin{itemize}[nosep]
-  \item On HTTP 429 (rate limit) or \texttt{aiohttp.ClientError}, the client
-    waits $\min(\texttt{base\_delay} \times 2^{\texttt{attempt}},\;
-    \texttt{retry\_max\_delay})$ seconds.
-  \item Default: \texttt{base\_delay} = 2.0\,s, \texttt{max\_delay} = 60.0\,s,
-    so delays are 2, 4, 8, 16, 32\,s (capped at 60\,s).
-  \item After 5 failed attempts, a \texttt{RuntimeError} is raised.
-  \item Successful responses (HTTP 200) are parsed immediately; the label
-    extractor runs on the response text.
-\end{itemize}
+\caption{Exponential backoff retry logic. On rate-limit or error responses,
+the client retries up to 5~times with increasing delays.}
+\label{fig:retry}
+\end{figure}
 
 
 % ─────────────────────────────────────────────────────────────────────────────
 \newpage
-\section{Output JSONL Format}\label{sec:output}
+\section{Output Format}\label{sec:output}
 % ─────────────────────────────────────────────────────────────────────────────
 
-\begin{conceptbox}[Result Serialisation]
-Each experiment writes one JSONL file to the \texttt{results/} directory.
-Each line is a single JSON object representing one judge call.
-\end{conceptbox}
+Each experiment writes a JSONL file to the \texttt{results/} directory, with
+one JSON object per judge call. Table~\ref{tab:fields} describes the schema.
 
-\begin{codebox}[\small JSONL Record Schema]
-\begin{lstlisting}
-{
-  "prompt_id":     "a3f8b2c901",
-  "experiment_id": "position_bias",
-  "condition":     "AB",
-  "raw_text":      "Response A is more helpful because...\nVerdict: A",
-  "label":         "A",
-  "thinking":      null,
-  "latency_s":     2.341,
-  "total_tokens":  487,
-  "parse_ok":      true,
-  "error":         null
-}
-\end{lstlisting}
-\end{codebox}
-
-\begin{center}
+\begin{table}[htbp]
+\centering
 \small
-\begin{longtable}{llp{7cm}}
+\caption{Fields in each JSONL result record.}
+\label{tab:fields}
+\begin{tabular}{@{}llp{7cm}@{}}
   \toprule
   \textbf{Field} & \textbf{Type} & \textbf{Description} \\
   \midrule
-  \endhead
-  \texttt{prompt\_id} & \texttt{str} &
-    Unique identifier for the dataset pair (MD5 hash or index-based). \\
-  \texttt{experiment\_id} & \texttt{str} &
-    Experiment name: \texttt{position\_bias}, \texttt{template\_sensitivity},
-    \texttt{reasoning\_depth}, or \texttt{input\_sensitivity}. \\
-  \texttt{condition} & \texttt{str} &
-    Experimental condition (e.g.\ ``AB'', ``BA'', template name,
-    ``reason\_then\_judge'', ``expert\_rater\_alt2\_accurate''). \\
-  \texttt{raw\_text} & \texttt{str} &
-    Full model output text, unmodified. \\
-  \texttt{label} & \texttt{str|null} &
-    Extracted verdict: ``A'', ``B'', ``C'', or \texttt{null} if parsing failed. \\
-  \texttt{thinking} & \texttt{str|null} &
-    Content of \texttt{<think>...</think>} block if present; \texttt{null}
-    otherwise. \\
-  \texttt{latency\_s} & \texttt{float} &
-    Wall-clock time for this request in seconds. \\
-  \texttt{total\_tokens} & \texttt{int} &
-    Total tokens (prompt + completion) as reported by the API. \\
-  \texttt{parse\_ok} & \texttt{bool} &
-    Whether label extraction succeeded. \\
-  \texttt{error} & \texttt{str|null} &
-    Error message if the request failed; \texttt{null} on success. \\
+  \texttt{prompt\_id} & str & Unique identifier for the dataset pair \\
+  \texttt{experiment\_id} & str & Experiment name \\
+  \texttt{condition} & str & Experimental condition (e.g.\ AB, BA, template name) \\
+  \texttt{raw\_text} & str & Full model output, unmodified \\
+  \texttt{label} & str\,|\,null & Extracted verdict: A, B, C, or null \\
+  \texttt{thinking} & str\,|\,null & Extracted reasoning block, if present \\
+  \texttt{latency\_s} & float & Request latency in seconds \\
+  \texttt{total\_tokens} & int & Total tokens (prompt + completion) \\
+  \texttt{parse\_ok} & bool & Whether label extraction succeeded \\
+  \texttt{error} & str\,|\,null & Error message, if the request failed \\
   \bottomrule
-\end{longtable}
-\end{center}
+\end{tabular}
+\end{table}
 
-Results are loaded by \texttt{metrics.py}'s \texttt{load\_results(path)}
-function, which reads each line as a JSON object and returns a
-\texttt{list[dict]} for downstream analysis.
+The results directory is organised as follows:
 
-\subsection*{File Layout}
-
-\begin{codebox}[\small Results Directory Structure]
 \begin{lstlisting}
 results/
   position_bias/
     expert_rater_helpful.jsonl
+    opro_helpful.jsonl
   template_sensitivity/
     criterion_helpful.jsonl
   reasoning_depth/
     criterion_helpful.jsonl
   input_sensitivity/
     all.jsonl
+  opro/
+    opro_results.json
 \end{lstlisting}
-\end{codebox}
 
 
 % ─────────────────────────────────────────────────────────────────────────────
-\newpage
-\section{Infrastructure Summary}\label{sec:infra}
+\section{Infrastructure}\label{sec:infra}
 % ─────────────────────────────────────────────────────────────────────────────
 
-\begin{warnbox}[No Local Compute]
-This pipeline performs \textbf{zero local GPU inference}. All model calls are
-HTTP requests to the Swiss AI Stack. The local machine only needs Python 3.10+
-with \texttt{aiohttp}, \texttt{datasets}, and \texttt{numpy}.
-\end{warnbox}
+This pipeline performs no local GPU inference. All model calls are HTTP
+requests to the Swiss~AI~Stack. Table~\ref{tab:infra} summarises the
+infrastructure.
 
-\begin{center}
+\begin{table}[htbp]
+\centering
 \small
-\begin{tabular}{ll}
+\caption{Infrastructure summary.}
+\label{tab:infra}
+\begin{tabular}{@{}ll@{}}
   \toprule
   \textbf{Component} & \textbf{Detail} \\
   \midrule
   Inference backend & Swiss AI Stack (CSCS) \\
-  Endpoint URL & \url{https://serving.swissai.svc.cscs.ch/v1} \\
+  Endpoint & \url{https://api.swissai.cscs.ch/v1} \\
   API compatibility & OpenAI \texttt{/v1/chat/completions} \\
-  Model & \texttt{Qwen/Qwen3-30B-A3B-Instruct-2507} \\
+  Model & Configurable (use \texttt{check\_models.py}) \\
   Authentication & Bearer token via \texttt{SWISSAI\_API\_KEY} \\
-  Protocol & HTTPS + JSON \\
   Client library & \texttt{aiohttp} (async) \\
   Concurrency & Semaphore-bounded (default 8) \\
   Retry strategy & Exponential backoff, max 5 retries \\
-  Local dependencies & Python 3.10+, aiohttp, datasets, numpy \\
-  Scheduler / cluster & \textbf{None} (no Slurm, no local vLLM) \\
+  Local requirements & Python 3.10+, aiohttp, datasets, numpy \\
+  Local GPU / cluster & None \\
   \bottomrule
 \end{tabular}
-\end{center}
+\end{table}
+
+
+% ─────────────────────────────────────────────────────────────────────────────
+\newpage
+\section{Dataset Analysis}\label{sec:analysis}
+% ─────────────────────────────────────────────────────────────────────────────
+
+The following figures are generated by \texttt{dataset\_analysis.ipynb} and
+provide an overview of the HelpSteer2 dataset used in all experiments.
+
+\subsection{Rating Distributions and Correlations}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.5\textwidth]{figures/rating_distributions.png}
+\caption{Distribution of helpfulness, correctness, coherence, complexity,
+and verbosity ratings across all responses.}
+\label{fig:ratings}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.6\textwidth]{figures/metric_correlation_heatmap.png}
+\caption{Pairwise Pearson correlation between rating dimensions. Helpfulness
+and correctness are strongly correlated, suggesting these criteria capture
+overlapping aspects of response quality.}
+\label{fig:correlation}
+\end{figure}
+\newpage
+\subsection{Response Length}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.6\textwidth]{figures/text_length_distributions.png}
+\caption{Distribution of prompt and response lengths (in characters).}
+\label{fig:lengths}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.45\textwidth]{figures/response_length_by_rating.png}
+\caption{Response length by helpfulness rating. Longer responses tend to
+receive higher scores.}
+\label{fig:length_rating}
+\end{figure}
+
+\newpage
+\subsection{Metric Gaps Between Paired Responses}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.45\textwidth]{figures/metric_gap_distributions.png}
+\caption{Distribution of per-metric gaps (score of A minus score of B) across
+all pairs. Larger gaps correspond to easier judgments.}
+\label{fig:gaps}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\begin{minipage}{0.5\textwidth}
+  \centering
+  \includegraphics[width=\textwidth]{figures/average_gap_radar.png}
+  \captionof{figure}{Average metric gaps.}
+  \label{fig:gap_radar}
+\end{minipage}\hfill
+\begin{minipage}{0.48\textwidth}
+  \centering
+  \includegraphics[width=\textwidth]{figures/average_ratings_radar.png}
+  \captionof{figure}{Average ratings.}
+  \label{fig:ratings_radar}
+\end{minipage}
+\end{figure}
+
+\newpage
+\subsection{Pair-Level Statistics}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.7\textwidth]{figures/gold_label_distribution.png}
+\caption{Gold label distribution. The better response is always placed as~A,
+so the majority of labels are~A.}
+\label{fig:gold}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.75\textwidth]{figures/score_gap_histogram.png}
+\caption{Composite score gap distribution. Smaller gaps indicate pairs that
+are harder for a judge to distinguish.}
+\label{fig:score_gap}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.65\textwidth]{figures/best_vs_worst_score.png}
+\caption{Scatter plot of composite scores: response~A versus response~B.}
+\label{fig:scatter}
+\end{figure}
+
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.75\textwidth]{figures/response_length_best_vs_worst.png}
+\caption{Response length comparison between the better and worse response
+in each pair.}
+\label{fig:length_pair}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.7\textwidth]{figures/score_gap_vs_length_diff.png}
+\caption{Score gap versus response length difference. Explores whether
+quality differences correlate with verbosity differences.}
+\label{fig:gap_length}
+\end{figure}
+\newpage
+\subsection{Difficulty buckets}
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.65\textwidth]{figures/difficulty_buckets.png}
+\caption{Number of pairs per difficulty bucket. Easy: gap~$> 1.0$;
+medium: $0.33 < \text{gap} \leq 1.0$; hard: gap~$\leq 0.33$.}
+\label{fig:difficulty}
+\end{figure}
+
 
 % ─────────────────────────────────────────────────────────────────────────────
 
 \vfill
 \begin{center}
-\small\textit{End of Architecture Document}
+\small\textit{End of document.}
 \end{center}
 
 \end{document}

@@ -1,6 +1,6 @@
 # LLM Judge Bias & Sensitivity Experiments
 
-Research pipeline for measuring systematic biases and sensitivities in LLM-as-a-judge evaluations using **Qwen3-30B-A3B-Instruct-2507** on the [Swiss AI Stack](https://serving.swissai.svc.cscs.ch/).
+Research pipeline for measuring systematic biases and sensitivities in LLM-as-a-judge evaluations on the [Swiss AI Stack](https://api.swissai.cscs.ch/).
 
 ## Project Structure
 
@@ -10,13 +10,22 @@ Research pipeline for measuring systematic biases and sensitivities in LLM-as-a-
 │   ├── templates.py            # Judge prompt templates and evaluation criteria
 │   ├── dataset.py              # HuggingFace dataset loaders → PairRecord objects
 │   ├── experiments.py          # Experiment runners (B1–B4): build calls, dispatch, save JSONL
-│   └── metrics.py              # Metrics from JSONL results (bias rates, agreement, accuracy)
+│   ├── metrics.py              # Metrics from JSONL results (bias rates, agreement, accuracy)
+│   └── opro_position_bias.py   # OPRO prompt optimisation for reducing position bias
+├── data/                       # Local dataset files (JSON + CSV)
+│   ├── helpsteer2_train.json / .csv
+│   ├── helpsteer2_train_full.json / .csv
+│   ├── helpsteer2_validation.json / .csv
+│   └── helpsteer2_validation_full.json / .csv
 ├── tests/
 │   └── test_pipeline.py        # Unit tests (no API calls required)
 ├── docs/
 │   ├── architecture.tex        # LaTeX source for architecture document
 │   └── architecture.pdf        # Compiled architecture document
 ├── run_experiments.py          # CLI orchestrator — runs experiments and prints summaries
+├── run_opro.py                 # OPRO prompt optimisation runner
+├── check_models.py             # List available models on the Swiss AI Stack
+├── dataset_analysis.ipynb      # Jupyter notebook for dataset exploration
 ├── requirements.txt            # Python dependencies
 └── PROJECT.md                  # Detailed project documentation
 ```
@@ -27,6 +36,26 @@ Research pipeline for measuring systematic biases and sensitivities in LLM-as-a-
 pip install -r requirements.txt
 export SWISSAI_API_KEY="<your-key>"
 ```
+
+## Dataset
+
+The pipeline uses [HelpSteer2](https://huggingface.co/datasets/nvidia/HelpSteer2). Download and save locally (JSON + CSV):
+
+```bash
+python -m src.dataset
+```
+
+This creates two versions per split (train / validation):
+- **Standard** (`helpsteer2_train.json`): `prompt_id, prompt, response_a, response_b, gold_label`
+- **Full** (`helpsteer2_train_full.json`): adds individual scores (`helpfulness_a`, `correctness_a`, `coherence_a`, `complexity_a`, `verbosity_a`, same for `_b`), composite `score_a/b`, `score_gap`, `len_a/b`, and `difficulty` (easy/medium/hard based on score gap)
+
+## Check Available Models
+
+```bash
+python check_models.py
+```
+
+Lists all models currently available on the Swiss AI Stack and lets you choose one. The selected model is shown with its full ID for use with `--model`.
 
 ## Running Experiments
 
@@ -120,6 +149,24 @@ Minor paraphrasing of the `expert_rater` template (3 semantic-equivalent variant
 **Key metrics**: pairwise agreement across wording variants; criterion-label drift.
 
 **Result file**: `results/input_sensitivity/all.jsonl`
+
+### OPRO — Prompt Optimisation for Position Bias
+
+Uses OPRO (Optimization by PROmpting) to find the system prompt that minimises position bias. The LLM generates candidate prompts, each is evaluated on a training subset, and the best is validated on held-out data.
+
+```bash
+# Default: 10 iterations, 80 eval pairs, 150 validation pairs
+python run_opro.py
+
+# Quick test
+python run_opro.py --n-iterations 3 --eval-pairs 20 --n-val 50
+```
+
+Results saved to `results/opro/opro_results.json`. The best prompt found is also registered as the `opro` template in `src/templates.py`:
+
+```bash
+python run_experiments.py --template opro --experiments position_bias
+```
 
 ## Output Format
 

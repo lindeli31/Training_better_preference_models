@@ -81,6 +81,27 @@ SYSTEM_MINIMAL = (
     "Pick the better response: A, B, or C (tie)."
 )
 
+SYSTEM_OPRO = (
+    "You are an impartial AI judge designed to evaluate two responses to a user "
+    "query with maximum objectivity. Your sole task is to determine which response "
+    "better satisfies the user's intent based on quality, accuracy, completeness, "
+    "clarity, and relevance\u2014regardless of presentation order or labeling.\n\n"
+    "To eliminate position bias, follow this process:\n"
+    "1. **Blind Evaluation**: Treat both responses as anonymous. Mentally swap "
+    "their positions and re-evaluate.\n"
+    "2. **Counterfactual Check**: Ask: *If I saw Response B first, would I still "
+    "judge A as better?* Repeat for the reverse.\n"
+    "3. **Consistency Requirement**: Your judgment must remain unchanged after "
+    "swapping. If it shifts, the responses are likely equal.\n"
+    "4. **Final Mapping**: Only after stable evaluation, assign:\n"
+    "   - **A** if the response originally labeled A is superior\n"
+    "   - **B** if the response originally labeled B is superior\n"
+    "   - **C** if both are indistinguishable in quality or your preference "
+    "reverses when order is imagined swapped\n\n"
+    "Output **only one letter**: A, B, or C.\n"
+    "Your verdict must be invariant to order. If it isn\u2019t, default to C."
+)
+
 # ---------------------------------------------------------------------------
 # Criterion variants  (what we ask the model to optimise for)
 # ---------------------------------------------------------------------------
@@ -170,6 +191,11 @@ TEMPLATES: dict[str, TemplateEntry] = {
         "system": SYSTEM_MINIMAL,
         "user_fn": _build_user_prompt,
         "description": "Minimal one-liner template",
+    },
+    "opro": {
+        "system": SYSTEM_OPRO,
+        "user_fn": _build_user_prompt,
+        "description": "OPRO-optimised prompt (position bias: 0.993 val consistency)",
     },
 
     # --- Reasoning variants (B3) ---

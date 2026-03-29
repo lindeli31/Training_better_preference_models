@@ -15,7 +15,6 @@ import re
 import time
 from dataclasses import dataclass, field, asdict
 from typing import Optional
-
 import aiohttp
 
 logger = logging.getLogger(__name__)
@@ -27,9 +26,9 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class InferenceConfig:
-    base_url: str = "https://serving.swissai.svc.cscs.ch/v1"
+    base_url: str = "https://api.swissai.cscs.ch/v1"
     api_key: str = "SWISSAI_API_KEY"          # replace or load from env
-    model: str = "Qwen/Qwen3-30B-A3B-Instruct-2507"
+    model: str = "meta-llama/Llama-3.3-70B-Instruct"
 
     # Generation params
     max_tokens: int = 2048                     # enough room for CoT + label

@@ -28,8 +28,11 @@ import asyncio
 import logging
 import os
 import time
-from pathlib import Path
 
+from dotenv import load_dotenv
+
+load_dotenv()
+from pathlib import Path
 from src.inference_client import InferenceConfig, SwissAIClient
 from src.dataset import load_dataset_pairs
 from src.experiments import (
@@ -75,9 +78,9 @@ def parse_args():
                    help="Judge template ID for position_bias experiment")
     p.add_argument("--output-dir", type=Path, default=Path("results"),
                    help="Root directory to save JSONL result files")
-    p.add_argument("--model", default="Qwen/Qwen3-30B-A3B-Instruct-2507",
+    p.add_argument("--model", default="meta-llama/Llama-3.3-70B-Instruct",
                    help="Model identifier on the Swiss AI stack")
-    p.add_argument("--base-url", default="https://serving.swissai.svc.cscs.ch/v1",
+    p.add_argument("--base-url", default="https://api.swissai.cscs.ch/v1",
                    help="Swiss AI inference base URL")
     p.add_argument("--concurrency", type=int, default=8,
                    help="Max concurrent requests to the API")
@@ -112,7 +115,6 @@ async def main(args):
     logger.info("Loading dataset: %s | split=%s | n=%d | seed=%d",
                 args.dataset, args.split, args.n_pairs, args.seed)
     pairs = load_dataset_pairs(
-        dataset_name=args.dataset,
         split=args.split,
         n=args.n_pairs,
         seed=args.seed,

@@ -1,46 +1,39 @@
 """
 dataset.py
 ----------
-Loads and pre-processes preference datasets for the judge pipeline.
-
-Supported datasets
-------------------
-  - nvidia/HelpSteer2 (default)
-  - openai/summarize_from_feedback
-  - Anthropic/hh-rlhf
-
-Each dataset is normalised to a list of PairRecord objects with fields:
-    prompt_id : str
-    prompt    : str
-    response_a: str   (the "chosen" / higher-rated response in original data)
-    response_b: str   (the "rejected" / lower-rated response in original data)
-    gold_label: str   ("A", "B", or "C") derived from human preference labels
-
-Usage
------
-    from src.dataset import load_dataset_pairs, PairRecord
-    pairs = load_dataset_pairs("nvidia/HelpSteer2", split="validation", n=200)
+Download HelpSteer2 from HuggingFace and save processed pairs to data/.
+Load pairs from local JSON files for experiments.
 """
 
+import csv
 import hashlib
-import logging
+import json
+import random
+from collections import defaultdict
 from dataclasses import dataclass
+from itertools import combinations
+from pathlib import Path
 from typing import Optional
+from datasets import load_dataset
 
-logger = logging.getLogger(__name__)
 
+DATA_DIR = Path("data")
+
+
+# ---------------------------------------------------------------------------
+# Data structure
+# ---------------------------------------------------------------------------
 
 @dataclass
 class PairRecord:
     prompt_id: str
     prompt: str
-    response_a: str        # original A (not flipped)
-    response_b: str        # original B (not flipped)
-    gold_label: str        # "A" = A is better, "B" = B is better, "C" = tie
+    response_a: str
+    response_b: str
+    gold_label: str  # "A", "B", "C"
 
     def flipped(self) -> "PairRecord":
-        """Return a new PairRecord with A and B swapped, gold label adjusted."""
-        flipped_label = {"A": "B", "B": "A", "C": "C"}.get(self.gold_label, self.gold_label)
+        flipped_label = {"A": "B", "B": "A", "C": "C"}[self.gold_label]
         return PairRecord(
             prompt_id=self.prompt_id + "_flipped",
             prompt=self.prompt,
@@ -50,153 +43,133 @@ class PairRecord:
         )
 
 
+# ---------------------------------------------------------------------------
+# Helper functions
+# ---------------------------------------------------------------------------
+
 def _make_id(text: str) -> str:
+    '''Make a short ID from the prompt text'''
     return hashlib.md5(text.encode()).hexdigest()[:10]
 
+def _score(row):
+    '''Compute average score across helpfulness, correctness, coherence.'''
+    return (row["helpfulness"] + row["correctness"] + row["coherence"]) / 3.0
+
 
 # ---------------------------------------------------------------------------
-# HelpSteer2 loader
+# Save helper
 # ---------------------------------------------------------------------------
 
-def _load_helpsteer2(split: str, n: Optional[int]) -> list[PairRecord]:
-    """
-    HelpSteer2 is a scored dataset (not pairwise).
-    We construct pairs by taking the top-scored and bottom-scored responses
-    for the same prompt.
+def _save(records: list[dict], path: Path):
+    """Save a list of dicts to JSON + CSV."""
+    DATA_DIR.mkdir(exist_ok=True)
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(records, f, ensure_ascii=False, indent=2)
+    csv_path = path.with_suffix(".csv")
+    with open(csv_path, "w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=records[0].keys())
+        writer.writeheader()
+        writer.writerows(records)
+    print(f"Saved {len(records)} pairs to {path} and {csv_path}")
 
-    Columns: prompt, response, helpfulness, correctness, coherence,
-             complexity, verbosity  (all 0-4 Likert)
-    """
-    try:
-        from datasets import load_dataset
-    except ImportError:
-        raise ImportError("Install `datasets`: pip install datasets")
 
+# ---------------------------------------------------------------------------
+# Download: all pairwise combinations
+# ---------------------------------------------------------------------------
+
+def download_dataset(split: str = "validation", full: bool = False):
+    """Download HelpSteer2, build all pairwise combinations, save to data/."""
     ds = load_dataset("nvidia/HelpSteer2", split=split)
-    if n:
-        ds = ds.select(range(min(n * 5, len(ds))))   # oversample, we'll filter below
 
-    # Group by prompt
-    from collections import defaultdict
     groups: dict[str, list] = defaultdict(list)
     for row in ds:
         groups[row["prompt"]].append(row)
 
-    pairs: list[PairRecord] = []
+    records = []
     for prompt, rows in groups.items():
         if len(rows) < 2:
             continue
-        # Score = mean of helpfulness + correctness + coherence
-        def score(r):
-            return (r["helpfulness"] + r["correctness"] + r["coherence"]) / 3.0
 
-        rows_sorted = sorted(rows, key=score, reverse=True)
-        best, worst = rows_sorted[0], rows_sorted[-1]
+        for a, b in combinations(rows, 2):
+            s_a, s_b = _score(a), _score(b)
 
-        s_best  = score(best)
-        s_worst = score(worst)
+            if s_a > s_b:
+                best, worst = a, b
+                gold = "A"
+            elif s_b > s_a:
+                best, worst = b, a
+                gold = "A"
+            else:
+                best, worst = a, b
+                gold = "C"
 
-        if s_best == s_worst:
-            gold = "C"
-        elif s_best > s_worst:
-            gold = "A"
-        else:
-            gold = "B"
+            record = {
+                "prompt_id": _make_id(prompt),
+                "prompt": prompt,
+                "response_a": best["response"],
+                "response_b": worst["response"],
+                "gold_label": gold,
+            }
 
-        pairs.append(PairRecord(
-            prompt_id=_make_id(prompt),
-            prompt=prompt,
-            response_a=best["response"],
-            response_b=worst["response"],
-            gold_label=gold,
-        ))
+            if full:
+                record["helpfulness_a"] = best["helpfulness"]
+                record["correctness_a"] = best["correctness"]
+                record["coherence_a"] = best["coherence"]
+                record["complexity_a"] = best["complexity"]
+                record["verbosity_a"] = best["verbosity"]
+                record["score_a"] = round(_score(best), 4)
+                record["helpfulness_b"] = worst["helpfulness"]
+                record["correctness_b"] = worst["correctness"]
+                record["coherence_b"] = worst["coherence"]
+                record["complexity_b"] = worst["complexity"]
+                record["verbosity_b"] = worst["verbosity"]
+                record["score_b"] = round(_score(worst), 4)
+                record["score_gap"] = round(abs(s_a - s_b), 4)
+                record["len_a"] = len(best["response"])
+                record["len_b"] = len(worst["response"])
+                gap = abs(s_a - s_b)
+                if gap > 1.0:
+                    record["difficulty"] = "easy"
+                elif gap > 0.33:
+                    record["difficulty"] = "medium"
+                else:
+                    record["difficulty"] = "hard"
 
-        if n and len(pairs) >= n:
-            break
+            records.append(record)
 
-    logger.info("Loaded %d pairs from HelpSteer2 (%s split)", len(pairs), split)
-    return pairs
-
-
-# ---------------------------------------------------------------------------
-# HH-RLHF loader (Anthropic)
-# ---------------------------------------------------------------------------
-
-def _load_hh_rlhf(split: str, n: Optional[int]) -> list[PairRecord]:
-    try:
-        from datasets import load_dataset
-    except ImportError:
-        raise ImportError("Install `datasets`: pip install datasets")
-
-    ds = load_dataset("Anthropic/hh-rlhf", split=split)
-    if n:
-        ds = ds.select(range(min(n, len(ds))))
-
-    pairs = []
-    for i, row in enumerate(ds):
-        chosen   = row.get("chosen", "")
-        rejected = row.get("rejected", "")
-        # Extract last assistant turn as the response
-        def last_assistant(text: str) -> tuple[str, str]:
-            """Returns (prompt_part, response_part)."""
-            parts = text.split("\n\nAssistant:")
-            response = parts[-1].strip() if len(parts) > 1 else text
-            prompt   = "\n\nAssistant:".join(parts[:-1]).strip() if len(parts) > 1 else ""
-            return prompt, response
-
-        prompt_c, resp_chosen   = last_assistant(chosen)
-        _,         resp_rejected = last_assistant(rejected)
-
-        pairs.append(PairRecord(
-            prompt_id=f"hh_{i:05d}",
-            prompt=prompt_c,
-            response_a=resp_chosen,
-            response_b=resp_rejected,
-            gold_label="A",               # HH-RLHF: chosen is always preferred
-        ))
-
-    logger.info("Loaded %d pairs from hh-rlhf (%s split)", len(pairs), split)
-    return pairs
+    suffix = "_full" if full else ""
+    _save(records, DATA_DIR / f"helpsteer2_{split}{suffix}.json")
+    return records
 
 
 # ---------------------------------------------------------------------------
-# Public API
+# Load: data/*.json -> list[PairRecord]
 # ---------------------------------------------------------------------------
-
-LOADERS = {
-    "nvidia/HelpSteer2":                  _load_helpsteer2,
-    "Anthropic/hh-rlhf":                  _load_hh_rlhf,
-}
-
 
 def load_dataset_pairs(
-    dataset_name: str = "nvidia/HelpSteer2",
     split: str = "validation",
     n: Optional[int] = 200,
     seed: int = 42,
 ) -> list[PairRecord]:
-    """
-    Load a preference dataset and return normalised PairRecord list.
-
-    Parameters
-    ----------
-    dataset_name : HuggingFace dataset identifier
-    split        : dataset split ("train", "validation", "test")
-    n            : max number of pairs to return (None = all)
-    seed         : random seed for shuffling before truncation
-    """
-    if dataset_name not in LOADERS:
-        raise ValueError(
-            f"Unknown dataset '{dataset_name}'. Available: {list(LOADERS)}"
-        )
-
-    import random
-    pairs = LOADERS[dataset_name](split, n=None)   # load all, then sample
+    """Load pairs from local JSON file in data/."""
+    path = DATA_DIR / f"helpsteer2_{split}.json"
+    with open(path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    pairs = [PairRecord(**row) for row in data]
 
     random.seed(seed)
     random.shuffle(pairs)
-
     if n:
         pairs = pairs[:n]
-
     return pairs
+
+
+# ---------------------------------------------------------------------------
+# Run directly to download train + validation
+# python -m src.dataset
+# ---------------------------------------------------------------------------
+
+if __name__ == "__main__":
+    for split in ["train", "validation"]:
+        download_dataset(split)
+        download_dataset(split, full=True)
