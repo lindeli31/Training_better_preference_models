@@ -47,6 +47,7 @@ from src.metrics import (
     compute_position_bias,
     compute_pairwise_agreement,
     compute_thinking_accuracy,
+    compute_stratified_metrics,
     print_summary,
     load_results,
 )
@@ -93,6 +94,11 @@ def parse_args():
     p.add_argument("--concurrency", type=int, default=8,
                    help="Max concurrent requests to the API")
     p.add_argument("--seed", type=int, default=42, help="Random seed for dataset sampling")
+    p.add_argument("--stratify", action="store_true",
+                   help="Sample proportionally across difficulty strata (easy/medium/hard)")
+    p.add_argument("--randomize-position", action="store_true",
+                   help="Randomly flip 50%% of pairs so gold_label is ~50%% A/B "
+                        "(required for valid positional bias measurement)")
     return p.parse_args()
 
 
@@ -120,12 +126,17 @@ async def main(args):
     # ------------------------------------------------------------------
     # Load dataset
     # ------------------------------------------------------------------
-    logger.info("Loading dataset: %s | split=%s | n=%d | seed=%d",
-                args.dataset, args.split, args.n_pairs, args.seed)
+    logger.info(
+        "Loading dataset: %s | split=%s | n=%d | seed=%d | stratify=%s | randomize_position=%s",
+        args.dataset, args.split, args.n_pairs, args.seed,
+        args.stratify, args.randomize_position,
+    )
     pairs = load_dataset_pairs(
         split=args.split,
         n=args.n_pairs,
         seed=args.seed,
+        stratify=args.stratify,
+        randomize_position=args.randomize_position,
     )
     logger.info("Dataset ready: %d pairs", len(pairs))
 
@@ -148,8 +159,14 @@ async def main(args):
                 criterion=args.criterion,
                 output_dir=args.output_dir / "position_bias",
             )
-            pb_metrics = compute_position_bias([r.to_dict() for r in pb_results])
+            pb_dicts = [r.to_dict() for r in pb_results]
+            pb_metrics = compute_position_bias(pb_dicts)
             print_summary("B1: Position Bias", pb_metrics)
+            if any(p.difficulty is not None for p in pairs):
+                strat = compute_stratified_metrics(
+                    pb_dicts, pairs, "difficulty", compute_position_bias
+                )
+                print_summary("B1: Position Bias — by difficulty", strat)
 
         # ---- B2: Template Sensitivity ----------------------------------
         if "template_sensitivity" in args.experiments:

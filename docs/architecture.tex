@@ -222,27 +222,57 @@ The higher-scoring response is placed as~A (gold label~=~``A''); pairs with
 equal scores receive gold label~``C''. Results are saved locally as both
 JSON and CSV in the \texttt{data/} directory.
 
-Two versions are produced per split:
-\begin{itemize}[nosep]
-  \item \textbf{Standard}: \texttt{prompt\_id}, \texttt{prompt},
-        \texttt{response\_a}, \texttt{response\_b}, \texttt{gold\_label}.
-  \item \textbf{Full}: additionally includes per-response scores
-        (helpfulness, correctness, coherence, complexity, verbosity for
-        both A and B), composite scores, score gap, response lengths, and
-        a \texttt{difficulty} label (easy if gap~$> 1.0$, medium if~$> 0.33$,
-        hard otherwise).
-\end{itemize}
+The standard file now includes five \emph{stratification fields} alongside
+every pair (Table~\ref{tab:stratfields}).  The full file additionally
+includes per-response attribute scores, composite scores, and response
+lengths.
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{Stratification fields written by \texttt{download\_dataset()}.}
+\label{tab:stratfields}
+\begin{tabular}{@{}llp{7cm}@{}}
+  \toprule
+  \textbf{Field} & \textbf{Type} & \textbf{Description} \\
+  \midrule
+  \texttt{score\_gap}       & float & $|s_A - s_B|$; absolute quality difference \\
+  \texttt{difficulty}       & str   & ``easy'' ($>1.0$), ``medium'' ($>0.33$), ``hard'' ($\leq 0.33$) \\
+  \texttt{verbosity\_delta} & int   & $\text{verbosity}_A - \text{verbosity}_B$ (signed); positive = better response is more verbose \\
+  \texttt{complexity\_max}  & int   & $\max(\text{complexity}_A, \text{complexity}_B)$; 0--4 scale \\
+  \texttt{is\_multiturn}    & bool  & True if the prompt contains a prior \texttt{Assistant:} turn \\
+  \bottomrule
+\end{tabular}
+\end{table}
 
 \paragraph{Load phase.}
 At experiment time, \texttt{load\_dataset\_pairs()} reads from local JSON,
 applies a seeded shuffle, and returns up to~$n$ \texttt{PairRecord} objects.
-No network access is required at this stage.
+No network access is required at this stage.  Two optional sampling modes
+are available:
 
-The \texttt{PairRecord} dataclass contains five fields: \texttt{prompt\_id},
-\texttt{prompt}, \texttt{response\_a}, \texttt{response\_b}, and
-\texttt{gold\_label}. The \texttt{flipped()} method returns a copy with
-A and~B swapped and the gold label inverted
-($\text{A} \leftrightarrow \text{B}$, $\text{C}$ unchanged).
+\begin{itemize}[nosep]
+  \item \textbf{\texttt{stratify=True}}: sample proportionally across
+        difficulty strata (easy / medium / hard) so that hard and medium
+        pairs are not under-represented.  A purely random sample is dominated
+        by easy pairs (large quality gap), which are the stratum where
+        positional bias is least pronounced.
+  \item \textbf{\texttt{randomize\_position=True}}: randomly flip 50\% of
+        pairs so that \texttt{gold\_label} is approximately 50\% A / 50\% B.
+        Without this, the best response is always placed as A, making any
+        A-preference in the judge indistinguishable from accuracy.  This flag
+        is required for valid positional bias measurement.
+\end{itemize}
+
+The \texttt{PairRecord} dataclass carries the five base fields
+(\texttt{prompt\_id}, \texttt{prompt}, \texttt{response\_a},
+\texttt{response\_b}, \texttt{gold\_label}) plus the five stratification
+fields from Table~\ref{tab:stratfields} as optional attributes (default
+\texttt{None} for legacy files).  The \texttt{flipped()} method returns a
+copy with A and~B swapped, the gold label inverted
+($\text{A} \leftrightarrow \text{B}$, $\text{C}$ unchanged), and
+\texttt{verbosity\_delta} negated (the other metadata fields are
+order-symmetric).
 
 
 \subsection{\texttt{inference\_client.py} --- Async HTTP Client}
@@ -373,6 +403,11 @@ This module loads JSONL results and computes experiment-specific metrics:
   \item \texttt{compute\_thinking\_accuracy}: accuracy versus gold labels,
         agreement with the no-reasoning baseline, and average latency per
         condition (used for B3).
+  \item \texttt{compute\_stratified\_metrics}: apply any of the above
+        functions separately for each value of a stratification field
+        (e.g.\ \texttt{difficulty}), returning a dict keyed by stratum value.
+        Enables per-stratum comparison of position consistency, template
+        sensitivity, and accuracy.
 \end{itemize}
 
 
@@ -382,7 +417,11 @@ This module loads JSONL results and computes experiment-specific metrics:
 the dataset, configures the inference client, runs selected experiments,
 computes metrics, and prints summaries. Key flags include
 \texttt{--experiments}, \texttt{--n-pairs}, \texttt{--template} (including
-\texttt{opro}), \texttt{--model}, and \texttt{--concurrency}.
+\texttt{opro}), \texttt{--model}, \texttt{--concurrency},
+\texttt{--stratify}, and \texttt{--randomize-position}.  When
+\texttt{--stratify} is active and difficulty labels are present, B1 results
+are automatically broken down by stratum using
+\texttt{compute\_stratified\_metrics}.
 
 \paragraph{\texttt{run\_opro.py}} runs the OPRO optimisation loop
 (Section~\ref{sec:opro}). It loads training and validation pairs, invokes

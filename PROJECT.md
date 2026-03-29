@@ -91,11 +91,19 @@ HuggingFace datasets
   - Blind criterion-first: criterion question before `[Response 1]`/`[Response 2]`
 
 ### `src/dataset.py`
-- **PairRecord** dataclass: prompt_id, prompt, response_a, response_b, gold_label
-  - `flipped()` returns new PairRecord with A↔B swapped, gold_label adjusted (A↔B, C→C)
-- **HelpSteer2 loader**: scored dataset (not pairwise). Groups by prompt, takes best/worst by mean(helpfulness + correctness + coherence)/3. Gold label derived from score comparison.
-- **HH-RLHF loader**: pairwise dataset. Extracts last assistant turn from chosen/rejected. Gold label always "A" (chosen is preferred).
-- **load_dataset_pairs()**: loads all, shuffles with seed, truncates to n pairs
+- **PairRecord** dataclass: prompt_id, prompt, response_a, response_b, gold_label, plus five optional stratification fields:
+  - `score_gap` (float): |score_a - score_b|
+  - `difficulty` (str): "easy" / "medium" / "hard" derived from score_gap thresholds
+  - `verbosity_delta` (int): verbosity_a - verbosity_b (signed; positive = better response is more verbose)
+  - `complexity_max` (int): max(complexity_a, complexity_b), scale 0–4
+  - `is_multiturn` (bool): True if prompt contains a prior `Assistant:` turn
+  - `flipped()` returns new PairRecord with A↔B swapped, gold_label adjusted (A↔B, C→C), verbosity_delta negated; symmetric fields (score_gap, difficulty, complexity_max, is_multiturn) preserved unchanged
+- **`_detect_multiturn(prompt)`**: regex check for `\bassistant\s*:` to identify multi-turn conversations
+- **`_stratified_sample(pairs, n, rng)`**: sample n pairs proportionally across difficulty strata with overflow handling
+- **`download_dataset()`**: Groups by prompt, takes best/worst by mean(helpfulness + correctness + coherence)/3. Gold label "A" (best always in position A) or "C" for ties. Now always writes all five stratification fields to the standard file. Full mode additionally writes per-response attribute scores and response lengths.
+- **`load_dataset_pairs(split, n, seed, stratify, randomize_position)`**:
+  - `stratify=True`: proportional sampling across difficulty strata (prevents easy-pair oversampling); falls back to random sampling with warning if difficulty metadata is absent
+  - `randomize_position=True`: randomly flips 50% of pairs so gold_label is ~50% A / ~50% B — **required for valid positional bias measurement** (without it, gold is always A and A-preference is indistinguishable from accuracy)
 
 ### `src/experiments.py`
 - **B1 `run_position_bias()`**: For each pair, creates two calls — condition "AB" (original order) and "BA" (flipped order via `pair.flipped()`). The `prompt_id` stays the same for both so metrics can match them.
@@ -112,8 +120,8 @@ HuggingFace datasets
 - **`compute_position_bias()`**: Groups AB/BA by prompt_id. Consistent = flipped label matches (A↔B). Tracks bias toward first/second position, tie inconsistency.
 - **`compute_pairwise_agreement()`**: Used for B2 and B4. Pivots by prompt_id × condition, computes pairwise agreement rate, identifies most volatile pairs, tracks label distribution per condition.
 - **`compute_thinking_accuracy()`**: Used for B3 and B5 (accuracy per structural condition). Computes accuracy vs gold labels per condition, agreement vs no_thinking baseline, average latency per condition.
+- **`compute_stratified_metrics(results, pairs, stratum_key, base_metric_fn, **kwargs)`**: Partition results by any stratification field on PairRecord and apply any base metric function separately to each stratum. Returns `{stratum_value: metrics_dict}`. Used to report position bias per difficulty bucket, per verbosity direction, per turn count, etc.
 - **`print_summary()`**: Pretty-prints metric dicts to console.
-- All three functions are reused for B5 metric reporting with no modification.
 
 ### `run_experiments.py`
 - CLI entry point with argparse
@@ -121,10 +129,12 @@ HuggingFace datasets
 - Runs selected experiments (or all), computes metrics, prints summaries
 - Key CLI flags: `--experiments`, `--n-pairs`, `--dataset`, `--split`, `--criterion`, `--template`, `--concurrency`, `--output-dir`, `--seed`
 - Experiments: `position_bias`, `template_sensitivity`, `reasoning_depth`, `input_sensitivity`, `user_prompt_structure`
+- `--stratify`: proportional difficulty sampling; auto-reports B1 by stratum when metadata present
+- `--randomize-position`: 50/50 gold label distribution for valid positional bias measurement
 
 ### `tests/test_pipeline.py`
-- 22 unit tests, no API calls required
-- Tests: label extraction (bare, verdict line, thinking blocks, fallback, blind 1/2 labels), template building (including all B5 variants), PairRecord flipping, all three metric functions
+- 39 unit tests, no API calls required
+- Tests: label extraction (bare, verdict line, thinking blocks, fallback, blind 1/2 labels), template building (B5 variants), PairRecord metadata fields and flipping behaviour, multi-turn detection, stratified sampling (proportional, undersized stratum, overflow), randomize_position (gold label distribution, response identity, verbosity_delta sign), all three base metric functions, compute_stratified_metrics (by difficulty, None-skipping, BA-condition matching)
 - Can run with `python3 tests/test_pipeline.py` or `pytest tests/`
 
 ---
@@ -138,6 +148,10 @@ HuggingFace datasets
 3. **Label extraction cascade** — the regex tries explicit verdict lines first (most reliable), then bare labels at end of text, then falls back to the last uppercase A/B/C in the text. `<think>` blocks are stripped before extraction to avoid matching reasoning content. Labels `1` and `2` (from B5 blind templates) are matched by the end-anchored patterns and immediately normalised to A/B, keeping all downstream metric functions compatible.
 
 4. **Position bias uses same prompt_id** — both AB and BA conditions for the same pair share the original `prompt_id`. The `flipped()` method's `prompt_id + "_flipped"` is NOT used as the call's prompt_id. This lets `compute_position_bias()` match pairs by prompt_id.
+
+7. **Gold label always A is a known confound** — `download_dataset()` always places the better response in position A (gold="A") except for ties. This means without `randomize_position=True`, any judge A-preference looks like accuracy. The `--randomize-position` flag fixes this by randomly placing the better response in either position at load time.
+
+8. **Dataset heterogeneity controlled via stratification** — `--stratify` ensures proportional representation of easy/medium/hard pairs. Without it, random sampling is dominated by easy pairs where quality differences are unambiguous and positional bias is minimal — the stress-test cases (hard pairs) are systematically underrepresented.
 
 5. **Semaphore-based concurrency** — `asyncio.Semaphore(8)` limits concurrent requests to avoid overwhelming the API. All calls in an experiment are dispatched via `asyncio.gather` for maximum parallelism within the limit.
 
@@ -215,11 +229,17 @@ JSONL files in `results/<experiment>/`. Each line:
 pip install -r requirements.txt
 export SWISSAI_API_KEY="<key>"
 
+# Download dataset (one-time; generates stratification metadata)
+python -m src.dataset
+
 # All experiments (200 pairs)
 python3 run_experiments.py
 
-# Single experiment
-python3 run_experiments.py --experiments position_bias
+# Recommended: stratified + randomized position for valid bias measurement
+python3 run_experiments.py --stratify --randomize-position --n-pairs 200
+
+# Single experiment with stratification breakdown
+python3 run_experiments.py --experiments position_bias --stratify --randomize-position
 
 # Quick smoke test
 python3 run_experiments.py --n-pairs 20 --experiments position_bias
@@ -234,7 +254,8 @@ python3 tests/test_pipeline.py
 
 - [x] Core pipeline implemented (inference client, templates, dataset loaders, experiments, metrics)
 - [x] B5 experiment (user-prompt structure: blind labels + criterion position)
-- [x] Unit tests (22/22 passing)
+- [x] Dataset stratification: 5 metadata fields, stratified sampling, randomize_position, compute_stratified_metrics
+- [x] Unit tests (39/39 passing)
 - [x] Architecture document (architecture.pdf) — updated to include B5 and pilot results
 - [x] README
 - [x] Bug fixes and code review
