@@ -67,28 +67,40 @@ class JudgeResponse:
 # Label extractor
 # ---------------------------------------------------------------------------
 
-# Matches the final judgment label (A / B / C) even when the model reasons first.
+# Matches the final judgment label (A / B / C, or 1 / 2 for blind templates).
+# 1/2 are added to the end-anchored patterns only — safe because they are anchored
+# to end-of-text, avoiding false positives from numbers in response text.
 _LABEL_PATTERNS = [
-    # explicit verdict lines  e.g. "Verdict: B"  "Answer: A"
-    r"(?i)(?:verdict|answer|response|output|better response)\s*:\s*([ABC])\b",
+    # explicit verdict lines  e.g. "Verdict: B"  "Answer: 1"
+    r"(?i)(?:verdict|answer|response|output|better response)\s*:\s*([ABC12])\b",
     # bare label at the very end of the text
-    r"(?i)\b([ABC])\s*$",
+    r"(?i)\b([ABC12])\s*$",
     # label followed by punctuation
-    r"(?i)\b([ABC])[.\s]*\Z",
+    r"(?i)\b([ABC12])[.\s]*\Z",
 ]
+
+# Normalise blind-template outputs (1/2) back to A/B so all downstream metrics
+# remain compatible without modification.
+_BLIND_MAP: dict[str, str] = {"1": "A", "2": "B"}
 
 
 def extract_label(text: str) -> tuple[Optional[str], bool]:
-    """Return (label, parse_ok). Tries multiple patterns in order."""
+    """Return (label, parse_ok). Tries multiple patterns in order.
+
+    Labels 1 and 2 (used by blind templates) are normalised to A and B
+    respectively so that all downstream metrics are compatible.
+    """
     # Strip CoT thinking block if present (common Qwen3 format)
     clean = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL).strip()
 
     for pattern in _LABEL_PATTERNS:
         m = re.search(pattern, clean)
         if m:
-            return m.group(1).upper(), True
+            raw = m.group(1).upper()
+            return _BLIND_MAP.get(raw, raw), True
 
-    # Fallback: find last uppercase A/B/C in the text
+    # Fallback: find last uppercase A/B/C in the text (1/2 excluded here to
+    # avoid false positives from numbers appearing in response content)
     letters = re.findall(r"\b([ABC])\b", clean)
     if letters:
         return letters[-1].upper(), True
