@@ -28,7 +28,7 @@ B4 Input Sensitivity
 import json
 from collections import defaultdict
 from pathlib import Path
-from typing import Optional
+from typing import Any, Callable, Optional
 import numpy as np
 
 
@@ -211,6 +211,75 @@ def compute_thinking_accuracy(
         "agreement_vs_no_reasoning": agreement_vs_baseline,
         "avg_latency_s": avg_latency,
     }
+
+
+# ---------------------------------------------------------------------------
+# Stratified metrics
+# ---------------------------------------------------------------------------
+
+def compute_stratified_metrics(
+    results: list[dict],
+    pairs: list,
+    stratum_key: str,
+    base_metric_fn: Callable,
+    **kwargs: Any,
+) -> dict[str, dict]:
+    """Apply base_metric_fn separately for each unique value of stratum_key.
+
+    Args:
+        results:        list of result dicts loaded from JSONL.
+        pairs:          list of PairRecord objects carrying stratification
+                        metadata.  Pairs with stratum_key=None are excluded.
+        stratum_key:    Attribute name on PairRecord to partition by.
+                        Common values: "difficulty", "is_multiturn",
+                        "verbosity_delta", "complexity_max".
+        base_metric_fn: Callable (list[dict], **kwargs) -> dict.
+                        Any of: compute_position_bias, compute_pairwise_agreement,
+                        compute_thinking_accuracy.
+        **kwargs:       Forwarded verbatim to base_metric_fn (e.g. gold_labels
+                        for compute_thinking_accuracy, group_by for
+                        compute_pairwise_agreement).
+
+    Returns:
+        {str(stratum_value): metrics_dict}, sorted by stratum value.
+        Includes a "n_results" key in each metrics_dict for quick sanity checks.
+
+    Example::
+
+        strat = compute_stratified_metrics(
+            pb_results, pairs, "difficulty", compute_position_bias
+        )
+        # strat == {"easy": {...}, "hard": {...}, "medium": {...}}
+
+        strat = compute_stratified_metrics(
+            rd_results, pairs, "difficulty",
+            compute_thinking_accuracy, gold_labels=gold_labels
+        )
+    """
+    # Build prompt_id -> stratum value.
+    # _flipped suffix is stripped so BA-condition results still match.
+    stratum_map: dict[str, Any] = {}
+    for pair in pairs:
+        val = getattr(pair, stratum_key, None)
+        if val is not None:
+            stratum_map[pair.prompt_id] = val
+
+    # Partition results by stratum
+    buckets: dict[Any, list[dict]] = defaultdict(list)
+    for r in results:
+        pid = r["prompt_id"]
+        base_pid = pid[: -len("_flipped")] if pid.endswith("_flipped") else pid
+        stratum = stratum_map.get(base_pid)
+        if stratum is not None:
+            buckets[stratum].append(r)
+
+    output: dict[str, dict] = {}
+    for stratum in sorted(buckets, key=str):
+        recs = buckets[stratum]
+        m = base_metric_fn(recs, **kwargs)
+        m["n_results"] = len(recs)
+        output[str(stratum)] = m
+    return output
 
 
 # ---------------------------------------------------------------------------
