@@ -93,9 +93,10 @@ This document describes the architecture of a research pipeline for measuring
 systematic biases and sensitivities in LLM-as-a-judge evaluations. The system
 is a pure HTTP client that dispatches judge queries to the Swiss~AI~Stack,
 an OpenAI-compatible inference endpoint hosted at CSCS. We detail the data
-pipeline, the four core experiments (position bias, template sensitivity,
-reasoning depth, and input sensitivity), and an OPRO-based prompt optimisation
-module that automatically discovers system prompts with reduced positional bias.
+pipeline, the five core experiments (position bias, template sensitivity,
+reasoning depth, input sensitivity, and user-prompt structure), and an
+OPRO-based prompt optimisation module that automatically discovers system
+prompts with reduced positional bias.
 \end{abstract}
 
 \tableofcontents
@@ -118,8 +119,9 @@ Every API call sends exactly one \emph{system prompt} and one
 \emph{user prompt}. The system prompt is a hidden instruction that defines the
 judge's persona and output format (e.g.\ ``You are an expert rater\ldots'').
 The user prompt contains the evaluation data: the original user question and
-two candidate responses labelled~A and~B. The system prompt varies across
-experiments; the user prompt varies across dataset pairs.
+two candidate responses. The system prompt varies across experiments~B1--B4;
+both the system prompt \emph{and} the user prompt structure vary in
+experiment~B5 (Section~\ref{sec:b5}).
 
 
 \subsection{Data-Flow Overview}
@@ -259,10 +261,14 @@ currently available models.
 After receiving a response, the module extracts the judge verdict through a
 three-tier cascade:
 \begin{enumerate}[nosep]
-  \item Explicit verdict lines (e.g.\ ``Verdict: B'', ``Answer: A'').
-  \item A bare A, B, or C at the end of the text.
+  \item Explicit verdict lines (e.g.\ ``Verdict: B'', ``Answer: 1'').
+  \item A bare A/B/C or 1/2 at the end of the text (end-anchored pattern).
   \item Fallback: the last standalone A/B/C anywhere in the text.
 \end{enumerate}
+Labels \texttt{1} and \texttt{2} (produced by blind-framing templates in B5)
+are normalised to~A and~B respectively at extraction time, keeping all
+downstream metric functions compatible. The digit patterns are applied only in
+end-anchored positions to avoid false positives from numbers in response text.
 If the model produced a \texttt{<think>...</think>} block, it is stripped
 before extraction and stored separately.
 
@@ -287,7 +293,7 @@ dictionary. Table~\ref{tab:templates} lists the available templates.
   \toprule
   \textbf{Template ID} & \textbf{Framing} & \textbf{Experiment} \\
   \midrule
-  \texttt{expert\_rater}  & Baseline expert rater   & B1, B2, B3, B4 \\
+  \texttt{expert\_rater}  & Baseline expert rater   & B1, B2, B3, B4, B5 \\
   \texttt{llm\_judge}     & ``LLM used to judge''   & B2 \\
   \texttt{neutral}        & Imperative, no persona  & B2 \\
   \texttt{academic}       & Formal quality evaluator & B2 \\
@@ -296,6 +302,12 @@ dictionary. Table~\ref{tab:templates} lists the available templates.
   \texttt{structured\_reasoning} & Rate on criteria, then verdict & B3 \\
   \texttt{expert\_rater\_alt1--3} & Minor wording variants & B4 \\
   \texttt{opro} & OPRO-optimised (low position bias) & B1 \\
+  \midrule
+  \multicolumn{3}{@{}l}{\textit{User-prompt structure variants (B5)}} \\
+  \midrule
+  \texttt{blind} & Responses labelled 1/2; criterion after & B5 \\
+  \texttt{criterion\_first} & A/B labels; criterion before responses & B5 \\
+  \texttt{blind\_criterion\_first} & 1/2 labels; criterion before responses & B5 \\
   \bottomrule
 \end{tabular}
 \end{table}
@@ -303,8 +315,9 @@ dictionary. Table~\ref{tab:templates} lists the available templates.
 Five evaluation criteria are supported: \texttt{helpful}, \texttt{quality},
 \texttt{accurate}, \texttt{harmless}, and \texttt{concise}, each mapping to
 a natural-language phrase. The \texttt{build\_prompt()} function resolves a
-template ID and criterion into a (system prompt, user prompt) pair. The user
-prompt follows a fixed format:
+template ID and criterion into a (system prompt, user prompt) pair.
+
+For experiments B1--B4 the user prompt follows a fixed format:
 
 \begin{lstlisting}
 [User Prompt]
@@ -318,6 +331,9 @@ prompt follows a fixed format:
 
 Which response is {criterion}?
 \end{lstlisting}
+
+Experiment~B5 introduces three structural variants of this user prompt,
+varying two binary dimensions independently (see Section~\ref{sec:b5}).
 
 
 \subsection{\texttt{experiments.py} --- Experiment Runners}
@@ -340,6 +356,7 @@ conditions.
   \texttt{run\_template\_sensitivity} & B2 & 5 templates \\
   \texttt{run\_reasoning\_depth} & B3 & 3 reasoning conditions \\
   \texttt{run\_input\_sensitivity} & B4 & $4 \times 5 = 20$ (templates $\times$ criteria) \\
+  \texttt{run\_user\_prompt\_structure} & B5 & $4 \times 2 = 8$ (structures $\times$ orders) \\
   \bottomrule
 \end{tabular}
 \end{table}
@@ -458,6 +475,97 @@ conditions per pair.
 Pairwise agreement across conditions and criterion drift (how much the
 label changes when only the criterion changes, with the template held fixed).
 
+
+% ─────────────────────────────────────────────────────────────────────────────
+\subsection{B5: User-Prompt Structure}\label{sec:b5}
+
+\paragraph{Research question.}
+Do structural properties of the \emph{user prompt} affect judge verdicts,
+independently of system-prompt wording? Specifically: (1)~do alphabetically
+loaded response labels (A/B) introduce bias compared to neutral labels (1/2),
+and (2)~does placing the evaluation criterion \emph{before} the responses
+improve accuracy by priming the judge?
+
+\paragraph{Method.}
+Two binary factors are crossed in a $2\times 2$ design, holding the system
+prompt body constant across all conditions (only the output instruction
+changes to match the label type):
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{B5 experimental conditions.}
+\label{tab:b5conditions}
+\begin{tabular}{@{}lcc@{}}
+  \toprule
+  \textbf{Condition} & \textbf{Labels} & \textbf{Criterion position} \\
+  \midrule
+  \texttt{expert\_rater} (baseline) & A/B & After responses \\
+  \texttt{blind}                    & 1/2 & After responses \\
+  \texttt{criterion\_first}         & A/B & Before responses \\
+  \texttt{blind\_criterion\_first}  & 1/2 & Before responses \\
+  \bottomrule
+\end{tabular}
+\end{table}
+
+Each condition is evaluated in both AB and BA response orderings (8 calls per
+pair total), enabling per-condition position consistency to be computed
+alongside cross-condition agreement.
+
+\paragraph{Metrics.}
+\begin{itemize}[nosep]
+  \item \textit{Per-condition position consistency}: reuses the B1 metric to
+        measure whether blind labels or criterion placement reduce positional
+        instability.
+  \item \textit{Cross-condition pairwise agreement}: measures how much the
+        label changes when the user prompt structure changes (AB order only).
+  \item \textit{Accuracy versus gold labels}: whether criterion-first placement
+        improves alignment with human judgments.
+\end{itemize}
+
+\paragraph{Pilot results ($n=10$, criterion = helpful).}
+Table~\ref{tab:b5pilot} reports preliminary results on a 10-pair smoke test.
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{B5 pilot results ($n=10$, \texttt{helpful} criterion, validation split).
+All figures are proportions.}
+\label{tab:b5pilot}
+\begin{tabular}{@{}lcccc@{}}
+  \toprule
+  \textbf{Condition} & \textbf{Pos.\ consistency} & \textbf{Bias 1st} &
+    \textbf{Bias 2nd} & \textbf{Acc.\ vs.\ gold} \\
+  \midrule
+  \texttt{expert\_rater}        & 0.90 & 0.10 & 0.00 & 0.50 \\
+  \texttt{blind}                & 0.80 & 0.00 & 0.20 & 0.40 \\
+  \texttt{criterion\_first}     & 0.60 & 0.20 & 0.20 & 0.50 \\
+  \texttt{blind\_criterion\_first} & 0.70 & 0.00 & 0.30 & 0.40 \\
+  \midrule
+  \multicolumn{2}{@{}l}{\textit{Cross-condition agreement}} & \multicolumn{3}{l}{0.817} \\
+  \bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Observations.}
+The pilot reveals several noteworthy patterns (to be confirmed at scale):
+\begin{itemize}[nosep]
+  \item Switching from A/B to 1/2 labels \emph{reverses the direction of
+        positional bias}: the first-position preference seen with A/B labels
+        (70\% of AB verdicts are ``A'') disappears entirely, replaced by a
+        second-position preference (60\% ``B''), suggesting a learned A-letter
+        preference in the model's training distribution.
+  \item Criterion-first placement \emph{increases} position sensitivity rather
+        than reducing it (consistency drops to 0.60), contrary to the initial
+        hypothesis. Pre-framing may cause the judge to anchor on the criterion
+        too early and become inconsistent when responses are reordered.
+  \item Cross-condition agreement of 0.817 indicates that roughly 18\% of
+        pairs receive different labels depending on user prompt structure
+        alone---a non-negligible source of variance even when the underlying
+        system prompt and data are identical.
+\end{itemize}
+These findings are preliminary ($n=10$); a full run at $n=200$ is required
+before drawing conclusions.
 
 % ─────────────────────────────────────────────────────────────────────────────
 \subsection{OPRO: Prompt Optimisation for Position Bias}\label{sec:opro}
@@ -600,6 +708,8 @@ results/
     criterion_helpful.jsonl
   input_sensitivity/
     all.jsonl
+  user_prompt_structure/
+    criterion_helpful.jsonl
   opro/
     opro_results.json
 \end{lstlisting}

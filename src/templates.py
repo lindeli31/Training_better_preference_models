@@ -26,6 +26,11 @@ _OUTPUT_INSTRUCTION = (
     "B if the second response is better, or C if they are equally good."
 )
 
+_OUTPUT_INSTRUCTION_BLIND = (
+    "Output only a single character: 1 if the first response is better, "
+    "2 if the second response is better, or C if they are equally good."
+)
+
 _OUTPUT_INSTRUCTION_VERBOSE = (
     "After your evaluation, provide your final verdict by strictly "
     "following this format:\n"
@@ -45,6 +50,39 @@ def _build_user_prompt(prompt: str, response_a: str, response_b: str,
         f"[Response A]\n{response_a}\n\n"
         f"[Response B]\n{response_b}\n\n"
         f"Which response is {criterion}?"
+    )
+
+
+def _build_user_prompt_blind(prompt: str, response_a: str, response_b: str,
+                              criterion: str = "better overall") -> str:
+    """Neutral 1/2 labels — removes alphabetical-ordering associations from A/B."""
+    return (
+        f"[User Prompt]\n{prompt}\n\n"
+        f"[Response 1]\n{response_a}\n\n"
+        f"[Response 2]\n{response_b}\n\n"
+        f"Which response is {criterion}?"
+    )
+
+
+def _build_user_prompt_criterion_first(prompt: str, response_a: str, response_b: str,
+                                        criterion: str = "better overall") -> str:
+    """Criterion question placed before responses — primes the judge while reading."""
+    return (
+        f"[User Prompt]\n{prompt}\n\n"
+        f"Which response is {criterion}?\n\n"
+        f"[Response A]\n{response_a}\n\n"
+        f"[Response B]\n{response_b}"
+    )
+
+
+def _build_user_prompt_blind_criterion_first(prompt: str, response_a: str, response_b: str,
+                                              criterion: str = "better overall") -> str:
+    """Both: 1/2 labels and criterion question before responses."""
+    return (
+        f"[User Prompt]\n{prompt}\n\n"
+        f"Which response is {criterion}?\n\n"
+        f"[Response 1]\n{response_a}\n\n"
+        f"[Response 2]\n{response_b}"
     )
 
 
@@ -79,6 +117,14 @@ SYSTEM_ACADEMIC = (
 
 SYSTEM_MINIMAL = (
     "Pick the better response: A, B, or C (tie)."
+)
+
+# B5: blind-framing system prompt — identical body to expert_rater, only output
+# instruction swapped to 1/2/C so B5 isolates user prompt structure, not wording.
+SYSTEM_EXPERT_RATER_BLIND = (
+    "You are an expert rater. You will be provided with a user prompt and two "
+    "assistant responses. Your task is to determine which response is better.\n\n"
+    + _OUTPUT_INSTRUCTION_BLIND
 )
 
 SYSTEM_OPRO = (
@@ -208,6 +254,23 @@ TEMPLATES: dict[str, TemplateEntry] = {
         "system": SYSTEM_STRUCTURED_REASONING,
         "user_fn": _build_user_prompt,
         "description": "Rate on helpfulness/accuracy/coherence criteria, then verdict",
+    },
+
+    # --- User-prompt structure variants (B5) ---
+    "blind": {
+        "system": SYSTEM_EXPERT_RATER_BLIND,
+        "user_fn": _build_user_prompt_blind,
+        "description": "Blind framing: responses labeled 1/2 instead of A/B, criterion after",
+    },
+    "criterion_first": {
+        "system": SYSTEM_EXPERT_RATER,
+        "user_fn": _build_user_prompt_criterion_first,
+        "description": "Standard A/B labels, criterion question placed before responses",
+    },
+    "blind_criterion_first": {
+        "system": SYSTEM_EXPERT_RATER_BLIND,
+        "user_fn": _build_user_prompt_blind_criterion_first,
+        "description": "Blind 1/2 labels + criterion question placed before responses",
     },
 
     # --- Minor-wording sensitivity variants (B4) ---

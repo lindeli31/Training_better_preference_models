@@ -9,10 +9,11 @@ that:
 
 Experiments
 -----------
-  run_position_bias      (B1) - flip A/B, measure consistency
+  run_position_bias        (B1) - flip A/B, measure consistency
   run_template_sensitivity (B2) - vary system-prompt wording
-  run_reasoning_depth    (B3) - compare no reasoning vs. prompted reasoning styles
-  run_input_sensitivity  (B4) - minor paraphrasing of templates
+  run_reasoning_depth      (B3) - compare no reasoning vs. prompted reasoning styles
+  run_input_sensitivity    (B4) - minor paraphrasing of templates
+  run_user_prompt_structure (B5) - 2×2: label type (A/B vs 1/2) × criterion position
 
 All experiments share the same data (list[PairRecord]) and client.
 """
@@ -217,4 +218,64 @@ async def run_input_sensitivity(
                 len(calls), len(template_ids), len(criteria), len(pairs))
     results = await client.batch_judge(calls)
     save_jsonl(results, output_dir / "all.jsonl")
+    return results
+
+
+# ---------------------------------------------------------------------------
+# Experiment B5: User-Prompt Structure
+# ---------------------------------------------------------------------------
+
+USER_PROMPT_STRUCTURE_VARIANTS = [
+    "expert_rater",           # baseline: A/B labels, criterion after responses
+    "blind",                  # 1/2 labels, criterion after responses
+    "criterion_first",        # A/B labels, criterion before responses
+    "blind_criterion_first",  # 1/2 labels, criterion before responses
+]
+
+async def run_user_prompt_structure(
+    client: SwissAIClient,
+    pairs: list[PairRecord],
+    template_ids: Optional[list[str]] = None,
+    criterion: str = "helpful",
+    output_dir: Path = Path("results/user_prompt_structure"),
+) -> list[JudgeResponse]:
+    """
+    2×2 factorial experiment varying two binary dimensions of user prompt structure:
+      - Label type     : A/B (standard) vs. 1/2 (blind — removes alphabetical bias)
+      - Criterion pos  : after responses (standard) vs. before (primes the judge)
+
+    Each condition is run in both AB and BA response order so that position
+    consistency can be computed per condition (8 calls per pair total).
+    Condition names follow the pattern: {template}_AB or {template}_BA.
+
+    Key hypotheses:
+      - blind* conditions show higher position consistency than expert_rater*
+      - criterion_first* conditions show higher accuracy vs. gold label
+    """
+    template_ids = template_ids or USER_PROMPT_STRUCTURE_VARIANTS
+    calls = []
+    for tmpl in template_ids:
+        for pair in pairs:
+            # Original order
+            sys_p, usr_p = build_prompt(tmpl, pair.prompt,
+                                         pair.response_a, pair.response_b, criterion)
+            calls.append(dict(
+                system_prompt=sys_p, user_prompt=usr_p,
+                prompt_id=pair.prompt_id, experiment_id="user_prompt_structure",
+                condition=f"{tmpl}_AB",
+            ))
+            # Flipped order
+            flipped = pair.flipped()
+            sys_p2, usr_p2 = build_prompt(tmpl, flipped.prompt,
+                                           flipped.response_a, flipped.response_b, criterion)
+            calls.append(dict(
+                system_prompt=sys_p2, user_prompt=usr_p2,
+                prompt_id=pair.prompt_id, experiment_id="user_prompt_structure",
+                condition=f"{tmpl}_BA",
+            ))
+
+    logger.info("[B5] Dispatching %d calls (%d templates × 2 orders × %d pairs)",
+                len(calls), len(template_ids), len(pairs))
+    results = await client.batch_judge(calls)
+    save_jsonl(results, output_dir / f"criterion_{criterion}.jsonl")
     return results
