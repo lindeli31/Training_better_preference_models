@@ -82,24 +82,34 @@ SYSTEM_MINIMAL = (
 )
 
 SYSTEM_OPRO = (
-    "You are an impartial AI judge designed to evaluate two responses to a user "
-    "query with maximum objectivity. Your sole task is to determine which response "
-    "better satisfies the user's intent based on quality, accuracy, completeness, "
-    "clarity, and relevance\u2014regardless of presentation order or labeling.\n\n"
-    "To eliminate position bias, follow this process:\n"
-    "1. **Blind Evaluation**: Treat both responses as anonymous. Mentally swap "
-    "their positions and re-evaluate.\n"
-    "2. **Counterfactual Check**: Ask: *If I saw Response B first, would I still "
-    "judge A as better?* Repeat for the reverse.\n"
-    "3. **Consistency Requirement**: Your judgment must remain unchanged after "
-    "swapping. If it shifts, the responses are likely equal.\n"
-    "4. **Final Mapping**: Only after stable evaluation, assign:\n"
-    "   - **A** if the response originally labeled A is superior\n"
-    "   - **B** if the response originally labeled B is superior\n"
-    "   - **C** if both are indistinguishable in quality or your preference "
-    "reverses when order is imagined swapped\n\n"
-    "Output **only one letter**: A, B, or C.\n"
-    "Your verdict must be invariant to order. If it isn\u2019t, default to C."
+    "You are an impartial evaluator tasked with comparing the quality of two responses "
+    "to a given user query. To ensure a completely unbiased assessment, consider the "
+    "responses, labeled A and B, as two separate entities that exist independently of "
+    "each other, and evaluate them based on their inherent qualities, such as accuracy, "
+    "completeness, relevance, clarity, and usefulness in addressing the user's query.\n\n"
+    "Imagine you are evaluating each response in isolation, without knowing which one was "
+    "presented first or having any prior knowledge of the other response. Then, consider "
+    "both responses together, weighing their strengths and weaknesses in a neutral and "
+    "parallel manner, as if they were two separate solutions to the same problem.\n\n"
+    "To further minimize any potential bias, evaluate the responses based on a standardized "
+    "set of criteria, considering multiple aspects of each, such as how well they address "
+    "the query, their clarity, and their usefulness. Ask yourself: If the responses were "
+    "swapped, would my evaluation change? If the responses were presented in a different "
+    "order, would my judgment be different?\n\n"
+    "Additionally, consider the following questions for each response: Does it fully address "
+    "the user's query? Is it clear, concise, and easy to understand? Does it provide relevant "
+    "and accurate information? Does it offer a unique perspective or solution?\n\n"
+    "Ensure that your judgment is based solely on the intrinsic merits of each response, "
+    "without being influenced by the order in which they are presented or any extraneous "
+    "factors. Carefully consider multiple aspects of each response, evaluating them based on "
+    "their individual merits, and then output a single letter: A if one response is superior, "
+    "B if the other response is superior, or C if both responses are of equal quality, "
+    "ensuring that your decision reflects a balanced and impartial comparison of the "
+    "responses' content.\n\n"
+    "To finalize your evaluation, take a moment to reflect on your judgment and ask yourself: "
+    "Is my decision based on a thorough and unbiased comparison of the responses? Have I "
+    "considered all relevant aspects of each response? Is my output consistent with the "
+    "principles of impartial evaluation?"
 )
 
 # ---------------------------------------------------------------------------
@@ -195,7 +205,7 @@ TEMPLATES: dict[str, TemplateEntry] = {
     "opro": {
         "system": SYSTEM_OPRO,
         "user_fn": _build_user_prompt,
-        "description": "OPRO-optimised prompt (position bias: 0.993 val consistency)",
+        "description": "OPRO-optimised prompt (train: 0.749, val: 0.769 position consistency)",
     },
 
     # --- Reasoning variants (B3) ---

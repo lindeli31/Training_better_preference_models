@@ -32,9 +32,28 @@ Research pipeline for measuring systematic biases and sensitivities in LLM-as-a-
 
 ## Setup
 
+1. Install dependencies:
 ```bash
 pip install -r requirements.txt
-export SWISSAI_API_KEY="<your-key>"
+```
+
+2. Create a `.env` file in the project root:
+```bash
+SWISSAI_API_KEY=<your-key>
+SWISSAI_MODEL=meta-llama/Llama-3.3-70B-Instruct
+```
+
+`SWISSAI_MODEL` pins the model used by all scripts. To see what models are currently available:
+```bash
+python check_models.py
+```
+
+Then update `SWISSAI_MODEL` in `.env` accordingly. Both `run_experiments.py` and `run_opro.py` will validate that the pinned model is available at startup and exit with a clear error if not.
+
+You can also override the model for a single run without changing `.env`:
+```bash
+python run_experiments.py --model <model_id>
+python run_opro.py --model <model_id>
 ```
 
 ## Dataset
@@ -55,7 +74,7 @@ This creates two versions per split (train / validation):
 python check_models.py
 ```
 
-Lists all models currently available on the Swiss AI Stack and lets you choose one. The selected model is shown with its full ID for use with `--model`.
+Lists all models currently available on the Swiss AI Stack. Use the output to set `SWISSAI_MODEL` in your `.env` file. Note: available models may change between runs — pinning via `.env` ensures consistency, especially for multi-run methods like OPRO.
 
 ## Running Experiments
 

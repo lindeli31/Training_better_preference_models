@@ -48,6 +48,7 @@ from src.metrics import (
     print_summary,
     load_results,
 )
+from check_models import validate_model
 
 logging.basicConfig(
     level=logging.INFO,
@@ -78,7 +79,7 @@ def parse_args():
                    help="Judge template ID for position_bias experiment")
     p.add_argument("--output-dir", type=Path, default=Path("results"),
                    help="Root directory to save JSONL result files")
-    p.add_argument("--model", default="meta-llama/Llama-3.3-70B-Instruct",
+    p.add_argument("--model", default=os.environ.get("SWISSAI_MODEL", "meta-llama/Llama-3.3-70B-Instruct"),
                    help="Model identifier on the Swiss AI stack")
     p.add_argument("--base-url", default="https://api.swissai.cscs.ch/v1",
                    help="Swiss AI inference base URL")
@@ -101,6 +102,8 @@ async def main(args):
         logger.warning(
             "SWISSAI_API_KEY not set. Requests may fail unless the endpoint is open."
         )
+
+    validate_model(args.model, base_url=args.base_url, api_key=api_key)
 
     config = InferenceConfig(
         base_url=args.base_url,

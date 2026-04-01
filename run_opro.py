@@ -22,6 +22,7 @@ from pathlib import Path
 from src.inference_client import InferenceConfig, SwissAIClient
 from src.dataset import load_dataset_pairs
 from src.opro_position_bias import run_opro
+from check_models import validate_model
 
 logging.basicConfig(
     level=logging.INFO,
@@ -42,7 +43,7 @@ def parse_args():
                    help="Validation pairs to load")
     p.add_argument("--seed", type=int, default=42, help="Random seed")
     p.add_argument("--output-dir", type=Path, default=Path("results/opro"))
-    p.add_argument("--model", default="Qwen/Qwen3-235B-A22B-Instruct-2507-luca")
+    p.add_argument("--model", default=os.environ.get("SWISSAI_MODEL", "meta-llama/Llama-3.3-70B-Instruct"))
     p.add_argument("--base-url", default="https://api.swissai.cscs.ch/v1")
     p.add_argument("--concurrency", type=int, default=8)
     return p.parse_args()
@@ -50,6 +51,8 @@ def parse_args():
 
 async def main(args):
     api_key = os.environ.get("SWISSAI_API_KEY", "")
+    validate_model(args.model, base_url=args.base_url, api_key=api_key)
+
     config = InferenceConfig(
         base_url=args.base_url,
         api_key=api_key,
