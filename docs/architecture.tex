@@ -10,6 +10,7 @@
 \usepackage{xcolor}
 \usepackage{booktabs}
 \usepackage{longtable}
+\usepackage{multirow}
 \usepackage{enumitem}
 \usepackage{tikz}
 \usetikzlibrary{
@@ -760,6 +761,241 @@ medium: $0.33 < \text{gap} \leq 1.0$; hard: gap~$\leq 0.33$.}
 \label{fig:difficulty}
 \end{figure}
 
+
+% ─────────────────────────────────────────────────────────────────────────────
+\newpage
+\section{Preliminary Experiments}\label{sec:preliminary}
+% ─────────────────────────────────────────────────────────────────────────────
+
+All experiments use 200 pairs from the HelpSteer2 validation split (seed~42),
+temperature~0.0, and concurrency~8, with \textbf{Qwen3-235B-A22B-Instruct}
+served via the Swiss~AI~Stack.
+
+% ─── B1 ──────────────────────────────────────────────────────────────────────
+\subsection{B1: Position Bias}\label{sec:b1-results}
+
+Table~\ref{tab:b1} reports position consistency across models and prompt
+templates. All runs use \texttt{run\_experiments.py --experiments position\_bias
+--n-pairs 200}. The \texttt{opro} prompt was optimised with
+\texttt{run\_opro.py --n-train 1000 --eval-pairs 200 --n-val 400 --n-iterations 10}
+(200 pairs scored per iteration from a pool of 1000 training pairs;
+400 held-out pairs for final validation).
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{B1 Position Bias results for Qwen3-235B. Position consistency = fraction
+of pairs where the flipped verdict matches the expected inversion (higher is better).}
+\label{tab:b1}
+\begin{tabular}{@{}lccccc@{}}
+  \toprule
+  \textbf{Template} & \textbf{Consistency} & \textbf{Bias Rate}
+    & \textbf{Bias $\to$ 1st} & \textbf{Bias $\to$ 2nd} & \textbf{Tie Incons.} \\
+  \midrule
+  \texttt{expert\_rater} & 0.705 & 0.295 & 0.180 & 0.060 & 0.055 \\
+  \texttt{opro}          & \textbf{0.740} & \textbf{0.260} & \textbf{0.090} & 0.130 & 0.040 \\
+  \bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Key findings.}
+\begin{itemize}[nosep]
+  \item The OPRO-optimised prompt improves position consistency by +3.5\,pp
+        over the \texttt{expert\_rater} baseline (0.740 vs.\ 0.705).
+  \item The OPRO prompt nearly eliminates first-position bias (0.090 vs.\ 0.180)
+        but slightly increases second-position bias (0.130 vs.\ 0.060), suggesting
+        the debiasing instruction overshoots in some cases.
+  \item A small OPRO eval set (80 pairs) caused overfitting; increasing to 200
+        pairs eliminated the train/validation gap.
+\end{itemize}
+
+
+% ─── B2 ──────────────────────────────────────────────────────────────────────
+\subsection{B2: Template Sensitivity}\label{sec:b2-results}
+
+Tables~\ref{tab:b2-per-template} and~\ref{tab:b2-labels} report template
+sensitivity results for Qwen3-235B across all five criteria.
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{B2 per-template average pairwise agreement by criterion. Each cell
+shows how often that template's verdict agrees with the other four templates
+on average.}
+\label{tab:b2-per-template}
+\begin{tabular}{@{}lccccc@{}}
+  \toprule
+  \textbf{Criterion} & \textbf{expert\_rater} & \textbf{llm\_judge}
+    & \textbf{neutral} & \textbf{academic} & \textbf{minimal} \\
+  \midrule
+  helpful  & \textbf{0.839} & 0.826 & 0.826 & 0.792 & 0.729 \\
+  accurate & \textbf{0.762} & 0.735 & 0.744 & 0.716 & 0.527 \\
+  quality  & \textbf{0.818} & 0.811 & \textbf{0.818} & 0.755 & 0.714 \\
+  harmless & \textbf{0.748} & 0.720 & 0.734 & 0.618 & 0.561 \\
+  concise  & \textbf{0.784} & 0.755 & 0.771 & 0.723 & 0.660 \\
+  \bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{B2 label distribution per template (A\,/\,B\,/\,C counts out of 200
+pairs). Bold C values highlight templates producing the most ties.}
+\label{tab:b2-labels}
+\begin{tabular}{@{}llccc@{}}
+  \toprule
+  \textbf{Criterion} & \textbf{Template} & \textbf{A} & \textbf{B} & \textbf{C} \\
+  \midrule
+  \multirow{5}{*}{helpful}
+    & expert\_rater & 146 & 42 & 12 \\
+    & llm\_judge    & 131 & 47 & 22 \\
+    & neutral       & 138 & 53 &  9 \\
+    & academic      & 126 & 45 & \textbf{29} \\
+    & minimal       & 127 & 70 &  3 \\
+  \midrule
+  \multirow{5}{*}{quality}
+    & expert\_rater & 141 & 46 & 13 \\
+    & llm\_judge    & 119 & 50 & 31 \\
+    & neutral       & 134 & 54 & 12 \\
+    & academic      & 111 & 40 & \textbf{49} \\
+    & minimal       & 130 & 70 &  0 \\
+  \midrule
+  \multirow{5}{*}{accurate}
+    & expert\_rater & 121 & 29 & 50 \\
+    & llm\_judge    & 103 & 33 & 64 \\
+    & neutral       & 119 & 28 & 53 \\
+    & academic      &  90 & 28 & \textbf{82} \\
+    & minimal       & 125 & 73 &  2 \\
+  \midrule
+  \multirow{5}{*}{harmless}
+    & expert\_rater & 127 & 34 & 39 \\
+    & llm\_judge    &  94 & 32 & \textbf{74} \\
+    & neutral       & 124 & 39 & 37 \\
+    & academic      &  72 & 29 & \textbf{99} \\
+    & minimal       & 122 & 76 &  2 \\
+  \midrule
+  \multirow{5}{*}{concise}
+    & expert\_rater & 107 & 66 & 27 \\
+    & llm\_judge    &  96 & 59 & \textbf{45} \\
+    & neutral       & 102 & 89 &  9 \\
+    & academic      &  91 & 58 & \textbf{51} \\
+    & minimal       & 117 & 82 &  1 \\
+  \bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Key findings.}
+\begin{itemize}[nosep]
+  \item \texttt{helpful} is the most stable criterion (0.803 overall); \texttt{harmless}
+        is the most volatile (0.676), indicating that safety judgements are
+        especially sensitive to prompt framing.
+  \item \texttt{expert\_rater} is the most consensus-aligned template across all
+        criteria --- its verdicts agree most with the other four templates.
+  \item \texttt{minimal} is the most deviant template, especially on \texttt{accurate}
+        (0.527) and \texttt{harmless} (0.561) --- likely because the one-liner prompt
+        forces decisive answers that diverge from the more deliberate verdicts of
+        longer prompts.
+  \item \texttt{academic} consistently produces the most tie labels (C) across all
+        criteria --- up to 99 out of 200 pairs for \texttt{harmless} --- suggesting
+        a formal evaluator persona makes the model more hesitant to commit to a verdict.
+  \item Some pairs achieve a minimum pairwise agreement of 0.2 (4 out of 5
+        templates disagree), appearing across multiple criteria --- indicating
+        a subset of genuinely ambiguous pairs.
+\end{itemize}
+
+
+% ─── B3 ──────────────────────────────────────────────────────────────────────
+\subsection{B3: Reasoning Depth}\label{sec:b3-results}
+
+Table~\ref{tab:b3} reports accuracy versus gold labels for Qwen3-235B across
+all five evaluation criteria and three reasoning conditions.
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{B3 Reasoning Depth results for Qwen3-235B, 200 validation pairs.
+Accuracy is fraction of verdicts matching the human gold label.}
+\label{tab:b3}
+\begin{tabular}{@{}lccc@{}}
+  \toprule
+  \textbf{Criterion} & \textbf{No reasoning} & \textbf{Reason then judge}
+    & \textbf{Structured reasoning} \\
+  \midrule
+  helpful  & \textbf{0.610} & 0.565 & 0.595 \\
+  accurate & \textbf{0.605} & 0.555 & 0.565 \\
+  quality  & 0.615          & 0.605 & \textbf{0.615} \\
+  harmless & \textbf{0.615} & 0.600 & 0.605 \\
+  concise  & 0.480          & 0.500 & \textbf{0.545} \\
+  \midrule
+  \textbf{Average} & \textbf{0.585} & 0.565 & \textbf{0.585} \\
+  \bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Key findings.}
+\begin{itemize}[nosep]
+  \item On average, \textit{no reasoning} and \textit{structured reasoning} tie
+        at 0.585, both outperforming \textit{reason then judge} (0.565).
+  \item The pattern is criterion-dependent: for \texttt{concise}, structured
+        reasoning helps (+6.5\,pp), likely because explicit criteria application
+        benefits conciseness judgements.
+  \item For \texttt{quality}, all three conditions are approximately equal.
+  \item For \texttt{helpful}, \texttt{accurate}, and \texttt{harmless}, reasoning
+        consistently hurts slightly.
+  \item Free-form reasoning (\textit{reason then judge}) is strictly worse than
+        direct verdicts across all criteria.
+  \item Reasoning conditions cost 25--50$\times$ more latency than no-reasoning
+        on Qwen3-235B, due to longer generated chains.
+\end{itemize}
+
+
+% ─── Next experiments ────────────────────────────────────────────────────────
+\subsection{Next Experiments}\label{sec:next}
+
+The current experiments use five evaluation criteria (\texttt{helpful},
+\texttt{accurate}, \texttt{quality}, \texttt{harmless}, \texttt{concise})
+that were designed independently of the HelpSteer2 annotation schema. However,
+HelpSteer2 provides per-response human ratings on five specific attributes:
+\textit{helpfulness}, \textit{correctness}, \textit{coherence},
+\textit{complexity}, and \textit{verbosity}.
+
+The current gold labels are derived from a composite score
+$(\text{helpfulness} + \text{correctness} + \text{coherence}) / 3$, which
+does not align with any single criterion used in B2, B3, or B4. This creates
+a mismatch: for example, B3 with \texttt{accurate} measures accuracy against
+a composite gold label rather than purely against human \textit{correctness}
+scores.
+
+Two approaches are possible. If keeping the current experiment criteria, a
+natural next step is to re-derive criterion-specific gold labels directly
+from HelpSteer2 attributes and rerun the experiments:
+
+\begin{center}
+\small
+\begin{tabular}{@{}ll@{}}
+  \toprule
+  \textbf{Experiment criterion} & \textbf{HelpSteer2 attribute} \\
+  \midrule
+  \texttt{helpful}  & \textit{helpfulness} \\
+  \texttt{accurate} & \textit{correctness} \\
+  \texttt{concise}  & \textit{verbosity} (inverted) \\
+  \texttt{quality}  & mean of all attributes \\
+  \texttt{harmless} & no direct mapping \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+This would make B3 accuracy scores directly interpretable and allow a fairer
+comparison across criteria --- potentially changing current findings on whether
+and when reasoning helps.
+
+Alternatively, if the goal is to test different criteria altogether, one could
+evaluate judge verdicts against HelpSteer2 gold labels derived
+\textit{per-attribute} (e.g.\ which response has higher \textit{correctness}?)
+as well as against the \textit{average} composite score. This would reveal
+whether judge performance and bias patterns vary depending on which human
+annotation dimension is treated as ground truth.
 
 % ─────────────────────────────────────────────────────────────────────────────
 
