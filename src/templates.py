@@ -15,17 +15,18 @@ and returns a formatted string.
 Templates are registered in TEMPLATES dict, keyed by a short ID.
 """
 
+# Standard library imports
 from typing import Callable
 
 # ---------------------------------------------------------------------------
-# Shared suffix (output instruction) — factored out so it stays consistent
+# Shared suffix (output instruction) - included in all system prompts.
+# This makes sure that all templates ask the model to output in the same format
+# (single letter: A, B, or C), so that the output parsing is consistent across templates.
 # ---------------------------------------------------------------------------
-
 _OUTPUT_INSTRUCTION = (
     "Output only a single letter: A if the first response is better, "
     "B if the second response is better, or C if they are equally good."
 )
-
 _OUTPUT_INSTRUCTION_VERBOSE = (
     "After your evaluation, provide your final verdict by strictly "
     "following this format:\n"
@@ -36,10 +37,11 @@ _OUTPUT_INSTRUCTION_VERBOSE = (
 
 # ---------------------------------------------------------------------------
 # User-prompt builder (shared across system-prompt variants)
+# This function takes the original prompt, responses, and criterion, and builds the user prompt.
 # ---------------------------------------------------------------------------
-
 def _build_user_prompt(prompt: str, response_a: str, response_b: str,
                         criterion: str = "better overall") -> str:
+    '''Builds the user prompt given the original prompt, responses, and criterion.'''
     return (
         f"[User Prompt]\n{prompt}\n\n"
         f"[Response A]\n{response_a}\n\n"
@@ -47,9 +49,10 @@ def _build_user_prompt(prompt: str, response_a: str, response_b: str,
         f"Which response is {criterion}?"
     )
 
-
 # ---------------------------------------------------------------------------
 # System-prompt variants  (Experiment B2 – template sensitivity)
+# This is useful in the experiments B2 to check how much the model's judgments are sensitive to the wording and framing of the prompt.
+# We have a primary template (expert_rater) and several variants that differ in wording, style, and framing. 
 # ---------------------------------------------------------------------------
 
 SYSTEM_EXPERT_RATER = (
@@ -122,6 +125,7 @@ CRITERIA = {
     "accurate":   "more accurate and factually correct",
     "harmless":   "safer and more appropriate",
     "concise":    "more concise while still fully answering the question",
+    "overall":    "better overall, considering helpfulness, correctness, and coherence",
 }
 
 # ---------------------------------------------------------------------------
@@ -168,7 +172,7 @@ SYSTEM_EXPERT_RATER_ALT3 = SYSTEM_EXPERT_RATER.replace(
 )
 
 # ---------------------------------------------------------------------------
-# Template registry
+# Template registry. Maps template_id to system prompt and user prompt builder function.
 # ---------------------------------------------------------------------------
 
 TemplateEntry = dict  # {system: str, user_fn: Callable, description: str}
@@ -244,7 +248,7 @@ def build_prompt(
     prompt: str,
     response_a: str,
     response_b: str,
-    criterion: str = "helpful",
+    criterion: str = "overall",
 ) -> tuple[str, str]:
     """
     Returns (system_prompt, user_prompt) for the given template.

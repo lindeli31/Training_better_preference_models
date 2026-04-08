@@ -1,70 +1,138 @@
 """
 inference_client.py
 -------------------
-Async inference client for the Swiss AI Stack (OpenAI-compatible endpoint).
-Wraps Qwen3-30B-A3B-Instruct-2507 (or any model on the stack) with:
-  - Rate-limit-aware retry logic with exponential back-off
-  - Structured response parsing (A / B / C label extraction)
-  - Full raw-response logging for reproducibility
+This module implements the SwissAIClient, an asynchronous client for calling
+the Swiss AI Stack API as an LLM judge. It includes:
+- InferenceConfig: a configuration class for setting API parameters and retry logic.
+- JudgeResponse: a structured class to encapsulate the model's response, including the extracted label and reasoning.
+- extract_label: a robust function to extract the A/B/C judgment from the model's output, handling various formats and edge cases.
+- extract_thinking: a function to extract the CoT reasoning block if present in the model's output.
+- SwissAIClient: the main client
+
+Remark: We canc hange the function to extract the answer also depending on the model.
 """
 
+# Standard library imports
 import asyncio
 import json
 import logging
 import re
 import time
-from dataclasses import dataclass, field, asdict
 from typing import Optional
 import aiohttp
-
 logger = logging.getLogger(__name__)
 
 
 # ---------------------------------------------------------------------------
-# Configuration
+# Configuration dataclass for the inference client. The following parameters can be set:
+# The following parameters are the most relevant for controlling the inference:
+# - base_url: the base URL of the API endpoint (default: "https://api.swissai.cscs.ch/v1")
+# - api_key: the API key for authentication (default: "SWISSAI_API_KEY", should be set from environment variable or config file)
+# - model: the model to use for inference (default: "meta-llama/Llama-3.3-70B-Instruct", can be changed to any model available on the stack)
+# - max_tokens: the maximum number of tokens to generate (default: 2048)
+# - temperature: the sampling temperature (default: 0.0 for deterministic output)
+# These parameters are more related to the retry logic and concurrency, and can usually be left at their default values:
+# - top_p: the nucleus sampling parameter (default: 1.0 for no nucleus sampling)
+# - max_retries: the maximum number of retries for failed requests (default: 5
+# - retry_base_delay: the base delay for retries (default: 2.0 seconds)
+# - retry_max_delay: the maximum delay for retries (default: 60.0 seconds)
+# - concurrent_requests: the maximum number of concurrent requests (default: 8)
+# 
 # ---------------------------------------------------------------------------
 
-@dataclass
 class InferenceConfig:
-    base_url: str = "https://api.swissai.cscs.ch/v1"
-    api_key: str = "SWISSAI_API_KEY"          # replace or load from env
-    model: str = "meta-llama/Llama-3.3-70B-Instruct"
-
-    # Generation params
-    max_tokens: int = 2048                     # enough room for CoT + label
-    temperature: float = 0.0                   # deterministic for reproducibility
-    top_p: float = 1.0
-
-    # Retry / rate-limit
-    max_retries: int = 5
-    retry_base_delay: float = 2.0             # seconds
-    retry_max_delay: float = 60.0
-    concurrent_requests: int = 8              # semaphore limit
-
+    def __init__(
+        self,
+        base_url: str = "https://api.swissai.cscs.ch/v1",
+        api_key: str = "SWISSAI_API_KEY",
+        model: str = "meta-llama/Llama-3.3-70B-Instruct",
+        max_tokens: int = 2048,
+        temperature: float = 0.0,
+        top_p: float = 1.0,
+        max_retries: int = 5,
+        retry_base_delay: float = 2.0,
+        retry_max_delay: float = 60.0,
+        concurrent_requests: int = 8,
+    ):
+        self.base_url = base_url
+        self.api_key = api_key
+        self.model = model
+        self.max_tokens = max_tokens
+        self.temperature = temperature
+        self.top_p = top_p
+        self.max_retries = max_retries
+        self.retry_base_delay = retry_base_delay
+        self.retry_max_delay = retry_max_delay
+        self.concurrent_requests = concurrent_requests
 
 # ---------------------------------------------------------------------------
 # Response dataclass
+# The JudgeResponse class encapsulates the structured response from the judge call.
+# As before the most important fields for analysis are:
+# - prompt_id: the ID of the prompt (for tracking)
+# - experiment_id: the ID of the experiment (for tracking)
+# - condition: the experimental condition (e.g. "AB", "BA", "template_v1", ...)
+# - raw_text: the full raw text output from the model (for logging and debugging)
+# - label: the extracted label ("A", "B", "C")
+# - thinking: the extracted CoT block (if present)
+#
+# The following fields are more related to debugging and analysis of the inference process, and can be logged but are not essential for the main experiments:
+# - latency_s: the latency of the API call in seconds
+# - total_tokens: the total number of tokens used in the API call (if available)
+# - parse_ok: whether the label extraction was successful
+# - error: any error message if the API call failed
 # ---------------------------------------------------------------------------
-
-@dataclass
 class JudgeResponse:
-    prompt_id: str
-    experiment_id: str
-    condition: str                             # e.g. "AB", "BA", "template_v1", ...
-    raw_text: str                              # full model output
-    label: Optional[str] = None               # "A", "B", "C", or None if parse fails
-    thinking: Optional[str] = None            # extracted CoT block if present
-    latency_s: float = 0.0
-    total_tokens: int = 0
-    parse_ok: bool = True
-    error: Optional[str] = None
+    def __init__(
+        self,
+        prompt_id: str,
+        experiment_id: str,
+        condition: str,
+        raw_text: str,
+        label: Optional[str] = None,
+        thinking: Optional[str] = None,
+        latency_s: float = 0.0,
+        total_tokens: int = 0,
+        parse_ok: bool = True,
+        error: Optional[str] = None,
+    ):
+        self.prompt_id = prompt_id
+        self.experiment_id = experiment_id
+        self.condition = condition               # e.g. "AB", "BA", "template_v1", ...
+        self.raw_text = raw_text                 # full model output
+        self.label = label                       # "A", "B", "C", or None if parse fails
+        self.thinking = thinking                 # extracted CoT block if present
+        self.latency_s = latency_s
+        self.total_tokens = total_tokens
+        self.parse_ok = parse_ok
+        self.error = error
 
     def to_dict(self) -> dict:
-        return asdict(self)
-
+        return {
+            "prompt_id": self.prompt_id,
+            "experiment_id": self.experiment_id,
+            "condition": self.condition,
+            "raw_text": self.raw_text,
+            "label": self.label,
+            "thinking": self.thinking,
+            "latency_s": self.latency_s,
+            "total_tokens": self.total_tokens,
+            "parse_ok": self.parse_ok,
+            "error": self.error,
+        }
 
 # ---------------------------------------------------------------------------
-# Label extractor
+# Label extractor The problem of extracting a clear A/B/C label from the model's 
+# output can be tricky (see documentation), especially if the model provides 
+# reasoning before giving the final judgment. 
+# The extract_label function implements a robust approach to handle this: 
+# The extract_label function tries multiple regex patterns to find 
+# a clear A/B/C label in the model's output. It also has a fallback to find the 
+# last uppercase A/B/C in the text if the more structured patterns fail. 
+# The extract_thinking function looks for a CoT block enclosed in 
+# <tool_call>...<tool_call> tags, which is a common format for reasoning in Qwen3. 
+# This allows us to separate the final judgment (label) from the reasoning process 
+# (thinking) if both are present in the output.
 # ---------------------------------------------------------------------------
 
 # Matches the final judgment label (A / B / C) even when the model reasons first.
@@ -76,8 +144,6 @@ _LABEL_PATTERNS = [
     # label followed by punctuation
     r"(?i)\b([ABC])[.\s]*\Z",
 ]
-
-
 def extract_label(text: str) -> tuple[Optional[str], bool]:
     """Return (label, parse_ok). Tries multiple patterns in order."""
     # Strip CoT thinking block if present (common Qwen3 format)
@@ -96,13 +162,35 @@ def extract_label(text: str) -> tuple[Optional[str], bool]:
     return None, False
 
 
+# ----------------------------------------------------------------------------
+# Thinking extractor (optional) The extract_thinking function looks for a CoT 
+# block enclosed in <think>...</think> tags, which is a common format for reasoning in Qwen3.
+#  This allows us to separate the final judgment (label) from the reasoning process (thinking)
+#  if both are present in the output.
+# ----------------------------------------------------------------------------
 def extract_thinking(text: str) -> Optional[str]:
     m = re.search(r"<think>(.*?)</think>", text, re.DOTALL)
     return m.group(1).strip() if m else None
 
-
 # ---------------------------------------------------------------------------
-# Async inference client
+# Async Inference Client
+#
+# The SwissAIClient is an asynchronous HTTP client that communicates with an
+# OpenAI-compatible LLM endpoint (Swiss AI Stack). It handles the full lifecycle
+# of a judge call: sending prompts to the model, receiving raw text responses,
+# and parsing them into structured JudgeResponse objects.
+#
+# Key features:
+# - Concurrency control: a semaphore limits the number of simultaneous API
+#   requests (default 8), preventing the server from being overwhelmed.
+# - Retry with exponential back-off: if the server returns a 429 (rate limit)
+#   or a transient error, the client automatically retries with increasing wait
+#   times (2s, 4s, 8s, ...) up to a configurable maximum.
+# - Label extraction: each raw model output is parsed to extract the final
+#   A/B/C judgment label and, if present, the chain-of-thought reasoning block.
+# - Batch processing: the batch_judge method dispatches all calls in parallel
+#   using asyncio.gather, making it efficient to evaluate hundreds of prompt
+#   pairs across multiple experimental conditions.
 # ---------------------------------------------------------------------------
 
 class SwissAIClient:
@@ -127,6 +215,11 @@ class SwissAIClient:
 
     # ------------------------------------------------------------------
     # Core request
+    # This method implements the core logic for making a POST request 
+    # to the API endpoint, with built-in retry logic that handles rate 
+    # limiting (HTTP 429) and other transient errors. It uses exponential 
+    # back-off for retries, and logs warnings when retries are triggered. 
+    # If all retries are exhausted, it raises an exception.
     # ------------------------------------------------------------------
 
     async def _post(self, messages: list[dict]) -> dict:
@@ -162,6 +255,11 @@ class SwissAIClient:
 
     # ------------------------------------------------------------------
     # Public judge call
+    # The judge method is the main public interface for calling the model as an LLM judge.
+    # It takes the system prompt, user prompt, and metadata (prompt_id, experiment_id
+    # condition) as input, constructs the messages for the API call, and then calls the _post method.
+    # It also measures the latency of the API call, and uses the extract_label and extract_thinking 
+    # functions to parse the model's output. The result is returned as a JudgeResponse object,
     # ------------------------------------------------------------------
 
     async def judge(
@@ -221,6 +319,8 @@ class SwissAIClient:
 
     # ------------------------------------------------------------------
     # Batch helper
+    # The batch_judge method is a helper that allows calling the judge method on a batch of inputs concurrently.
+    # It takes a list of dictionaries (each containing the kwargs for a judge call), and returns a list of JudgeResponse objects in the same order. It uses asyncio.gather to run the
     # ------------------------------------------------------------------
 
     async def batch_judge(self, calls: list[dict]) -> list[JudgeResponse]:

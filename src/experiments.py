@@ -17,81 +17,105 @@ Experiments
 All experiments share the same data (list[PairRecord]) and client.
 """
 
+# Standard library imports
 import asyncio
 import json
 import logging
 from pathlib import Path
 from typing import Optional
-
 from src.inference_client import SwissAIClient, InferenceConfig, JudgeResponse
 from src.templates import build_prompt, TEMPLATES, CRITERIA
 from src.dataset import PairRecord
-
 logger = logging.getLogger(__name__)
-
-
 # ---------------------------------------------------------------------------
-# Helper: save results
+# Helper: function to save results to JSONL 
 # ---------------------------------------------------------------------------
-
 def save_jsonl(results: list[JudgeResponse], path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with open(path, "w") as f:
         for r in results:
             f.write(json.dumps(r.to_dict()) + "\n")
     logger.info("Saved %d results → %s", len(results), path)
-
-
 # ---------------------------------------------------------------------------
 # Experiment B1: Position Bias
+# For each pair, the model judges twice:
+#   - Once in the original order (A first, B second) → condition "AB"
+#   - Once in the flipped order (B first, A second) → condition "BA
+# Finally, it saves the results for analysis (see metrics.py)
 # ---------------------------------------------------------------------------
-
 async def run_position_bias(
     client: SwissAIClient,
     pairs: list[PairRecord],
     template_id: str = "expert_rater",
-    criterion: str = "helpful",
+    criterion: str = "overall",
     output_dir: Path = Path("results/position_bias"),
 ) -> list[JudgeResponse]:
     """
-    For each pair, judge both orders:
-      - condition "AB": A=chosen, B=rejected
-      - condition "BA": A=rejected, B=chosen  (flipped)
+    Experiment B1: Position Bias.
 
-    Consistency = fraction where the model prefers the same response
-                  regardless of order (accounting for label flip).
+    For each pair, the model judges twice:
+      - Once in the original order (A first, B second) → condition "AB"
+      - Once in the flipped order (B first, A second) → condition "BA"
+
+    If the model is consistent, flipping the order should flip the label.
     """
-    calls = []
+
+    # Step 1: Build all judge calls (2 per pair: original + flipped)
+    all_judge_calls = []
+
     for pair in pairs:
-        # Original order
-        sys_p, usr_p = build_prompt(template_id, pair.prompt,
-                                     pair.response_a, pair.response_b, criterion)
-        calls.append(dict(
-            system_prompt=sys_p, user_prompt=usr_p,
-            prompt_id=pair.prompt_id, experiment_id="position_bias",
+
+        ## Original order: response A first, response B second
+        # build the system and user prompts using the specified template and criterion
+        original_system_prompt, original_user_prompt = build_prompt(
+            template_id, pair.prompt, pair.response_a, pair.response_b, criterion
+        )
+        # add the judge call to the list of all judge calls
+        all_judge_calls.append(dict(
+            system_prompt=original_system_prompt,
+            user_prompt=original_user_prompt,
+            prompt_id=pair.prompt_id,
+            experiment_id="position_bias",
             condition="AB",
         ))
 
-        # Flipped order
-        flipped = pair.flipped()
-        sys_p2, usr_p2 = build_prompt(template_id, flipped.prompt,
-                                       flipped.response_a, flipped.response_b, criterion)
-        calls.append(dict(
-            system_prompt=sys_p2, user_prompt=usr_p2,
-            prompt_id=pair.prompt_id, experiment_id="position_bias",
+        ## Flipped order: response B first, response A second
+        flipped_pair = pair.flipped()
+        flipped_system_prompt, flipped_user_prompt = build_prompt(
+            template_id, flipped_pair.prompt,
+            flipped_pair.response_a, flipped_pair.response_b, criterion
+        )
+        all_judge_calls.append(dict(
+            system_prompt=flipped_system_prompt,
+            user_prompt=flipped_user_prompt,
+            prompt_id=pair.prompt_id,
+            experiment_id="position_bias",
             condition="BA",
         ))
 
-    logger.info("[B1] Dispatching %d calls (position bias, template=%s)", len(calls), template_id)
-    results = await client.batch_judge(calls)
+    # Step 2: Send all calls to the model in parallel
+    logger.info("[B1] Dispatching %d calls (position bias, template=%s)", len(all_judge_calls), template_id)
+    results = await client.batch_judge(all_judge_calls)
+
+    # Step 3: Save results to JSONL
     save_jsonl(results, output_dir / f"{template_id}_{criterion}.jsonl")
     return results
 
 
-# ---------------------------------------------------------------------------
-# Experiment B2: Template Sensitivity
-# ---------------------------------------------------------------------------
 
+
+
+
+
+
+
+
+
+
+## TODO
+# ---------------------------------------------------------------------------
+# Experiment B2: Template Sensitivity TODO
+# ---------------------------------------------------------------------------
 TEMPLATE_SENSITIVITY_VARIANTS = [
     "expert_rater",
     "llm_judge",
@@ -99,12 +123,11 @@ TEMPLATE_SENSITIVITY_VARIANTS = [
     "academic",
     "minimal",
 ]
-
 async def run_template_sensitivity(
     client: SwissAIClient,
     pairs: list[PairRecord],
     template_ids: Optional[list[str]] = None,
-    criterion: str = "helpful",
+    criterion: str = "overall",
     output_dir: Path = Path("results/template_sensitivity"),
 ) -> list[JudgeResponse]:
     """
@@ -129,23 +152,19 @@ async def run_template_sensitivity(
     results = await client.batch_judge(calls)
     save_jsonl(results, output_dir / f"criterion_{criterion}.jsonl")
     return results
-
-
 # ---------------------------------------------------------------------------
-# Experiment B3: Reasoning Depth
+# Experiment B3: Reasoning Depth TODO
 # ---------------------------------------------------------------------------
-
 REASONING_CONDITIONS = [
     {"label": "no_reasoning",          "template": "expert_rater"},
     {"label": "reason_then_judge",     "template": "reason_then_judge"},
     {"label": "structured_reasoning",  "template": "structured_reasoning"},
 ]
-
 async def run_reasoning_depth(
     client: SwissAIClient,
     pairs: list[PairRecord],
     conditions: Optional[list[dict]] = None,
-    criterion: str = "helpful",
+    criterion: str = "overall",
     output_dir: Path = Path("results/reasoning_depth"),
 ) -> list[JudgeResponse]:
     """
@@ -173,19 +192,15 @@ async def run_reasoning_depth(
     results = await client.batch_judge(calls)
     save_jsonl(results, output_dir / f"criterion_{criterion}.jsonl")
     return results
-
-
 # ---------------------------------------------------------------------------
-# Experiment B4: Input / Wording Sensitivity
+# Experiment B4: Input / Wording Sensitivity TODO
 # ---------------------------------------------------------------------------
-
 INPUT_SENSITIVITY_VARIANTS = [
     "expert_rater",
     "expert_rater_alt1",
     "expert_rater_alt2",
     "expert_rater_alt3",
 ]
-
 async def run_input_sensitivity(
     client: SwissAIClient,
     pairs: list[PairRecord],

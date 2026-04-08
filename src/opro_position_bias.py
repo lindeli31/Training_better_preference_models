@@ -17,16 +17,15 @@ Pipeline:
   5. Save everything to results/opro/opro_results.json
 """
 
+# Standard library imports
 import json
 import logging
 import random
 from dataclasses import dataclass
 from pathlib import Path
-
 from src.dataset import PairRecord
 from src.inference_client import SwissAIClient
 from src.templates import _build_user_prompt, _OUTPUT_INSTRUCTION
-
 logger = logging.getLogger(__name__)
 
 
@@ -38,7 +37,7 @@ async def evaluate_position_bias(
     client: SwissAIClient,
     pairs: list[PairRecord],
     system_prompt: str,
-    criterion: str = "more helpful to the user",
+    criterion: str = "better overall, considering helpfulness, correctness, and coherence",
 ) -> float:
     """
     Test how consistent a system prompt is when response order is flipped.

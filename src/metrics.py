@@ -9,33 +9,30 @@ B1 Position Bias
   - position_consistency  : % of pairs where label is consistent across AB / BA
   - position_bias_rate    : % where AB label ≠ (flipped BA label)
   - preferred_position    : overall fraction preferring "A" (positional preference)
-
-B2 Template Sensitivity
-  - pairwise_agreement    : Fleiss' kappa / pairwise % agreement across templates
-  - label_distribution    : per-template A/B/C rates
-  - most_volatile_pairs   : pairs with highest disagreement across templates
-
-B3 Thinking Budget
-  - accuracy_vs_gold      : % agreement with gold label per condition
-  - delta_accuracy        : improvement of thinking over no-thinking
-  - consistency_vs_no_reasoning : % agreement with the no-thinking condition
-
-B4 Input Sensitivity
-  - pairwise_agreement across minor wording variants
-  - criterion_drift       : how much the label changes when criterion changes
+B2 Agreement across conditions
+  - Todo better
+B3 Thinking Budget – accuracy against gold
+  - Todo better
+B4 Agreement across templates (if applicable)
+- Todo better
 """
 
+# Standard library imports
 import json
 from collections import defaultdict
 from pathlib import Path
 from typing import Optional
 import numpy as np
-
-
 # ---------------------------------------------------------------------------
-# Loading
+# Loading. This funnction loads the results from a JSONL file, where each line 
+# is a JSON object representing a single judgment. The expected format of each line is:
+# {
+#   "prompt_id": str,
+#   "condition": str,  # e.g., "AB", "BA", "template1", "template2", "no_reasoning", etc.
+#   "label": str,  # "A", "B", "C", or None if no valid label was extracted
+#   ... (other metadata fields)
+# }
 # ---------------------------------------------------------------------------
-
 def load_results(path: Path) -> list[dict]:
     results = []
     with open(path) as f:
@@ -43,69 +40,80 @@ def load_results(path: Path) -> list[dict]:
             results.append(json.loads(line.strip()))
     return results
 
-
 # ---------------------------------------------------------------------------
 # B1: Position Bias
 # ---------------------------------------------------------------------------
 
 def compute_position_bias(results: list[dict]) -> dict:
     """
-    Expects results to contain both 'AB' and 'BA' conditions for the same prompt_id.
+    Measures if the model prefers responses based on their position (A or B)
+    rather than their actual quality.
+
+    Each prompt is judged twice: once in original order (AB) and once flipped (BA).
+    If the model is consistent, flipping the order should flip the label
+    (e.g. AB says "A" → BA should say "B", because the same response moved).
     """
-    ab_labels: dict[str, str] = {}
-    ba_labels: dict[str, str] = {}
+    # Step 1: Separate results into original order (AB) and flipped order (BA)
+    original_order_labels = {}   # prompt_id -> label when shown in AB order
+    flipped_order_labels = {}    # prompt_id -> label when shown in BA order
 
-    for r in results:
-        if r["label"] is None:
+    for result in results:
+        if result["label"] is None:
             continue
-        pid = r["prompt_id"]
-        if r["condition"] == "AB":
-            ab_labels[pid] = r["label"]
-        elif r["condition"] == "BA":
-            ba_labels[pid] = r["label"]
+        prompt_id = result["prompt_id"]
+        if result["condition"] == "AB":
+            original_order_labels[prompt_id] = result["label"]
+        elif result["condition"] == "BA":
+            flipped_order_labels[prompt_id] = result["label"]
 
-    # For a consistent pair: if AB says "A", BA should say "B" (same underlying response)
+    # Step 2: For each prompt judged in both orders, check consistency
     flip_map = {"A": "B", "B": "A", "C": "C"}
-    both = set(ab_labels) & set(ba_labels)
+    prompts_with_both_orders = set(original_order_labels) & set(flipped_order_labels)
 
-    consistent = 0
-    bias_toward_a = 0
-    bias_toward_b = 0
-    ties = 0
+    consistent_count = 0
+    always_picks_first_count = 0    # model always picks position A
+    always_picks_second_count = 0   # model always picks position B
+    tie_inconsistency_count = 0
 
-    for pid in both:
-        ab = ab_labels[pid]
-        ba = ba_labels[pid]
-        expected_ba = flip_map[ab]
+    for prompt_id in prompts_with_both_orders:
+        original_label = original_order_labels[prompt_id]
+        flipped_label = flipped_order_labels[prompt_id]
+        expected_flipped_label = flip_map[original_label]
 
-        if ba == expected_ba:
-            consistent += 1
+        if flipped_label == expected_flipped_label:
+            # Model is consistent: picked the same response regardless of position
+            consistent_count += 1
+        elif original_label == "A" and flipped_label == "A":
+            # Both times picked first position → bias toward position A
+            always_picks_first_count += 1
+        elif original_label == "B" and flipped_label == "B":
+            # Both times picked second position → bias toward position B
+            always_picks_second_count += 1
         else:
-            # Both say "A" means model prefers whichever is listed first
-            if ab == "A" and ba == "A":
-                bias_toward_a += 1
-            elif ab == "B" and ba == "B":
-                bias_toward_b += 1
-            elif ab == "C" or ba == "C":
-                ties += 1
+            # One of them is a tie → inconsistency involving ties
+            tie_inconsistency_count += 1
 
-    n = len(both)
+    # Step 3: Compute metrics
+    total_pairs = len(prompts_with_both_orders)
+
     return {
-        "n_pairs_evaluated": n,
-        "position_consistency": round(consistent / n, 4) if n else 0,
-        "position_bias_rate": round(1 - consistent / n, 4) if n else 0,
-        "bias_toward_first_position": round(bias_toward_a / n, 4) if n else 0,
-        "bias_toward_second_position": round(bias_toward_b / n, 4) if n else 0,
-        "tie_inconsistency_rate": round(ties / n, 4) if n else 0,
-        # Overall positional preference (A-preference in AB condition)
+        "n_pairs_evaluated": total_pairs,
+        "position_consistency": round(consistent_count / total_pairs, 4) if total_pairs else 0,
+        "position_bias_rate": round(1 - consistent_count / total_pairs, 4) if total_pairs else 0,
+        "bias_toward_first_position": round(always_picks_first_count / total_pairs, 4) if total_pairs else 0,
+        "bias_toward_second_position": round(always_picks_second_count / total_pairs, 4) if total_pairs else 0,
+        "tie_inconsistency_rate": round(tie_inconsistency_count / total_pairs, 4) if total_pairs else 0,
         "pct_preferring_A_in_AB": round(
-            sum(1 for v in ab_labels.values() if v == "A") / len(ab_labels), 4
-        ) if ab_labels else 0,
+            sum(1 for v in original_order_labels.values() if v == "A") / len(original_order_labels), 4
+        ) if original_order_labels else 0,
     }
 
 
+
+# TODO:....
+
 # ---------------------------------------------------------------------------
-# B2 / B4: Agreement across conditions
+# B2 / B4: Agreement across conditions. To do better.
 # ---------------------------------------------------------------------------
 
 def compute_pairwise_agreement(
@@ -165,7 +173,7 @@ def compute_pairwise_agreement(
 
 
 # ---------------------------------------------------------------------------
-# B3: Thinking Budget – accuracy against gold
+# B3: Thinking Budget – accuracy against gold. To do better
 # ---------------------------------------------------------------------------
 
 def compute_thinking_accuracy(
