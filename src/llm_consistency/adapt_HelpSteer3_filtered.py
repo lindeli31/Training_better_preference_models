@@ -7,7 +7,7 @@ def _filter_record(example: dict) -> bool:
     context_str = "".join(turn["content"] for turn in example["context"])
     total_length = len(context_str) + len(example["response1"]) + len(example["response2"])
 
-    if total_length > 400: return False
+    if total_length > 1000: return False
 
     return True
 
@@ -15,7 +15,7 @@ def _filter_record(example: dict) -> bool:
 def _process_record(example: dict):
     context = ""
     for message in example["context"]:
-        context += f"Message from: {message["role"]}\n"
+        context += f"Message from: {message['role']}\n"
         context += message["content"]
         context += f"\n\n"
     shards: List[str] = [example["response1"], example["response2"]]

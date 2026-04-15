@@ -1,6 +1,6 @@
 import dspy
 
-from llm_consistency.ConsistencySignature import ConsistencySignature
+from src.llm_consistency.ConsistencySignature import ConsistencySignature
 
 
 class ConsistentQA(dspy.Module):
