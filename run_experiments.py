@@ -46,7 +46,7 @@ import time
 from dotenv import load_dotenv
 from pathlib import Path
 from src.inference_client import InferenceConfig, SwissAIClient
-from src.dataset import load_dataset_pairs
+from src.dataset import load_dataset_pairs, DIFFICULTY_LEVELS
 from src.experiments import (
     run_position_bias,
     run_template_sensitivity,
@@ -104,6 +104,9 @@ def parse_args():
     p.add_argument("--concurrency", type=int, default=8,
                    help="Max concurrent requests to the API")
     p.add_argument("--seed", type=int, default=42, help="Random seed for dataset sampling")
+    p.add_argument("--difficulty", default=None, choices=DIFFICULTY_LEVELS,
+                   help="Filter pairs by difficulty (easy / medium / hard). "
+                        "Requires the full dataset variant (helpsteer2_{split}_full.json).")
     return p.parse_args()
 
 # ---------------------------------------------------------------------------
@@ -147,12 +150,13 @@ async def main(args):
     # Also build a dictionary of gold labels (prompt_id -> "A"/"B"/"C")
     # needed later for accuracy computation in experiment B3.
     # ------------------------------------------------------------------
-    logger.info("Loading dataset: %s | split=%s | n=%d | seed=%d",
-                args.dataset, args.split, args.n_pairs, args.seed)
+    logger.info("Loading dataset: %s | split=%s | n=%d | seed=%d | difficulty=%s",
+                args.dataset, args.split, args.n_pairs, args.seed, args.difficulty or "all")
     pairs = load_dataset_pairs(
         split=args.split,
         n=args.n_pairs,
         seed=args.seed,
+        difficulty=args.difficulty,
     )
     logger.info("Dataset ready: %d pairs", len(pairs))
     # Map each prompt_id to its gold label

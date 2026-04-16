@@ -21,7 +21,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from src.inference_client import extract_label, extract_thinking, JudgeResponse
 from src.templates import build_prompt, TEMPLATES, CRITERIA
-from src.dataset import PairRecord
+from src.dataset import PairRecord, DIFFICULTY_LEVELS
 from src.metrics import compute_position_bias, compute_pairwise_agreement, compute_thinking_accuracy
 
 
@@ -93,6 +93,18 @@ def test_pair_record_flip():
 def test_pair_record_flip_tie():
     pair = PairRecord("p2", "Q?", "Ans1", "Ans2", "C")
     assert pair.flipped().gold_label == "C"
+
+def test_pair_record_difficulty_field():
+    pair = PairRecord("p1", "Q?", "A", "B", "A", difficulty="hard")
+    assert pair.difficulty == "hard"
+    assert pair.flipped().difficulty == "hard"
+
+def test_pair_record_difficulty_optional():
+    pair = PairRecord("p1", "Q?", "A", "B", "A")
+    assert pair.difficulty is None
+
+def test_difficulty_levels_constant():
+    assert set(DIFFICULTY_LEVELS) == {"easy", "medium", "hard"}
 
 
 # ===========================================================================
@@ -167,6 +179,9 @@ if __name__ == "__main__":
         test_unknown_template_raises,
         test_pair_record_flip,
         test_pair_record_flip_tie,
+        test_pair_record_difficulty_field,
+        test_pair_record_difficulty_optional,
+        test_difficulty_levels_constant,
         test_compute_position_bias_perfect,
         test_compute_position_bias_full_bias,
         test_compute_pairwise_agreement_perfect,

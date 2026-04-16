@@ -107,9 +107,12 @@ python3 run_experiments.py \
   --split validation \
   --n-pairs 200 \
   --criterion helpful \
+  --difficulty hard \
   --concurrency 8 \
   --output-dir results/run_001
 ```
+
+`--difficulty` filters pairs by score gap before sampling (`easy` gap > 1.0, `medium` gap > 0.33, `hard` gap ≤ 0.33). Omit to use all pairs. Requires the full dataset variant (`helpsteer2_{split}_full.json`).
 
 ### Run tests (no API key required)
 

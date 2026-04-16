@@ -83,11 +83,12 @@ HuggingFace datasets
 - **User prompt format**: `[User Prompt]\n{prompt}\n\n[Response A]\n{a}\n\n[Response B]\n{b}\n\nWhich response is {criterion}?`
 
 ### `src/dataset.py`
-- **PairRecord** dataclass: prompt_id, prompt, response_a, response_b, gold_label
-  - `flipped()` returns new PairRecord with A↔B swapped, gold_label adjusted (A↔B, C→C)
-- **HelpSteer2 loader**: scored dataset (not pairwise). Groups by prompt, takes best/worst by mean(helpfulness + correctness + coherence)/3. Gold label derived from score comparison.
+- **`DIFFICULTY_LEVELS`**: module-level constant `("easy", "medium", "hard")` — single source of truth used by both the loader and the CLI.
+- **PairRecord** dataclass: prompt_id, prompt, response_a, response_b, gold_label, difficulty (optional — `None` when loaded from the standard dataset, `"easy"/"medium"/"hard"` when loaded from the full variant)
+  - `flipped()` returns new PairRecord with A↔B swapped, gold_label adjusted (A↔B, C→C), difficulty propagated unchanged
+- **HelpSteer2 loader**: scored dataset (not pairwise). Groups by prompt, takes best/worst by mean(helpfulness + correctness + coherence)/3. Gold label derived from score comparison. Full variant adds per-response scores, score_gap, lengths, and difficulty tag (easy: gap > 1.0, medium: gap > 0.33, hard: gap ≤ 0.33).
 - **HH-RLHF loader**: pairwise dataset. Extracts last assistant turn from chosen/rejected. Gold label always "A" (chosen is preferred).
-- **load_dataset_pairs()**: loads all, shuffles with seed, truncates to n pairs
+- **load_dataset_pairs()**: loads all, shuffles with seed, truncates to n pairs. Accepts optional `difficulty` filter — when set, automatically loads the `_full` JSON variant and filters before sampling.
 
 ### `src/experiments.py`
 - **B1 `run_position_bias()`**: For each pair, creates two calls — condition "AB" (original order) and "BA" (flipped order via `pair.flipped()`). The `prompt_id` stays the same for both so metrics can match them.
@@ -109,7 +110,7 @@ HuggingFace datasets
 - CLI entry point with argparse
 - Loads API key from `SWISSAI_API_KEY` env var
 - Runs selected experiments (or all), computes metrics, prints summaries
-- Key CLI flags: `--experiments`, `--n-pairs`, `--dataset`, `--split`, `--criterion`, `--template`, `--thinking-budget`, `--concurrency`, `--output-dir`, `--seed`
+- Key CLI flags: `--experiments`, `--n-pairs`, `--dataset`, `--split`, `--criterion`, `--template`, `--difficulty`, `--concurrency`, `--output-dir`, `--seed`
 
 ### `tests/test_pipeline.py`
 - 15 unit tests, no API calls required
@@ -190,7 +191,7 @@ python3 tests/test_pipeline.py
 ## Project Status
 
 - [x] Core pipeline implemented (inference client, templates, dataset loaders, experiments, metrics)
-- [x] Unit tests (15/15 passing)
+- [x] Unit tests (18/18 passing)
 - [x] Architecture document (architecture.pdf)
 - [x] README
 - [x] Bug fixes and code review

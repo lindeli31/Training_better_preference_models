@@ -37,13 +37,18 @@ DATA_DIR = Path("data")
 # - gold_label: "A", "B", or "C" (if A is better, B is better, or tie)
 # ---------------------------------------------------------------------------
 
+DIFFICULTY_LEVELS = ("easy", "medium", "hard")
+
+
 class PairRecord:
-    def __init__(self, prompt_id: str, prompt: str, response_a: str, response_b: str, gold_label: str):
+    def __init__(self, prompt_id: str, prompt: str, response_a: str, response_b: str,
+                 gold_label: str, difficulty: Optional[str] = None, **_kwargs):
         self.prompt_id = prompt_id
         self.prompt = prompt
         self.response_a = response_a
         self.response_b = response_b
         self.gold_label = gold_label
+        self.difficulty = difficulty  # "easy", "medium", "hard" — only set when loaded from full dataset
 
     def flipped(self) -> "PairRecord":
         flipped_label = {"A": "B", "B": "A", "C": "C"}[self.gold_label]
@@ -53,6 +58,7 @@ class PairRecord:
             response_a=self.response_b,
             response_b=self.response_a,
             gold_label=flipped_label,
+            difficulty=self.difficulty,
         )
 
     def __repr__(self):
@@ -182,12 +188,27 @@ def load_dataset_pairs(
     split: str = "validation",
     n: Optional[int] = 200,
     seed: int = 42,
+    difficulty: Optional[str] = None,
 ) -> list[PairRecord]:
-    """Load pairs from local JSON file in data/."""
-    path = DATA_DIR / f"helpsteer2_{split}.json"
+    """Load pairs from local JSON file in data/.
+
+    If difficulty is given ("easy", "medium", "hard"), loads the full dataset
+    variant (which carries the difficulty tag) and filters before sampling.
+    """
+    if difficulty is not None and difficulty not in DIFFICULTY_LEVELS:
+        raise ValueError(f"difficulty must be one of {DIFFICULTY_LEVELS}, got {difficulty!r}")
+
+    use_full = difficulty is not None
+    suffix = "_full" if use_full else ""
+    path = DATA_DIR / f"helpsteer2_{split}{suffix}.json"
+
     with open(path, "r", encoding="utf-8") as f:
         data = json.load(f)
+
     pairs = [PairRecord(**row) for row in data]
+
+    if difficulty is not None:
+        pairs = [p for p in pairs if p.difficulty == difficulty]
 
     random.seed(seed)
     random.shuffle(pairs)
