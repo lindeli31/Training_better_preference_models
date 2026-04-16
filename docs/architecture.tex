@@ -213,13 +213,16 @@ pipeline operates in two phases:
 \paragraph{Download phase.}
 The \texttt{download\_dataset()} function fetches HelpSteer2 from HuggingFace,
 groups responses by prompt, and constructs \emph{all pairwise combinations}
-within each group. For each pair, a composite quality score is computed as
+within each group. For each response, a composite quality score is computed as
 \[
   s = \frac{\text{helpfulness} + \text{correctness} + \text{coherence}}{3}.
 \]
-The higher-scoring response is placed as~A (gold label~=~``A''); pairs with
-equal scores receive gold label~``C''. Results are saved locally as both
-JSON and CSV in the \texttt{data/} directory.
+Within each pair, the higher-scoring response is always placed as~A and the
+lower-scoring one as~B. Consequently, the gold label is either ``A''
+(A~is better) or ``C'' (tied scores) --- it is \textbf{never~``B''} at
+download time. The \texttt{flipped()} method on \texttt{PairRecord} swaps
+A~and~B at experiment time to test position effects (see Section~\ref{sec:b1}).
+Results are saved locally as both JSON and CSV in the \texttt{data/} directory.
 
 Two versions are produced per split:
 \begin{itemize}[nosep]

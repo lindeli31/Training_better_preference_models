@@ -8,7 +8,6 @@ Key metrics per experiment
 B1 Position Bias
   - position_consistency  : % of pairs where label is consistent across AB / BA
   - position_bias_rate    : % where AB label ≠ (flipped BA label)
-  - preferred_position    : overall fraction preferring "A" (positional preference)
 B2 Agreement across conditions
   - Todo better
 B3 Thinking Budget – accuracy against gold
@@ -103,9 +102,7 @@ def compute_position_bias(results: list[dict]) -> dict:
         "bias_toward_first_position": round(always_picks_first_count / total_pairs, 4) if total_pairs else 0,
         "bias_toward_second_position": round(always_picks_second_count / total_pairs, 4) if total_pairs else 0,
         "tie_inconsistency_rate": round(tie_inconsistency_count / total_pairs, 4) if total_pairs else 0,
-        "pct_preferring_A_in_AB": round(
-            sum(1 for v in original_order_labels.values() if v == "A") / len(original_order_labels), 4
-        ) if original_order_labels else 0,
+        
     }
 
 

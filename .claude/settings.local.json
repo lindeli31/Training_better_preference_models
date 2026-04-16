@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3:*)",
+      "Bash(ls -la /home/deli/ETH_projects/Training_better_preference_models/architecture.*)",
+      "Bash(pdflatex -interaction=nonstopmode architecture.tex)",
+      "Bash(git -C /home/deli/ETH_projects/Training_better_preference_models add PROJECT.md)",
+      "Bash(git -C:*)",
+      "Bash(git mv:*)",
+      "Bash(python:*)",
+      "Bash(git add:*)"
+    ]
+  }
+}
