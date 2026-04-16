@@ -128,7 +128,19 @@ python3 -m pytest tests/test_pipeline.py -v
 
 Every pair is judged twice: once as (A=chosen, B=rejected) and once flipped (A=rejected, B=chosen). A consistent judge should flip its label accordingly.
 
-**Key metric**: `position_consistency` — fraction of pairs where label is stable across both orderings. `1.0` = no bias.
+**Key metrics**:
+
+| Metric | Description |
+|---|---|
+| `position_consistency` | Fraction of pairs where the verdict correctly flipped with order. `1.0` = no bias |
+| `position_bias_rate` | Fraction where it did not flip |
+| `bias_toward_first_position` | Fraction of inconsistent pairs where the judge always picked position A |
+| `bias_toward_second_position` | Same but always picked position B |
+| `tie_inconsistency_rate` | Fraction where a tie in one condition became a non-tie in the other |
+| `accuracy.ab_accuracy` | Fraction correct when the better response is in position A |
+| `accuracy.ba_accuracy` | Fraction correct when the better response is in position B |
+| `accuracy.overall_accuracy` | Accuracy pooled across both conditions |
+| `accuracy.accuracy_gap` | AB accuracy − BA accuracy. A large positive gap means the judge is right in AB partly due to position preference, not quality recognition |
 
 **Result file**: `results/position_bias/<template>_<criterion>.jsonl`
 

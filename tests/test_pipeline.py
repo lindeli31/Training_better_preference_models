@@ -132,6 +132,28 @@ def test_compute_position_bias_full_bias():
     assert m["position_bias_rate"] == 1.0
     assert m["bias_toward_first_position"] == 1.0
 
+def test_compute_position_bias_accuracy():
+    # Gold: p1 -> A (better response is A), p2 -> A
+    gold = {"p1": "A", "p2": "A"}
+    results = [
+        {"prompt_id": "p1", "condition": "AB", "label": "A"},  # correct
+        {"prompt_id": "p1", "condition": "BA", "label": "B"},  # correct (gold flips to B in BA)
+        {"prompt_id": "p2", "condition": "AB", "label": "A"},  # correct
+        {"prompt_id": "p2", "condition": "BA", "label": "A"},  # wrong (should be B)
+    ]
+    m = compute_position_bias(results, gold_labels=gold)
+    assert m["accuracy"]["ab_accuracy"] == 1.0
+    assert m["accuracy"]["ba_accuracy"] == 0.5
+    assert m["accuracy"]["accuracy_gap"] == 0.5
+
+def test_compute_position_bias_no_gold_no_accuracy():
+    results = [
+        {"prompt_id": "p1", "condition": "AB", "label": "A"},
+        {"prompt_id": "p1", "condition": "BA", "label": "B"},
+    ]
+    m = compute_position_bias(results)
+    assert "accuracy" not in m
+
 def test_compute_pairwise_agreement_perfect():
     results = [
         {"prompt_id": "p1", "condition": "tmpl1", "label": "A"},
@@ -184,6 +206,8 @@ if __name__ == "__main__":
         test_difficulty_levels_constant,
         test_compute_position_bias_perfect,
         test_compute_position_bias_full_bias,
+        test_compute_position_bias_accuracy,
+        test_compute_position_bias_no_gold_no_accuracy,
         test_compute_pairwise_agreement_perfect,
         test_compute_pairwise_agreement_zero,
         test_compute_thinking_accuracy,

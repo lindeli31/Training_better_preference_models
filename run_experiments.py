@@ -190,7 +190,8 @@ async def main(args):
                 output_dir=args.output_dir / "position_bias",
             )
             position_bias_metrics = compute_position_bias(
-                [r.to_dict() for r in position_bias_results]
+                [r.to_dict() for r in position_bias_results],
+                gold_labels=gold_labels,
             )
             print_summary("B1: Position Bias", position_bias_metrics)
 

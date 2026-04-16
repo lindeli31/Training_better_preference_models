@@ -6,8 +6,12 @@ Compute and display metrics from experiment results.
 Key metrics per experiment
 --------------------------
 B1 Position Bias
-  - position_consistency  : % of pairs where label is consistent across AB / BA
-  - position_bias_rate    : % where AB label ≠ (flipped BA label)
+  - position_consistency      : % of pairs where label is consistent across AB / BA
+  - position_bias_rate        : % where AB label ≠ (flipped BA label)
+  - bias_toward_first/second  : breakdown of inconsistencies by direction
+  - accuracy.ab_accuracy      : % correct when better response is in position A
+  - accuracy.ba_accuracy      : % correct when better response is in position B
+  - accuracy.accuracy_gap     : ab_accuracy − ba_accuracy (requires gold_labels)
 B2 Agreement across conditions
   - Todo better
 B3 Thinking Budget – accuracy against gold
@@ -43,7 +47,10 @@ def load_results(path: Path) -> list[dict]:
 # B1: Position Bias
 # ---------------------------------------------------------------------------
 
-def compute_position_bias(results: list[dict]) -> dict:
+def compute_position_bias(
+    results: list[dict],
+    gold_labels: Optional[dict[str, str]] = None,  # prompt_id -> "A"/"B"/"C"
+) -> dict:
     """
     Measures if the model prefers responses based on their position (A or B)
     rather than their actual quality.
@@ -51,6 +58,11 @@ def compute_position_bias(results: list[dict]) -> dict:
     Each prompt is judged twice: once in original order (AB) and once flipped (BA).
     If the model is consistent, flipping the order should flip the label
     (e.g. AB says "A" → BA should say "B", because the same response moved).
+
+    If gold_labels is provided, also computes per-condition accuracy and the
+    accuracy gap (AB accuracy - BA accuracy). A large gap means the judge is
+    getting answers right in AB partly because it prefers position A, not because
+    it recognises the better response.
     """
     # Step 1: Separate results into original order (AB) and flipped order (BA)
     original_order_labels = {}   # prompt_id -> label when shown in AB order
@@ -80,30 +92,59 @@ def compute_position_bias(results: list[dict]) -> dict:
         expected_flipped_label = flip_map[original_label]
 
         if flipped_label == expected_flipped_label:
-            # Model is consistent: picked the same response regardless of position
             consistent_count += 1
         elif original_label == "A" and flipped_label == "A":
-            # Both times picked first position → bias toward position A
             always_picks_first_count += 1
         elif original_label == "B" and flipped_label == "B":
-            # Both times picked second position → bias toward position B
             always_picks_second_count += 1
         else:
-            # One of them is a tie → inconsistency involving ties
             tie_inconsistency_count += 1
 
-    # Step 3: Compute metrics
+    # Step 3: Compute consistency metrics
     total_pairs = len(prompts_with_both_orders)
 
-    return {
+    metrics = {
         "n_pairs_evaluated": total_pairs,
         "position_consistency": round(consistent_count / total_pairs, 4) if total_pairs else 0,
         "position_bias_rate": round(1 - consistent_count / total_pairs, 4) if total_pairs else 0,
         "bias_toward_first_position": round(always_picks_first_count / total_pairs, 4) if total_pairs else 0,
         "bias_toward_second_position": round(always_picks_second_count / total_pairs, 4) if total_pairs else 0,
         "tie_inconsistency_rate": round(tie_inconsistency_count / total_pairs, 4) if total_pairs else 0,
-        
     }
+
+    # Step 4: Accuracy against gold labels (optional)
+    if gold_labels is not None:
+        ab_correct, ab_total = 0, 0
+        ba_correct, ba_total = 0, 0
+
+        for prompt_id, ab_label in original_order_labels.items():
+            gold = gold_labels.get(prompt_id)
+            if gold is None:
+                continue
+            ab_correct += int(ab_label == gold)
+            ab_total += 1
+
+        for prompt_id, ba_label in flipped_order_labels.items():
+            gold = gold_labels.get(prompt_id)
+            if gold is None:
+                continue
+            # Gold label is defined for the original order (better response = A).
+            # In BA the responses are swapped, so the correct verdict is flipped.
+            ba_correct += int(ba_label == flip_map[gold])
+            ba_total += 1
+
+        ab_acc = round(ab_correct / ab_total, 4) if ab_total else 0
+        ba_acc = round(ba_correct / ba_total, 4) if ba_total else 0
+
+        metrics["accuracy"] = {
+            "ab_accuracy": ab_acc,
+            "ba_accuracy": ba_acc,
+            "overall_accuracy": round((ab_correct + ba_correct) / (ab_total + ba_total), 4)
+                                if (ab_total + ba_total) else 0,
+            "accuracy_gap": round(ab_acc - ba_acc, 4),
+        }
+
+    return metrics
 
 
 

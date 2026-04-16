@@ -101,7 +101,7 @@ HuggingFace datasets
 - All experiments save results to JSONL via `save_jsonl()`
 
 ### `src/metrics.py`
-- **`compute_position_bias()`**: Groups AB/BA by prompt_id. Consistent = flipped label matches (A↔B). Tracks bias toward first/second position, tie inconsistency.
+- **`compute_position_bias(results, gold_labels=None)`**: Groups AB/BA by prompt_id. Consistent = flipped label matches (A↔B). Tracks bias toward first/second position, tie inconsistency. If `gold_labels` is provided, also computes `ab_accuracy`, `ba_accuracy`, `overall_accuracy`, and `accuracy_gap` (AB − BA). A large gap indicates the judge is picking correctly in AB partly due to position preference rather than quality recognition.
 - **`compute_pairwise_agreement()`**: Used for B2 and B4. Pivots by prompt_id × condition, computes pairwise agreement rate, identifies most volatile pairs, tracks label distribution per condition.
 - **`compute_thinking_accuracy()`**: Used for B3. Computes accuracy vs gold labels per condition, agreement vs no_thinking baseline, average latency per condition.
 - **`print_summary()`**: Pretty-prints metric dicts to console.
@@ -191,7 +191,7 @@ python3 tests/test_pipeline.py
 ## Project Status
 
 - [x] Core pipeline implemented (inference client, templates, dataset loaders, experiments, metrics)
-- [x] Unit tests (18/18 passing)
+- [x] Unit tests (20/20 passing)
 - [x] Architecture document (architecture.pdf)
 - [x] README
 - [x] Bug fixes and code review
