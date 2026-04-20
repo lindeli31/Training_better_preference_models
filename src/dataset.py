@@ -38,21 +38,34 @@ DATA_DIR = Path("data")
 # ---------------------------------------------------------------------------
 
 class PairRecord:
-    def __init__(self, prompt_id: str, prompt: str, response_a: str, response_b: str, gold_label: str):
+    def __init__(self, prompt_id: str, prompt: str, response_a: str, response_b: str,
+                 gold_label: str, **extras):
         self.prompt_id = prompt_id
         self.prompt = prompt
         self.response_a = response_a
         self.response_b = response_b
         self.gold_label = gold_label
+        self.extras = extras   # optional fields from _full JSON (score_gap, score_a, etc.)
 
     def flipped(self) -> "PairRecord":
         flipped_label = {"A": "B", "B": "A", "C": "C"}[self.gold_label]
+        flipped_extras = dict(self.extras)
+        # Swap *_a and *_b suffixed keys so the extras stay consistent with the flip
+        swapped = {}
+        for k, v in flipped_extras.items():
+            if k.endswith("_a"):
+                swapped[k[:-2] + "_b"] = v
+            elif k.endswith("_b"):
+                swapped[k[:-2] + "_a"] = v
+            else:
+                swapped[k] = v
         return PairRecord(
             prompt_id=self.prompt_id + "_flipped",
             prompt=self.prompt,
             response_a=self.response_b,
             response_b=self.response_a,
             gold_label=flipped_label,
+            **swapped,
         )
 
     def __repr__(self):
@@ -100,8 +113,15 @@ def _save(records: list[dict], path: Path):
 # - Save to data/helpsteer2_{split}.json (we have also saved the full version with all scores and metadata for analysis)
 # ---------------------------------------------------------------------------
 
-def download_dataset(split: str = "validation", full: bool = False):
-    """Download HelpSteer2, build all pairwise combinations, save to data/."""
+def download_dataset(split: str = "validation", full: bool = False, seed: int = 42):
+    """
+    Download HelpSteer2, build all pairwise combinations, save to data/.
+
+    The A/B-position swap is now seeded via `seed` (default 42), so repeated
+    calls produce the same assignment and the regular and _full JSON files
+    are guaranteed to be consistent with each other.
+    """
+    random.seed(seed)
     ds = load_dataset("nvidia/HelpSteer2", split=split)
 
     groups: dict[str, list] = defaultdict(list)
@@ -182,9 +202,16 @@ def load_dataset_pairs(
     split: str = "validation",
     n: Optional[int] = 200,
     seed: int = 42,
+    full: bool = False,
 ) -> list[PairRecord]:
-    """Load pairs from local JSON file in data/."""
-    path = DATA_DIR / f"helpsteer2_{split}.json"
+    """Load pairs from local JSON file in data/.
+
+    If `full=True`, loads from `helpsteer2_{split}_full.json`, which contains
+    extra fields (score_a, score_b, score_gap, helpfulness_a/b, ...). Those
+    extras are stored on PairRecord.extras.
+    """
+    suffix = "_full" if full else ""
+    path = DATA_DIR / f"helpsteer2_{split}{suffix}.json"
     with open(path, "r", encoding="utf-8") as f:
         data = json.load(f)
     pairs = [PairRecord(**row) for row in data]

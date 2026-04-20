@@ -1,0 +1,149 @@
+% !TEX root = architecture.tex
+%
+% CLI_commands.tex
+% ----------------
+% Reference for the top-level CLI runners. Each script is called from the
+% project root with `./.venv/bin/python <script>.py <flags>` (or `python -m`
+% when imported as a module). Flags with no listed default are required.
+
+Three top-level scripts drive the evaluation pipeline. They share the same
+client/config stack (\texttt{SwissAIClient}, \texttt{InferenceConfig}) and
+therefore expose a consistent family of flags for model selection,
+concurrency, and output routing. Unless overridden, the model defaults to
+\texttt{\$SWISSAI\_MODEL} when set, else
+\texttt{meta-llama/Llama-3.3-70B-Instruct}; the endpoint defaults to
+\texttt{https://api.swissai.cscs.ch/v1}; and each API key is read from the
+environment variable \texttt{SWISSAI\_API\_KEY} loaded via
+\texttt{python-dotenv}.
+
+Each run writes a JSONL of raw per-call records plus a sidecar
+\texttt{.meta.json} capturing the exact arguments and resolved prompt ids,
+so that any run can be reproduced from its metadata alone.
+
+
+% ─── run_evaluate_accuracy.py ────────────────────────────────────────────────
+\subsection{\texttt{run\_evaluate\_accuracy.py}}\label{sec:cli-acc}
+
+Issues one AB-order judge call per pair and saves an \emph{enriched}
+JSONL carrying the standard \texttt{JudgeResponse} fields together with
+\texttt{gold\_label}, \texttt{score\_gap}, \texttt{score\_a}, \texttt{score\_b},
+and \texttt{is\_correct}. Pairs are loaded from
+\texttt{helpsteer2\_\{split\}\_full.json} so the score gap is available for
+bucket analysis. Results are summarised by \texttt{compute\_accuracy\_breakdown}.
+
+\begin{lstlisting}[title={\small Typical invocation}]
+python run_evaluate_accuracy.py --n-pairs 1000
+python run_evaluate_accuracy.py --n-pairs 500 --template expert_rater \
+    --criterion overall --run-name baseline \
+    --comment "first full-accuracy pass"
+\end{lstlisting}
+
+\begin{longtable}{@{}llp{7.5cm}@{}}
+  \toprule
+  \textbf{Flag} & \textbf{Default} & \textbf{Description} \\
+  \midrule \endhead
+  \texttt{--n-pairs}       & \texttt{500}           & Number of dataset pairs to evaluate. \\
+  \texttt{--split}         & \texttt{train}         & HelpSteer2 split (\texttt{train} / \texttt{validation}). \\
+  \texttt{--seed}          & \texttt{42}            & Seed for the deterministic pair shuffle. \\
+  \texttt{--temperature}   & \texttt{0.0}           & Sampling temperature (\texttt{0.0} = greedy). \\
+  \texttt{--template}      & \texttt{expert\_rater} & System-prompt template id from \texttt{templates.py}. \\
+  \texttt{--criterion}     & \texttt{overall}       & Evaluation criterion used in the user prompt. \\
+  \texttt{--run-name}      & UTC timestamp          & Short label appended to the output filename. \\
+  \texttt{--comment}       & \texttt{""}          & Free-text note written into the sidecar \texttt{.meta.json}. \\
+  \texttt{--output-dir}    & \texttt{results}       & Parent directory; files land under \texttt{<dir>/evaluate\_accuracy/}. \\
+  \texttt{--model}         & env / Llama-3.3-70B    & Model id sent to the Swiss AI Stack. \\
+  \texttt{--base-url}      & \texttt{swissai.../v1}   & OpenAI-compatible endpoint URL. \\
+  \texttt{--concurrency}   & \texttt{8}             & Max concurrent HTTP requests. \\
+  \bottomrule
+\end{longtable}
+
+\textbf{Outputs.} \texttt{results/evaluate\_accuracy/<template>\_<criterion>[\_<run\_name>].jsonl}
+and the matching \texttt{.meta.json}. Plots can then be generated with
+\texttt{python -m src.plot\_accuracy <path>.jsonl}.
+
+
+% ─── run_repetition_stability.py ─────────────────────────────────────────────
+\subsection{\texttt{run\_repetition\_stability.py}}\label{sec:cli-rep}
+
+Experiment B5: sends the same AB-order judge call \texttt{--n-repetitions}
+times per pair and measures label stability across calls. At
+\texttt{--temperature~0.0} this exposes residual server non-determinism; at
+higher temperatures it measures sampling variance of the judge. The
+\texttt{--pin-ids} option forces specific \texttt{prompt\_id}s into the run
+while leaving determinism intact for the remaining (unpinned) slots.
+
+\begin{lstlisting}[title={\small Typical invocation}]
+python run_repetition_stability.py --n-pairs 100 --n-repetitions 30
+python run_repetition_stability.py --n-pairs 100 --temperature 0.7
+
+# Force-include specific prompts and tag the run
+python run_repetition_stability.py \
+    --n-pairs 100 --pin-ids 1d7a53ffeb ce1271a1f3 \
+    --run-name pilot_with_unstable \
+    --comment "check whether the two low-agreement prompts replicate"
+\end{lstlisting}
+
+\begin{longtable}{@{}llp{7.5cm}@{}}
+  \toprule
+  \textbf{Flag} & \textbf{Default} & \textbf{Description} \\
+  \midrule \endhead
+  \texttt{--n-pairs}          & \texttt{100}           & Total pairs per run (pinned + sampled). \\
+  \texttt{--n-repetitions}    & \texttt{30}            & Identical repetitions per pair. \\
+  \texttt{--temperature}      & \texttt{0.0}           & Sampling temperature (\texttt{0.0} = greedy). \\
+  \texttt{--pin-ids}          & \texttt{[]}            & \texttt{prompt\_id}s that MUST be included; remaining slots filled deterministically. \\
+  \texttt{--run-name}         & UTC timestamp          & Short label appended to the output filename. \\
+  \texttt{--comment}          & \texttt{""}          & Free-text note written into the sidecar \texttt{.meta.json}. \\
+  \texttt{--split}            & \texttt{train}         & HelpSteer2 split (\texttt{train} / \texttt{validation}). \\
+  \texttt{--criterion}        & \texttt{overall}       & Evaluation criterion used in the user prompt. \\
+  \texttt{--template}         & \texttt{expert\_rater} & System-prompt template id. \\
+  \texttt{--stable-threshold} & \texttt{0.9}           & Modal-agreement cutoff used to count a prompt as ``stable''. \\
+  \texttt{--seed}             & \texttt{42}            & Seed for the deterministic pair shuffle. \\
+  \texttt{--output-dir}       & \texttt{results}       & Parent directory; files land under \texttt{<dir>/repetition\_stability/}. \\
+  \texttt{--model}            & env / Llama-3.3-70B    & Model id sent to the Swiss AI Stack. \\
+  \texttt{--base-url}         & \texttt{swissai.../v1}   & OpenAI-compatible endpoint URL. \\
+  \texttt{--concurrency}      & \texttt{8}             & Max concurrent HTTP requests. \\
+  \bottomrule
+\end{longtable}
+
+\textbf{Outputs.} \texttt{results/repetition\_stability/<template>\_<criterion>\_t<temperature>[\_<run\_name>].jsonl}
+and the matching \texttt{.meta.json} (also listing \texttt{pinned\_ids\_found}
+and \texttt{pinned\_ids\_missing}).
+
+
+% ─── run_opro.py ─────────────────────────────────────────────────────────────
+\subsection{\texttt{run\_opro.py}}\label{sec:cli-opro}
+
+OPRO prompt optimisation for position bias (Section~\ref{sec:opro}). Runs
+\texttt{--n-iterations} rounds; in each round the optimiser proposes a new
+system prompt conditioned on the full history of (prompt, score) pairs,
+and scores it on \texttt{--eval-pairs} training pairs. The best prompt is
+re-evaluated on \texttt{--n-val} held-out pairs.
+
+\begin{lstlisting}[title={\small Typical invocation}]
+# Default: 10 iterations, 80 training pairs per eval, 150 validation pairs
+python run_opro.py
+
+# Heavier run
+python run_opro.py --n-iterations 20 --eval-pairs 200 \
+    --n-train 1000 --n-val 400
+\end{lstlisting}
+
+\begin{longtable}{@{}llp{7.5cm}@{}}
+  \toprule
+  \textbf{Flag} & \textbf{Default} & \textbf{Description} \\
+  \midrule \endhead
+  \texttt{--n-iterations} & \texttt{10}                & Number of OPRO iterations. \\
+  \texttt{--eval-pairs}   & \texttt{80}                & Training pairs scored per iteration (fixed subset for comparability). \\
+  \texttt{--n-train}      & \texttt{500}               & Total training pairs loaded into the pool. \\
+  \texttt{--n-val}        & \texttt{150}               & Held-out validation pairs for the final prompt. \\
+  \texttt{--seed}         & \texttt{42}                & Random seed for pair sampling. \\
+  \texttt{--output-dir}   & \texttt{results/opro}      & Output directory; writes \texttt{opro\_results.json}. \\
+  \texttt{--model}        & env / Llama-3.3-70B        & Model id sent to the Swiss AI Stack. \\
+  \texttt{--base-url}     & \texttt{swissai.../v1}       & OpenAI-compatible endpoint URL. \\
+  \texttt{--concurrency}  & \texttt{8}                 & Max concurrent HTTP requests. \\
+  \bottomrule
+\end{longtable}
+
+\textbf{Outputs.} \texttt{results/opro/opro\_results.json}. The best prompt
+is also registered as the \texttt{opro} template and can then be passed to
+\texttt{run\_experiments.py --template opro}.
