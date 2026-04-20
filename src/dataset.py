@@ -42,16 +42,26 @@ DIFFICULTY_LEVELS = ("easy", "medium", "hard")
 
 class PairRecord:
     def __init__(self, prompt_id: str, prompt: str, response_a: str, response_b: str,
-                 gold_label: str, difficulty: Optional[str] = None, **_kwargs):
+                 gold_label: str, difficulty: Optional[str] = None, **extras):
         self.prompt_id = prompt_id
         self.prompt = prompt
         self.response_a = response_a
         self.response_b = response_b
         self.gold_label = gold_label
         self.difficulty = difficulty  # "easy", "medium", "hard" — only set when loaded from full dataset
+        self.extras = extras   # optional fields from _full JSON (score_gap, score_a, etc.)
 
     def flipped(self) -> "PairRecord":
         flipped_label = {"A": "B", "B": "A", "C": "C"}[self.gold_label]
+        # Swap *_a and *_b suffixed keys so the extras stay consistent with the flip
+        swapped = {}
+        for k, v in self.extras.items():
+            if k.endswith("_a"):
+                swapped[k[:-2] + "_b"] = v
+            elif k.endswith("_b"):
+                swapped[k[:-2] + "_a"] = v
+            else:
+                swapped[k] = v
         return PairRecord(
             prompt_id=self.prompt_id + "_flipped",
             prompt=self.prompt,
@@ -59,6 +69,7 @@ class PairRecord:
             response_b=self.response_a,
             gold_label=flipped_label,
             difficulty=self.difficulty,
+            **swapped,
         )
 
     def __repr__(self):
@@ -106,8 +117,15 @@ def _save(records: list[dict], path: Path):
 # - Save to data/helpsteer2_{split}.json (we have also saved the full version with all scores and metadata for analysis)
 # ---------------------------------------------------------------------------
 
-def download_dataset(split: str = "validation", full: bool = False):
-    """Download HelpSteer2, build all pairwise combinations, save to data/."""
+def download_dataset(split: str = "validation", full: bool = False, seed: int = 42):
+    """
+    Download HelpSteer2, build all pairwise combinations, save to data/.
+
+    The A/B-position swap is now seeded via `seed` (default 42), so repeated
+    calls produce the same assignment and the regular and _full JSON files
+    are guaranteed to be consistent with each other.
+    """
+    random.seed(seed)
     ds = load_dataset("nvidia/HelpSteer2", split=split)
 
     groups: dict[str, list] = defaultdict(list)
@@ -189,16 +207,20 @@ def load_dataset_pairs(
     n: Optional[int] = 200,
     seed: int = 42,
     difficulty: Optional[str] = None,
+    full: bool = False,
 ) -> list[PairRecord]:
     """Load pairs from local JSON file in data/.
 
-    If difficulty is given ("easy", "medium", "hard"), loads the full dataset
-    variant (which carries the difficulty tag) and filters before sampling.
+    - `full=True` loads `helpsteer2_{split}_full.json`, which carries extra
+      per-pair fields (score_a, score_b, score_gap, helpfulness_a/b, ...)
+      stored on `PairRecord.extras`, plus the `difficulty` tag.
+    - `difficulty` ("easy", "medium", "hard") filters pairs before sampling
+      and implicitly requires the full variant.
     """
     if difficulty is not None and difficulty not in DIFFICULTY_LEVELS:
         raise ValueError(f"difficulty must be one of {DIFFICULTY_LEVELS}, got {difficulty!r}")
 
-    use_full = difficulty is not None
+    use_full = full or difficulty is not None
     suffix = "_full" if use_full else ""
     path = DATA_DIR / f"helpsteer2_{split}{suffix}.json"
 
