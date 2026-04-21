@@ -20,6 +20,12 @@ Each run writes a JSONL of raw per-call records plus a sidecar
 \texttt{.meta.json} capturing the exact arguments and resolved prompt ids,
 so that any run can be reproduced from its metadata alone.
 
+\texttt{run\_experiments.py} and \texttt{run\_evaluate\_accuracy.py} both
+accept \texttt{--exclude-ties}, which omits pairs with \texttt{gold\_label=C}
+from accuracy metrics. This is needed when running on hard-difficulty subsets:
+HelpSteer2 hard pairs are all exact score ties (gold~=~C), so accuracy is
+trivially zero without this flag.
+
 
 % ─── run_evaluate_accuracy.py ────────────────────────────────────────────────
 \subsection{\texttt{run\_evaluate\_accuracy.py}}\label{sec:cli-acc}
@@ -54,6 +60,7 @@ python run_evaluate_accuracy.py --n-pairs 500 --template expert_rater \
   \texttt{--model}         & env / Llama-3.3-70B    & Model id sent to the Swiss AI Stack. \\
   \texttt{--base-url}      & \texttt{swissai.../v1}   & OpenAI-compatible endpoint URL. \\
   \texttt{--concurrency}   & \texttt{8}             & Max concurrent HTTP requests. \\
+  \texttt{--exclude-ties}  & \texttt{false}         & Omit pairs with \texttt{gold\_label=C} from all accuracy computations. Necessary when evaluating hard-difficulty subsets, where all gold labels are exact score ties (\texttt{C}) and accuracy is otherwise trivially zero. \\
   \bottomrule
 \end{longtable}
 

@@ -108,11 +108,14 @@ python3 run_experiments.py \
   --n-pairs 200 \
   --criterion helpful \
   --difficulty hard \
+  --exclude-ties \
   --concurrency 8 \
   --output-dir results/run_001
 ```
 
 `--difficulty` filters pairs by score gap before sampling (`easy` gap > 1.0, `medium` gap > 0.33, `hard` gap ≤ 0.33). Omit to use all pairs. Requires the full dataset variant (`helpsteer2_{split}_full.json`).
+
+`--exclude-ties` omits pairs with `gold_label=C` from all accuracy computations. Useful when running on difficulty-filtered subsets: hard pairs in HelpSteer2 are all exact score ties (gold=C), so accuracy is always 0 without this flag.
 
 ### Run tests (no API key required)
 
@@ -141,6 +144,7 @@ Every pair is judged twice: once as (A=chosen, B=rejected) and once flipped (A=r
 | `accuracy.ba_accuracy` | Fraction correct when the better response is in position B |
 | `accuracy.overall_accuracy` | Accuracy pooled across both conditions |
 | `accuracy.accuracy_gap` | AB accuracy − BA accuracy. A large positive gap means the judge is right in AB partly due to position preference, not quality recognition |
+| *(with `--exclude-ties`)* | Pairs where `gold_label=C` are excluded from all accuracy counts. Necessary for hard-difficulty subsets where all gold labels are ties. |
 
 **Result file**: `results/position_bias/<template>_<criterion>.jsonl`
 
