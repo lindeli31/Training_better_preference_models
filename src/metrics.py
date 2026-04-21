@@ -60,6 +60,7 @@ def load_results(path: Path) -> list[dict]:
 def compute_position_bias(
     results: list[dict],
     gold_labels: Optional[dict[str, str]] = None,  # prompt_id -> "A"/"B"/"C"
+    exclude_ties: bool = False,
 ) -> dict:
     """
     Measures if the model prefers responses based on their position (A or B)
@@ -134,12 +135,16 @@ def compute_position_bias(
             gold = gold_labels.get(prompt_id)
             if gold is None:
                 continue
+            if exclude_ties and gold == "C":
+                continue
             ab_correct += int(ab_label == gold)
             ab_total += 1
 
         for prompt_id, ba_label in flipped_order_labels.items():
             gold = gold_labels.get(prompt_id)
             if gold is None:
+                continue
+            if exclude_ties and gold == "C":
                 continue
             # Gold label is defined for the original order (better response = A).
             # In BA the responses are swapped, so the correct verdict is flipped.
@@ -360,10 +365,12 @@ def compute_repetition_stability(
 # medium (0.33 < gap ≤ 1.0), easy (gap > 1.0). Score scale is 0-4.
 # ---------------------------------------------------------------------------
 
-def compute_accuracy_breakdown(results: list[dict]) -> dict:
+def compute_accuracy_breakdown(results: list[dict], exclude_ties: bool = False) -> dict:
     """
     Expects enriched records with at least: label, gold_label, score_gap.
     """
+    if exclude_ties:
+        results = [r for r in results if r.get("gold_label") != "C"]
     buckets = [(0.33, "hard"), (1.0, "medium"), (float("inf"), "easy")]
     bucket_stats = {name: {"correct": 0, "total": 0} for _, name in buckets}
     confusion: dict = defaultdict(lambda: {"A": 0, "B": 0, "C": 0, "None": 0})

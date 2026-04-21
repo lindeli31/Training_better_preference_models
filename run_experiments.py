@@ -107,6 +107,8 @@ def parse_args():
     p.add_argument("--difficulty", default=None, choices=DIFFICULTY_LEVELS,
                    help="Filter pairs by difficulty (easy / medium / hard). "
                         "Requires the full dataset variant (helpsteer2_{split}_full.json).")
+    p.add_argument("--exclude-ties", action="store_true",
+                   help="Exclude pairs with gold_label=C from accuracy computation.")
     return p.parse_args()
 
 # ---------------------------------------------------------------------------
@@ -192,6 +194,7 @@ async def main(args):
             position_bias_metrics = compute_position_bias(
                 [r.to_dict() for r in position_bias_results],
                 gold_labels=gold_labels,
+                exclude_ties=args.exclude_ties,
             )
             print_summary("B1: Position Bias", position_bias_metrics)
 

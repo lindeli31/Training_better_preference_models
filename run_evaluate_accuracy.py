@@ -70,6 +70,8 @@ def parse_args():
     p.add_argument("--model", default=os.environ.get("SWISSAI_MODEL", "meta-llama/Llama-3.3-70B-Instruct"))
     p.add_argument("--base-url", default="https://api.swissai.cscs.ch/v1")
     p.add_argument("--concurrency", type=int, default=8)
+    p.add_argument("--exclude-ties", action="store_true",
+                   help="Exclude pairs with gold_label=C from accuracy computation.")
     return p.parse_args()
 
 
@@ -124,7 +126,7 @@ async def main(args):
             run_name=run_name,
             meta=meta,
         )
-        metrics = compute_accuracy_breakdown(enriched)
+        metrics = compute_accuracy_breakdown(enriched, exclude_ties=args.exclude_ties)
         print_summary(f"Accuracy breakdown  (run={run_name})", metrics)
 
     elapsed = time.perf_counter() - t_start
