@@ -33,9 +33,9 @@ from dotenv import load_dotenv
 
 from check_models import validate_model
 from datasets.dataset import load_dataset_pairs
-from src.experiments import run_position_bias
+from eval.experiments import run_position_bias
 from core.inference_client import InferenceConfig, SwissAIClient
-from src.metrics import compute_position_bias
+from eval.metrics import compute_position_bias
 
 load_dotenv()
 logging.basicConfig(
