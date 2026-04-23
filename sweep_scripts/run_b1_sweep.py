@@ -1,9 +1,9 @@
 """
 run_b1_sweep.py
 ---------------
-Run B1 (position bias) for all 18 combinations of:
+Run B1 (position bias) for all 27 combinations of:
   - difficulty  : easy / medium / hard
-  - model       : Apertus-70B, Llama-3.3-70B
+  - model       : Apertus-70B, Llama-3.3-70B, GLM-4.7-Flash
   - template    : expert_rater / llm_judge / opro
 
 Uses all available pairs for each difficulty level (no sub-sampling).
@@ -26,8 +26,12 @@ import asyncio
 import json
 import logging
 import os
+import sys
 import time
 from pathlib import Path
+
+# ensure project root is on the path when running from sweep_scripts/
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from dotenv import load_dotenv
 
@@ -47,6 +51,7 @@ logger = logging.getLogger(__name__)
 MODELS = [
     "swiss-ai/Apertus-70B-Instruct-2509",
     "meta-llama/Llama-3.3-70B-Instruct",
+    "zai-org/GLM-4.7-Flash",
 ]
 TEMPLATES = ["expert_rater", "llm_judge", "opro"]
 DIFFICULTIES = ["easy", "medium", "hard"]
@@ -61,6 +66,8 @@ def model_key(model: str) -> str:
         return "apertus"
     if "Llama-3.3" in name:
         return "llama33"
+    if "GLM-4.7" in name:
+        return "glm47"
     return name.lower()[:20]
 
 

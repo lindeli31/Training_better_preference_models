@@ -28,10 +28,12 @@ import numpy as np
 MODEL_COLORS = {
     "apertus": "#b42828",
     "llama33":  "#1f407a",
+    "glm47":   "#2e8b57",
 }
 MODEL_LABELS = {
     "apertus": "Apertus-70B",
     "llama33":  "Llama-3.3-70B",
+    "glm47":   "GLM-4.7-Flash",
 }
 TEMPLATE_HATCHES = {
     "expert_rater": "",
@@ -44,7 +46,7 @@ TEMPLATE_LABELS = {
     "opro":         "opro",
 }
 DIFFICULTIES = ["easy", "medium"]
-MODELS_ORDER = ["apertus", "llama33"]
+MODELS_ORDER = ["apertus", "llama33", "glm47"]
 TEMPLATES_ORDER = ["expert_rater", "llm_judge", "opro"]
 
 
@@ -160,9 +162,9 @@ def plot_accuracy_overview(records: list[dict], out: Path) -> None:
                 group_data.append(group_row)
 
             bar_cols = [MODEL_COLORS[m] for m in MODELS_ORDER]
-            bar_hatch = ["", "//"]  # one per model
+            bar_hatch = ["", "//", "xx"]  # one per model
             _grouped_bars(ax, group_data, TEMPLATES_ORDER, MODELS_ORDER,
-                          bar_cols, bar_hatch, width=0.2, gap=0.6)
+                          bar_cols, bar_hatch, width=0.15, gap=0.65)
 
             if "gap" in sub_key:
                 ax.axhline(0, color="black", linewidth=0.8, linestyle="--")
@@ -234,7 +236,7 @@ def plot_position_bias_overview(records: list[dict], out: Path) -> None:
 
             bar_cols = [MODEL_COLORS[m] for m in MODELS_ORDER]
             _grouped_bars(ax, group_data, TEMPLATES_ORDER, MODELS_ORDER,
-                          bar_cols, ["", "//"], width=0.2, gap=0.6)
+                          bar_cols, ["", "//", "xx"], width=0.15, gap=0.65)
 
             ax.set_ylim(*ylim)
             ax.grid(axis="y", alpha=0.25)
@@ -289,7 +291,7 @@ def plot_summary_heatmaps(records: list[dict], out: Path) -> None:
 
     fig, axes = plt.subplots(1, len(metrics_to_plot),
                              figsize=(5 * len(metrics_to_plot), 5.5))
-    fig.suptitle("B1 Summary — 18 Experiments", fontsize=12, fontweight="bold")
+    fig.suptitle("B1 Summary — 27 Experiments", fontsize=12, fontweight="bold")
 
     for ax, (top_key, sub_key, title, cmap, vmin, vmax) in zip(axes, metrics_to_plot):
         mat = np.full((len(row_keys), len(DIFFICULTIES)), float("nan"))
@@ -367,7 +369,7 @@ def plot_model_comparison(records: list[dict], out: Path) -> None:
                         vals.append(v)
                 means.append(np.mean(vals) if vals else float("nan"))
 
-            offset = (i - 0.5) * width
+            offset = (i - (len(MODELS_ORDER) - 1) / 2) * width
             bars = ax.bar(x + offset, means, width,
                           color=MODEL_COLORS[m], label=MODEL_LABELS[m],
                           edgecolor="black", linewidth=0.5, alpha=0.85)
@@ -385,7 +387,7 @@ def plot_model_comparison(records: list[dict], out: Path) -> None:
 
     handles = [mpatches.Patch(facecolor=MODEL_COLORS[m], label=MODEL_LABELS[m],
                                edgecolor="black") for m in MODELS_ORDER]
-    fig.legend(handles=handles, loc="lower center", ncol=2, fontsize=9,
+    fig.legend(handles=handles, loc="lower center", ncol=len(MODELS_ORDER), fontsize=9,
                bbox_to_anchor=(0.5, -0.06))
     fig.tight_layout()
     out_path = out / "model_comparison.png"

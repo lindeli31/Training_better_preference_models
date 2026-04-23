@@ -3,7 +3,7 @@ make_sweep_diagram.py
 ---------------------
 Generate a slide-ready overview of the B1 sweep setup.
 
-Left panel  — sweep matrix  (2 models × 3 templates × 3 difficulties = 18)
+Left panel  — sweep matrix  (3 models × 3 templates × 3 difficulties = 27)
 Right panel — per-experiment B1 procedure (flowchart)
 
 Output: results/b1_sweep/figures/sweep_diagram.png
@@ -24,6 +24,7 @@ from matplotlib.patches import FancyBboxPatch, Rectangle
 C = {
     "apertus":  "#b42828",
     "llama33":  "#1f407a",
+    "glm47":    "#2e8b57",
     "easy":     "#2e8b57",
     "medium":   "#d97b2a",
     "hard":     "#8b2252",
@@ -35,7 +36,7 @@ C = {
     "compare":  ("#e8f5e9", "#1e7e34"),
     "metrics":  ("#fef9e7", "#b7950b"),
 }
-MODELS      = [("apertus", "Apertus-70B"), ("llama33", "Llama-3.3-70B")]
+MODELS      = [("apertus", "Apertus-70B"), ("llama33", "Llama-3.3-70B"), ("glm47", "GLM-4.7-Flash")]
 TEMPLATES   = ["expert_rater", "llm_judge", "opro"]
 TMPL_DISPLAY = {"expert_rater": "expert\nrater", "llm_judge": "llm\njudge", "opro": "opro"}
 DIFFICULTIES = ["easy", "medium", "hard"]
@@ -73,7 +74,7 @@ def draw_matrix(ax):
     ax.text(0.60, 0.96, "B1 Position Bias — Sweep Design",
             ha="center", va="center", fontsize=15, fontweight="bold", color="#111")
     ax.text(0.60, 0.91,
-            "2 models  ×  3 templates  ×  3 difficulties  =  18 experiments",
+            "3 models  ×  3 templates  ×  3 difficulties  =  27 experiments",
             ha="center", va="center", fontsize=10.5, color="#555")
 
     # ── column headers (difficulties)
@@ -92,8 +93,9 @@ def draw_matrix(ax):
                           edgecolor="#adb5bd", linewidth=1.2))
 
     # ── grid cells
-    sq   = cw * 0.22    # model-square side
-    gap  = sq * 1.35    # spacing between the two squares
+    sq   = cw * 0.18    # model-square side (slightly smaller to fit 3 models)
+    gap  = sq * 1.05    # spacing between squares
+    MODEL_SHORTS = {"apertus": "Ap", "llama33": "Ll", "glm47": "Gl"}
     for ri in range(3):
         for ci in range(3):
             cx, cy = col_cx[ci], row_cy[ri]
@@ -104,21 +106,20 @@ def draw_matrix(ax):
                 facecolor="#f4f6f8", edgecolor="#ced4da", linewidth=1.0, zorder=1,
             ))
 
-            # two model squares (Ap | Ll)
+            # three model squares (Ap | Ll | Gl)
             for mi, (mk, _) in enumerate(MODELS):
-                mx = cx + (mi - 0.5) * gap
+                mx = cx + (mi - (len(MODELS) - 1) / 2) * gap
                 my = cy + 0.025
                 ax.add_patch(FancyBboxPatch(
                     (mx - sq / 2, my - sq / 2), sq, sq,
                     boxstyle="round,pad=0.006",
                     facecolor=C[mk], edgecolor="white", linewidth=0.7, zorder=2,
                 ))
-                short = "Ap" if mk == "apertus" else "Ll"
-                ax.text(mx, my, short, ha="center", va="center",
-                        fontsize=7.5, color="white", fontweight="bold", zorder=3)
+                ax.text(mx, my, MODEL_SHORTS[mk], ha="center", va="center",
+                        fontsize=6.5, color="white", fontweight="bold", zorder=3)
 
             # sub-caption
-            ax.text(cx, cy - ch * 0.32, "2 judge models", ha="center", va="center",
+            ax.text(cx, cy - ch * 0.32, "3 judge models", ha="center", va="center",
                     fontsize=7, color="#888", style="italic", zorder=3)
 
     # ── axis labels
@@ -128,17 +129,17 @@ def draw_matrix(ax):
             ha="center", va="center", fontsize=9, color="#777", rotation=90)
 
     # ── legend
-    ax.text(0.37, 0.035, "Models:", ha="center", va="center",
+    ax.text(0.25, 0.035, "Models:", ha="center", va="center",
             fontsize=9, color="#444")
     for mi, (mk, ml) in enumerate(MODELS):
-        lx = 0.47 + mi * 0.29
+        lx = 0.34 + mi * 0.22
         ax.add_patch(FancyBboxPatch(
             (lx - 0.018, 0.025 - 0.012), 0.036, 0.024,
             boxstyle="round,pad=0.004",
             facecolor=C[mk], edgecolor="white", linewidth=0.5, zorder=3,
         ))
-        ax.text(lx + 0.03, 0.035, ml, ha="left", va="center",
-                fontsize=9, color="#333")
+        ax.text(lx + 0.025, 0.035, ml, ha="left", va="center",
+                fontsize=8.5, color="#333")
 
 
 # ── right panel: B1 flowchart ─────────────────────────────────────────────────
