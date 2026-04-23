@@ -17,7 +17,7 @@ from dotenv import load_dotenv
 load_dotenv()
 from pathlib import Path
 from core.inference_client import InferenceConfig, SwissAIClient
-from datasets.dataset import load_dataset_pairs
+from src.datasets.dataset import load_dataset_pairs
 from prompt_optimization.opro.opro_position_bias import run_opro
 
 logging.basicConfig(
