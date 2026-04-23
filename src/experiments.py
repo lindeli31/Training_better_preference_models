@@ -24,8 +24,8 @@ import json
 import logging
 from pathlib import Path
 from typing import Optional
-from src.inference_client import SwissAIClient, JudgeResponse
-from src.templates import build_prompt, CRITERIA
+from core.inference_client import SwissAIClient, JudgeResponse
+from core.templates import build_prompt, CRITERIA
 from datasets.dataset import PairRecord
 logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------

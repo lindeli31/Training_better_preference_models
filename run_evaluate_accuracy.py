@@ -35,7 +35,7 @@ from datetime import datetime
 from dotenv import load_dotenv
 from pathlib import Path
 
-from src.inference_client import InferenceConfig, SwissAIClient
+from core.inference_client import InferenceConfig, SwissAIClient
 from datasets.dataset import load_dataset_pairs
 from src.experiments import run_evaluate_accuracy
 from src.metrics import compute_accuracy_breakdown, print_summary

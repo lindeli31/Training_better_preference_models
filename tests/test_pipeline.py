@@ -15,8 +15,8 @@ from pathlib import Path
 # ---- Make sure the project root is on the path ----
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from src.inference_client import extract_label, extract_thinking
-from src.templates import build_prompt, TEMPLATES
+from core.inference_client import extract_label, extract_thinking
+from core.templates import build_prompt, TEMPLATES
 from datasets.dataset import PairRecord, DIFFICULTY_LEVELS
 from src.metrics import compute_position_bias, compute_pairwise_agreement, compute_thinking_accuracy
 
