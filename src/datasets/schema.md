@@ -10,3 +10,5 @@ The schema of the dataset:
    - 1 if the second answer candidate is better;
    - 2 if they are equal.
  - metadata (json): optional, you may have here additional information, e.g. context length.
+
+TODO: should we have "prompt_id" as a separate field?
