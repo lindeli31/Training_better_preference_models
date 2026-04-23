@@ -23,9 +23,9 @@ import logging
 import random
 from dataclasses import dataclass
 from pathlib import Path
-from src.dataset import PairRecord
-from src.inference_client import SwissAIClient
-from src.templates import _build_user_prompt, _OUTPUT_INSTRUCTION
+from src.datasets.dataset import PairRecord
+from core.inference_client import SwissAIClient
+from core.templates import _build_user_prompt, _OUTPUT_INSTRUCTION
 logger = logging.getLogger(__name__)
 
 
