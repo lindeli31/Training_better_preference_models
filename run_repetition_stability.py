@@ -38,7 +38,7 @@ from dotenv import load_dotenv
 from pathlib import Path
 
 from src.inference_client import InferenceConfig, SwissAIClient
-from src.dataset import load_dataset_pairs
+from datasets.dataset import load_dataset_pairs
 from src.experiments import run_repetition_stability
 from src.metrics import compute_repetition_stability, print_summary
 from check_models import validate_model

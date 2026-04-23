@@ -20,7 +20,7 @@ load_dotenv()
 
 from pathlib import Path
 from src.inference_client import InferenceConfig, SwissAIClient
-from src.dataset import load_dataset_pairs
+from datasets.dataset import load_dataset_pairs
 from src.opro_position_bias import run_opro
 from check_models import validate_model
 

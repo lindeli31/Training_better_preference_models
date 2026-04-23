@@ -9,19 +9,15 @@ Run with:
     python tests/test_pipeline.py
 """
 
-import asyncio
-import json
 import sys
-import tempfile
 from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock, patch
 
 # ---- Make sure the project root is on the path ----
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from src.inference_client import extract_label, extract_thinking, JudgeResponse
-from src.templates import build_prompt, TEMPLATES, CRITERIA
-from src.dataset import PairRecord, DIFFICULTY_LEVELS
+from src.inference_client import extract_label, extract_thinking
+from src.templates import build_prompt, TEMPLATES
+from datasets.dataset import PairRecord, DIFFICULTY_LEVELS
 from src.metrics import compute_position_bias, compute_pairwise_agreement, compute_thinking_accuracy
 
 
