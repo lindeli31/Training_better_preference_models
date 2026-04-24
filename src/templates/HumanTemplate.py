@@ -8,9 +8,9 @@ from core.Template import Template
 
 class HumanTemplate(Template):
     generation_instructions: str = (
-        "Given the context and two responses, indicate your preference by choosing the corresponding letter: 'A' if the first response is better, '0' if they are equal, '+' if the second response is better. "
-        "Keep your answer grounded in the quality and relevance of the responses to the context. "
-        "Return only the letter, without any additional text or punctuation."
+        "Evaluate which of two responses better answers the conversation. "
+        "You must choose 'A' for the first candidate, 'B' for the second, or 'C' if they are equal. "
+        "Your judgment must be accurate and consistent regardless of the order the responses are presented."
     )
     
     def render(self, perm_pair: PermPair) -> List[Prompt]:
