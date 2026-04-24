@@ -6,3 +6,4 @@ python-dotenv>=1.0
 dspy
 weave
 wandb
+pydantic
