@@ -53,6 +53,7 @@ class InferenceConfig:
         retry_base_delay: float = 2.0,
         retry_max_delay: float = 60.0,
         concurrent_requests: int = 8,
+        extra_body: dict | None = None,
     ):
         self.base_url = base_url
         self.api_key = api_key
@@ -64,6 +65,7 @@ class InferenceConfig:
         self.retry_base_delay = retry_base_delay
         self.retry_max_delay = retry_max_delay
         self.concurrent_requests = concurrent_requests
+        self.extra_body = extra_body or {}
 
 # ---------------------------------------------------------------------------
 # Response dataclass
@@ -230,6 +232,7 @@ class SwissAIClient:
             "max_tokens": self.config.max_tokens,
             "temperature": self.config.temperature,
             "top_p": self.config.top_p,
+            **self.config.extra_body,
         }
 
         delay = self.config.retry_base_delay

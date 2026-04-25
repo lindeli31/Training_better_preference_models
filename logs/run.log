@@ -1,0 +1,95 @@
+/Users/francescocaperna/miniconda3/lib/python3.12/site-packages/pandas/core/computation/expressions.py:22: UserWarning: Pandas requires version '2.10.2' or newer of 'numexpr' (version '2.10.1' currently installed).
+  from pandas.core.computation.check import NUMEXPR_INSTALLED
+2026-04-25 23:44:28,911 [INFO] __main__: Loading stratified train/val (easy/medium/hard, ~n/3 per tier)
+2026-04-25 23:44:29,284 [INFO] __main__: Loaded 798 train + 198 val
+2026-04-25 23:44:29,284 [INFO] __main__: ======================================================================
+2026-04-25 23:44:29,284 [INFO] __main__: Model: swiss-ai/Apertus-70B-Instruct-2509
+2026-04-25 23:44:29,285 [INFO] __main__: ======================================================================
+2026-04-25 23:44:29,285 [INFO] __main__: [swiss-ai/Apertus-70B-Instruct-2509] Running GEPA (reflection=meta-llama/Llama-3.3-70B-Instruct, budget=heavy, threads=16)
+2026-04-25 23:44:29,285 [INFO] src.runall_prompt_optimization.gepa_position_bias: thinking=off reflection_thinking=off
+2026-04-25 23:44:29,286 [INFO] src.runall_prompt_optimization.gepa_position_bias: Evaluating baseline on 798 train + 198 val pairs
+2026-04-25 23:45:23,116 [INFO] openai._base_client: Retrying request to /chat/completions in 0.422333 seconds
+2026/04/25 23:46:31 WARNING dspy.clients.lm: LM response was truncated due to exceeding max_tokens=2048. You can inspect the latest LM interactions with `dspy.inspect_history()`. To avoid truncation, consider passing a larger max_tokens when setting up dspy.LM. You may also consider increasing the temperature (currently 0.0)  if the reason for truncation is repetition.
+2026/04/25 23:47:03 WARNING dspy.clients.lm: LM response was truncated due to exceeding max_tokens=2048. You can inspect the latest LM interactions with `dspy.inspect_history()`. To avoid truncation, consider passing a larger max_tokens when setting up dspy.LM. You may also consider increasing the temperature (currently 0.0)  if the reason for truncation is repetition.
+2026-04-25 23:47:38,539 [INFO] src.runall_prompt_optimization.gepa_position_bias: Baseline(train) cons=0.327 acc=0.442 bias=0.673
+2026-04-25 23:48:14,505 [INFO] src.runall_prompt_optimization.gepa_position_bias: Baseline(val)   cons=0.348 acc=0.492 bias=0.651
+2026-04-25 23:48:14,509 [INFO] src.runall_prompt_optimization.gepa_position_bias: --- GEPA seed 0 (277 chars) ---
+2026/04/25 23:48:14 INFO dspy.teleprompt.gepa.gepa: Running GEPA for approx 2421 metric calls of the program. This amounts to 10.62 full evals on the train+val set.
+2026/04/25 23:48:14 INFO dspy.teleprompt.gepa.gepa: Using 198 examples for tracking Pareto scores. You can consider using a smaller sample of the valset to allow GEPA to explore more diverse solutions within the same budget. GEPA requires you to provide the smallest valset that is just large enough to match your downstream task distribution, while providing as large trainset as possible.
+GEPA Optimization:   0%|          | 0/2421 [00:00<?, ?rollouts/s]2026-04-25 23:48:14,583 [INFO] src.runall_prompt_optimization.gepa_position_bias: GEPA progress: 10 calls | score=0.350 acc=0.400 consist=0.300 parse=1.00 c_emit=0.00 c_gold=0.10
+2026-04-25 23:48:14,612 [INFO] src.runall_prompt_optimization.gepa_position_bias: GEPA progress: 20 calls | score=0.500 acc=0.700 consist=0.300 parse=1.00 c_emit=0.00 c_gold=0.00
+2026-04-25 23:48:14,632 [INFO] src.runall_prompt_optimization.gepa_position_bias: GEPA progress: 30 calls | score=0.450 acc=0.400 consist=0.500 parse=1.00 c_emit=0.00 c_gold=0.50
+2026-04-25 23:48:14,649 [INFO] src.runall_prompt_optimization.gepa_position_bias: GEPA progress: 40 calls | score=0.550 acc=0.500 consist=0.600 parse=1.00 c_emit=0.00 c_gold=0.20
+2026-04-25 23:48:14,664 [INFO] src.runall_prompt_optimization.gepa_position_bias: GEPA progress: 50 calls | score=0.250 acc=0.300 consist=0.200 parse=1.00 c_emit=0.00 c_gold=0.40
+2026-04-25 23:48:14,665 [INFO] src.runall_prompt_optimization.gepa_position_bias: *** BEAT BASELINE on val *** candidate=8081622e consistency=0.380 (> baseline 0.348) accuracy=0.460 n=50
+2026-04-25 23:48:14,685 [INFO] src.runall_prompt_optimization.gepa_position_bias: GEPA progress: 60 calls | score=0.400 acc=0.500 consist=0.300 parse=1.00 c_emit=0.00 c_gold=0.10
+2026-04-25 23:48:14,698 [INFO] src.runall_prompt_optimization.gepa_position_bias: GEPA progress: 70 calls | score=0.450 acc=0.700 consist=0.200 parse=1.00 c_emit=0.00 c_gold=0.00
+2026-04-25 23:48:14,710 [INFO] src.runall_prompt_optimization.gepa_position_bias: GEPA progress: 80 calls | score=0.400 acc=0.400 consist=0.400 parse=1.00 c_emit=0.00 c_gold=0.20
+2026-04-25 23:48:14,726 [INFO] src.runall_prompt_optimization.gepa_position_bias: GEPA progress: 90 calls | score=0.400 acc=0.600 consist=0.200 parse=1.00 c_emit=0.00 c_gold=0.10
+2026-04-25 23:48:14,742 [INFO] src.runall_prompt_optimization.gepa_position_bias: GEPA progress: 100 calls | score=0.350 acc=0.400 consist=0.300 parse=1.00 c_emit=0.00 c_gold=0.20
+2026-04-25 23:48:14,759 [INFO] src.runall_prompt_optimization.gepa_position_bias: GEPA progress: 110 calls | score=0.450 acc=0.700 consist=0.200 parse=1.00 c_emit=0.00 c_gold=0.10
+2026-04-25 23:48:14,776 [INFO] src.runall_prompt_optimization.gepa_position_bias: GEPA progress: 120 calls | score=0.700 acc=0.600 consist=0.800 parse=1.00 c_emit=0.00 c_gold=0.20
+2026-04-25 23:48:14,793 [INFO] src.runall_prompt_optimization.gepa_position_bias: GEPA progress: 130 calls | score=0.450 acc=0.500 consist=0.400 parse=1.00 c_emit=0.00 c_gold=0.30
+2026-04-25 23:48:14,807 [INFO] src.runall_prompt_optimization.gepa_position_bias: GEPA progress: 140 calls | score=0.450 acc=0.600 consist=0.300 parse=1.00 c_emit=0.00 c_gold=0.20
+2026-04-25 23:48:14,822 [INFO] src.runall_prompt_optimization.gepa_position_bias: GEPA progress: 150 calls | score=0.550 acc=0.800 consist=0.300 parse=1.00 c_emit=0.00 c_gold=0.00
+2026-04-25 23:48:14,836 [INFO] src.runall_prompt_optimization.gepa_position_bias: GEPA progress: 160 calls | score=0.250 acc=0.300 consist=0.200 parse=1.00 c_emit=0.00 c_gold=0.30
+2026-04-25 23:48:14,853 [INFO] src.runall_prompt_optimization.gepa_position_bias: GEPA progress: 170 calls | score=0.350 acc=0.400 consist=0.300 parse=1.00 c_emit=0.00 c_gold=0.40
+2026-04-25 23:48:14,869 [INFO] src.runall_prompt_optimization.gepa_position_bias: GEPA progress: 180 calls | score=0.400 acc=0.400 consist=0.400 parse=1.00 c_emit=0.00 c_gold=0.30
+2026-04-25 23:48:14,880 [INFO] src.runall_prompt_optimization.gepa_position_bias: GEPA progress: 190 calls | score=0.600 acc=0.700 consist=0.500 parse=1.00 c_emit=0.00 c_gold=0.10
+2026/04/25 23:48:14 INFO dspy.evaluate.evaluate: Average Metric: 87.0 / 198 (43.9%)
+2026/04/25 23:48:14 INFO dspy.teleprompt.gepa.gepa: Iteration 0: Base program full valset score: 0.4393939393939394 over 198 / 198 examples
+GEPA Optimization:   8%|▊         | 198/2421 [00:00<00:03, 560.23rollouts/s]2026/04/25 23:48:14 INFO dspy.teleprompt.gepa.gepa: Iteration 1: Selected program 0 score: 0.4393939393939394
+  0%|          | 0/30 [00:00<?, ?it/s]Average Metric: 0.50 / 1 (50.0%):   0%|          | 0/30 [00:00<?, ?it/s]2026-04-25 23:48:14,902 [INFO] src.runall_prompt_optimization.gepa_position_bias: GEPA progress: 200 calls | score=0.550 acc=0.800 consist=0.300 parse=1.00 c_emit=0.00 c_gold=0.00
+Average Metric: 1.50 / 2 (75.0%):   3%|▎         | 1/30 [00:00<00:00, 553.34it/s]Average Metric: 1.50 / 3 (50.0%):   7%|▋         | 2/30 [00:00<00:00, 340.02it/s]Average Metric: 2.00 / 4 (50.0%):  10%|█         | 3/30 [00:00<00:00, 272.97it/s]Average Metric: 2.00 / 5 (40.0%):  13%|█▎        | 4/30 [00:00<00:00, 348.16it/s]Average Metric: 3.00 / 6 (50.0%):  17%|█▋        | 5/30 [00:00<00:00, 396.20it/s]Average Metric: 4.00 / 7 (57.1%):  20%|██        | 6/30 [00:00<00:00, 425.17it/s]Average Metric: 4.50 / 8 (56.2%):  23%|██▎       | 7/30 [00:00<00:00, 471.25it/s]Average Metric: 5.00 / 9 (55.6%):  27%|██▋       | 8/30 [00:00<00:00, 459.79it/s]Average Metric: 5.50 / 10 (55.0%):  30%|███       | 9/30 [00:00<00:00, 515.67it/s]Average Metric: 6.00 / 11 (54.5%):  33%|███▎      | 10/30 [00:00<00:00, 571.63it/s]2026-04-25 23:48:14,918 [INFO] src.runall_prompt_optimization.gepa_position_bias: GEPA progress: 210 calls | score=0.500 acc=0.600 consist=0.400 parse=1.00 c_emit=0.00 c_gold=0.00
+Average Metric: 6.50 / 12 (54.2%):  37%|███▋      | 11/30 [00:00<00:00, 604.13it/s]Average Metric: 7.50 / 13 (57.7%):  40%|████      | 12/30 [00:00<00:00, 595.15it/s]Average Metric: 8.00 / 14 (57.1%):  43%|████▎     | 13/30 [00:00<00:00, 643.18it/s]Average Metric: 8.50 / 15 (56.7%):  47%|████▋     | 14/30 [00:00<00:00, 608.08it/s]Average Metric: 8.50 / 16 (53.1%):  50%|█████     | 15/30 [00:00<00:00, 583.77it/s]Average Metric: 9.00 / 17 (52.9%):  53%|█████▎    | 16/30 [00:00<00:00, 621.53it/s]Average Metric: 9.50 / 18 (52.8%):  57%|█████▋    | 17/30 [00:00<00:00, 648.56it/s]Average Metric: 9.50 / 19 (50.0%):  60%|██████    | 18/30 [00:00<00:00, 581.82it/s]Average Metric: 9.50 / 20 (47.5%):  63%|██████▎   | 19/30 [00:00<00:00, 593.67it/s]2026-04-25 23:48:14,934 [INFO] src.runall_prompt_optimization.gepa_position_bias: GEPA progress: 220 calls | score=0.400 acc=0.700 consist=0.100 parse=1.00 c_emit=0.00 c_gold=0.20
+Average Metric: 10.00 / 21 (47.6%):  67%|██████▋   | 20/30 [00:00<00:00, 587.37it/s]Average Metric: 10.50 / 22 (47.7%):  70%|███████   | 21/30 [00:00<00:00, 615.87it/s]Average Metric: 11.00 / 23 (47.8%):  73%|███████▎  | 22/30 [00:00<00:00, 620.10it/s]Average Metric: 11.50 / 24 (47.9%):  77%|███████▋  | 23/30 [00:00<00:00, 647.41it/s]Average Metric: 11.50 / 25 (46.0%):  80%|████████  | 24/30 [00:00<00:00, 670.73it/s]Average Metric: 11.50 / 26 (44.2%):  83%|████████▎ | 25/30 [00:00<00:00, 676.90it/s]Average Metric: 12.00 / 27 (44.4%):  87%|████████▋ | 26/30 [00:00<00:00, 703.04it/s]Average Metric: 12.50 / 28 (44.6%):  90%|█████████ | 27/30 [00:00<00:00, 708.87it/s]Average Metric: 13.00 / 29 (44.8%):  93%|█████████▎| 28/30 [00:00<00:00, 727.74it/s]Average Metric: 14.00 / 30 (46.7%):  97%|█████████▋| 29/30 [00:00<00:00, 752.85it/s]Average Metric: 14.00 / 30 (46.7%): 100%|██████████| 30/30 [00:00<00:00, 777.84it/s]2026/04/25 23:48:14 INFO dspy.evaluate.evaluate: Average Metric: 14.0 / 30 (46.7%)
+2026-04-25 23:48:14,940 [INFO] src.runall_prompt_optimization.gepa_position_bias: GEPA progress: 230 calls | score=0.500 acc=0.700 consist=0.300 parse=1.00 c_emit=0.00 c_gold=0.10
+2026-04-25 23:48:14,940 [INFO] src.runall_prompt_optimization.gepa_position_bias: GEPA progress: 240 calls | score=0.500 acc=0.700 consist=0.300 parse=1.00 c_emit=0.00 c_gold=0.00
+2026-04-25 23:48:14,941 [INFO] src.runall_prompt_optimization.gepa_position_bias: GEPA progress: 250 calls | score=0.400 acc=0.600 consist=0.200 parse=1.00 c_emit=0.00 c_gold=0.20
+2026/04/25 23:48:22 INFO dspy.teleprompt.gepa.gepa: Iteration 1: Proposed new text for judge: You are an expert rater. You will be provided with a user prompt and two assistant responses. Your task is to determine which response is better.
+
+To perform this task, you should consider the following factors:
+- The relevance of the response to the user prompt
+- The accuracy and correctness of the information provided in the response
+- The clarity and coherence of the response
+- The completeness of the response in addressing all aspects of the user prompt
+
+When comparing the two responses, you should evaluate them based on the above factors and provide a verdict. 
+
+The possible verdicts are:
+A if the first response is better
+B if the second response is better
+C if they are equally good
+
+You should output only the letter corresponding to your verdict (A, B, or C).
+
+In addition to the above instructions, please note the following domain-specific information and strategies that have been observed in the previous interactions:
+
+- When evaluating responses related to technical topics such as programming, software development, or data analysis, consider the correctness of the code, the appropriateness of the technology or tool used, and the completeness of the solution.
+- When evaluating responses related to creative writing or language-related tasks, consider the coherence, clarity, and overall quality of the writing, as well as its relevance to the prompt.
+- When evaluating responses related to scientific or factual topics, consider the accuracy and correctness of the information, as well as its relevance to the prompt.
+- When evaluating responses related to tasks that involve multiple steps or complex procedures, consider the completeness and correctness of each step, as well as the overall flow and coherence of the response.
+
+By following these instructions and considering the above factors and domain-specific information, you should be able to provide an informed verdict on which response is better.
+2026-04-25 23:48:26,224 [INFO] src.runall_prompt_optimization.gepa_position_bias: GEPA progress: 260 calls | score=0.550 acc=0.700 consist=0.400 parse=1.00 c_emit=0.00 c_gold=0.10
+2026-04-25 23:48:26,275 [INFO] src.runall_prompt_optimization.gepa_position_bias: GEPA progress: 270 calls | score=0.550 acc=0.800 consist=0.300 parse=1.00 c_emit=0.00 c_gold=0.00
+2026-04-25 23:48:29,078 [INFO] src.runall_prompt_optimization.gepa_position_bias: GEPA progress: 280 calls | score=0.500 acc=0.500 consist=0.500 parse=1.00 c_emit=0.00 c_gold=0.20
+2026/04/25 23:48:29 INFO dspy.evaluate.evaluate: Average Metric: 16.0 / 30 (53.3%)
+2026/04/25 23:48:29 INFO dspy.teleprompt.gepa.gepa: Iteration 1: New subsample score 16.0 is better than old score 14.0. Continue to full eval and add to candidate pool.
+2026-04-25 23:48:31,888 [INFO] src.runall_prompt_optimization.gepa_position_bias: GEPA progress: 290 calls | score=0.500 acc=0.600 consist=0.400 parse=1.00 c_emit=0.00 c_gold=0.10
+2026-04-25 23:48:32,078 [INFO] src.runall_prompt_optimization.gepa_position_bias: GEPA progress: 300 calls | score=0.400 acc=0.400 consist=0.400 parse=1.00 c_emit=0.00 c_gold=0.10
+2026-04-25 23:48:34,999 [INFO] src.runall_prompt_optimization.gepa_position_bias: GEPA progress: 310 calls | score=0.600 acc=0.600 consist=0.600 parse=1.00 c_emit=0.00 c_gold=0.40
+2026-04-25 23:48:37,011 [INFO] src.runall_prompt_optimization.gepa_position_bias: GEPA progress: 320 calls | score=0.450 acc=0.300 consist=0.600 parse=1.00 c_emit=0.00 c_gold=0.30
+2026-04-25 23:48:37,056 [INFO] src.runall_prompt_optimization.gepa_position_bias: GEPA progress: 330 calls | score=0.550 acc=0.600 consist=0.500 parse=1.00 c_emit=0.00 c_gold=0.20
+2026-04-25 23:48:39,753 [INFO] src.runall_prompt_optimization.gepa_position_bias: *** BEAT BASELINE on val *** candidate=8a17c4a6 consistency=0.500 (> baseline 0.348) accuracy=0.420 n=50
+2026-04-25 23:48:39,756 [INFO] src.runall_prompt_optimization.gepa_position_bias: GEPA progress: 340 calls | score=0.200 acc=0.100 consist=0.300 parse=1.00 c_emit=0.00 c_gold=0.30
+2026-04-25 23:48:42,715 [INFO] src.runall_prompt_optimization.gepa_position_bias: GEPA progress: 350 calls | score=0.600 acc=0.700 consist=0.500 parse=1.00 c_emit=0.00 c_gold=0.00
+2026-04-25 23:48:46,310 [INFO] src.runall_prompt_optimization.gepa_position_bias: GEPA progress: 360 calls | score=0.750 acc=0.700 consist=0.800 parse=1.00 c_emit=0.00 c_gold=0.20
+2026-04-25 23:48:46,357 [INFO] src.runall_prompt_optimization.gepa_position_bias: GEPA progress: 370 calls | score=0.500 acc=0.500 consist=0.500 parse=1.00 c_emit=0.00 c_gold=0.20
+2026-04-25 23:48:49,834 [INFO] src.runall_prompt_optimization.gepa_position_bias: GEPA progress: 380 calls | score=0.650 acc=0.600 consist=0.700 parse=1.00 c_emit=0.00 c_gold=0.10
+2026-04-25 23:48:54,517 [INFO] src.runall_prompt_optimization.gepa_position_bias: GEPA progress: 390 calls | score=0.400 acc=0.500 consist=0.300 parse=1.00 c_emit=0.00 c_gold=0.10
+2026-04-25 23:48:54,569 [INFO] src.runall_prompt_optimization.gepa_position_bias: GEPA progress: 400 calls | score=0.550 acc=0.600 consist=0.500 parse=1.00 c_emit=0.00 c_gold=0.20
+2026-04-25 23:48:57,876 [INFO] src.runall_prompt_optimization.gepa_position_bias: GEPA progress: 410 calls | score=0.500 acc=0.600 consist=0.400 parse=1.00 c_emit=0.00 c_gold=0.10
+2026-04-25 23:49:01,132 [INFO] src.runall_prompt_optimization.gepa_position_bias: GEPA progress: 420 calls | score=0.700 acc=0.800 consist=0.600 parse=1.00 c_emit=0.00 c_gold=0.10
+2026-04-25 23:49:01,181 [INFO] src.runall_prompt_optimization.gepa_position_bias: GEPA progress: 430 calls | score=0.650 acc=0.700 consist=0.600 parse=1.00 c_emit=0.00 c_gold=0.10
+2026-04-25 23:49:03,780 [INFO] src.runall_prompt_optimization.gepa_position_bias: GEPA progress: 440 calls | score=0.650 acc=0.600 consist=0.700 parse=1.00 c_emit=0.00 c_gold=0.20
