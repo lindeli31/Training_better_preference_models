@@ -25,7 +25,8 @@ B5 Repetition Stability
   - least_stable_prompts : N prompts with the lowest modal_agreement
 Accuracy breakdown
   - accuracy_overall    : % of predictions matching gold_label
-  - accuracy_by_gap_bucket : accuracy within hard / medium / easy buckets
+  - accuracy_by_gap_bucket : accuracy per difficulty bucket (easy / medium /
+                             hard / impossible, as tagged in the _full dataset)
   - confusion_matrix_gold_x_pred : gold → predicted label counts
   - label_distribution   : predicted label counts
 """
@@ -361,18 +362,22 @@ def compute_repetition_stability(
 
 # ---------------------------------------------------------------------------
 # Accuracy breakdown (for run_evaluate_accuracy)
-# Uses the same "difficulty" buckets as dataset.py: hard (gap ≤ 0.33),
-# medium (0.33 < gap ≤ 1.0), easy (gap > 1.0). Score scale is 0-4.
+# Buckets come from the `difficulty` tag set at dataset-build time, so the
+# thresholds live in one place (src/dataset.py).
 # ---------------------------------------------------------------------------
+
+BUCKET_ORDER = ("easy", "medium", "hard", "impossible")
+
 
 def compute_accuracy_breakdown(results: list[dict], exclude_ties: bool = False) -> dict:
     """
-    Expects enriched records with at least: label, gold_label, score_gap.
+    Expects enriched records with at least: label, gold_label, difficulty.
+    Pairs without a difficulty tag end up in an "unknown" bucket.
     """
     if exclude_ties:
         results = [r for r in results if r.get("gold_label") != "C"]
-    buckets = [(0.33, "hard"), (1.0, "medium"), (float("inf"), "easy")]
-    bucket_stats = {name: {"correct": 0, "total": 0} for _, name in buckets}
+
+    bucket_stats: dict = defaultdict(lambda: {"correct": 0, "total": 0})
     confusion: dict = defaultdict(lambda: {"A": 0, "B": 0, "C": 0, "None": 0})
     label_dist = {"A": 0, "B": 0, "C": 0, "None": 0}
 
@@ -384,7 +389,7 @@ def compute_accuracy_breakdown(results: list[dict], exclude_ties: bool = False) 
         total += 1
         lbl = r.get("label")
         gold = r.get("gold_label")
-        gap = r.get("score_gap") if r.get("score_gap") is not None else 0.0
+        bucket = r.get("difficulty") or "unknown"
 
         key_lbl = lbl if lbl is not None else "None"
         label_dist[key_lbl] += 1
@@ -394,22 +399,21 @@ def compute_accuracy_breakdown(results: list[dict], exclude_ties: bool = False) 
             parse_fail += 1
             continue
 
-        for upper, name in buckets:
-            if gap <= upper:
-                bucket_stats[name]["total"] += 1
-                if lbl == gold:
-                    bucket_stats[name]["correct"] += 1
-                break
-
+        bucket_stats[bucket]["total"] += 1
         if lbl == gold:
+            bucket_stats[bucket]["correct"] += 1
             correct += 1
 
+    # Preserve canonical order (easy → impossible) and append any extras last
+    ordered_names = [b for b in BUCKET_ORDER if b in bucket_stats] + \
+                    [b for b in bucket_stats if b not in BUCKET_ORDER]
     accuracy_by_bucket = {
         name: {
-            "n": s["total"],
-            "accuracy": round(s["correct"] / s["total"], 4) if s["total"] else 0.0,
+            "n": bucket_stats[name]["total"],
+            "accuracy": round(bucket_stats[name]["correct"] / bucket_stats[name]["total"], 4)
+                        if bucket_stats[name]["total"] else 0.0,
         }
-        for name, s in bucket_stats.items()
+        for name in ordered_names
     }
 
     return {

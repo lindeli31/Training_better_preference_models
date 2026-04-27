@@ -37,7 +37,7 @@ DATA_DIR = Path("data")
 # - gold_label: "A", "B", or "C" (if A is better, B is better, or tie)
 # ---------------------------------------------------------------------------
 
-DIFFICULTY_LEVELS = ("easy", "medium", "hard")
+DIFFICULTY_LEVELS = ("easy", "medium", "hard", "impossible")
 
 
 class PairRecord:
@@ -181,12 +181,14 @@ def download_dataset(split: str = "validation", full: bool = False, seed: int = 
                 record["len_a"] = len(best["response"])
                 record["len_b"] = len(worst["response"])
                 gap = abs(s_a - s_b)
-                if gap > 1.0:
+                if gap > 1.3:  #five points of difference 
                     record["difficulty"] = "easy"
-                elif gap > 0.33:
+                elif gap >0.6:  
                     record["difficulty"] = "medium"
-                else:
+                elif gap >0.3:
                     record["difficulty"] = "hard"
+                else: 
+                    record["difficulty"] = "impossible"
 
             records.append(record)
 
@@ -240,8 +242,85 @@ def load_dataset_pairs(
 
 
 # ---------------------------------------------------------------------------
+# load_stratified_pairs
+# - Loads from helpsteer2_{split}_full.json (difficulty tags required)
+# - pct_ties controls the share of gold_label=C pairs in the returned sample
+# - The remaining (1 - pct_ties) share is split as evenly as possible across
+#   the given difficulty buckets (default: easy / medium / hard — "impossible"
+#   is excluded unless you ask for it).
+# - Deterministic given `seed`.
+# ---------------------------------------------------------------------------
+
+def load_stratified_pairs(
+    split: str = "train",
+    n: int = 500,
+    pct_ties: float = 0.0,
+    seed: int = 42,
+    difficulties: tuple[str, ...] = ("easy", "medium", "hard"),
+) -> list[PairRecord]:
+    """
+    Return `n` pairs drawn from the _full split with controlled composition:
+      - round(n * pct_ties) pairs have gold_label == "C" (ties)
+      - the remaining n_real = n - n_ties are split as evenly as possible
+        across `difficulties` (only non-tie pairs enter the per-difficulty
+        pools)
+
+    If any bucket has fewer pairs than requested, a warning is printed and
+    the function returns what is available for that bucket.
+    """
+    if not 0.0 <= pct_ties <= 1.0:
+        raise ValueError(f"pct_ties must be in [0, 1], got {pct_ties}")
+    for d in difficulties:
+        if d not in DIFFICULTY_LEVELS:
+            raise ValueError(f"Unknown difficulty {d!r}; expected one of {DIFFICULTY_LEVELS}")
+
+    path = DATA_DIR / f"helpsteer2_{split}_full.json"
+    with open(path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    pool = [PairRecord(**row) for row in data]
+
+    rng = random.Random(seed)
+
+    ties_pool = [p for p in pool if p.gold_label == "C"]
+    bucket_pools = {
+        d: [p for p in pool if p.gold_label != "C" and p.difficulty == d]
+        for d in difficulties
+    }
+
+    rng.shuffle(ties_pool)
+    for d in difficulties:
+        rng.shuffle(bucket_pools[d])
+
+    n_ties = round(n * pct_ties)
+    n_real = n - n_ties
+    k = len(difficulties)
+    base, extra = divmod(n_real, k)
+    per_bucket = {d: base + (1 if i < extra else 0) for i, d in enumerate(difficulties)}
+
+    picked: list[PairRecord] = []
+
+    if n_ties > len(ties_pool):
+        print(f"WARNING: requested {n_ties} tie pairs but only {len(ties_pool)} available")
+        picked.extend(ties_pool)
+    else:
+        picked.extend(ties_pool[:n_ties])
+
+    for d in difficulties:
+        want = per_bucket[d]
+        available = bucket_pools[d]
+        if want > len(available):
+            print(f"WARNING: requested {want} {d!r} pairs but only {len(available)} available")
+            picked.extend(available)
+        else:
+            picked.extend(available[:want])
+
+    rng.shuffle(picked)  # mix difficulties so concurrency isn't ordered by bucket
+    return picked
+
+
+# ---------------------------------------------------------------------------
 # Run directly to download train + validation
-# python -m src.dataset 
+# python -m src.dataset
 # when you are in the root of the project.
 # Ater running this, you can visualize dataset with dataset.analysis.ipynb.
 # ---------------------------------------------------------------------------

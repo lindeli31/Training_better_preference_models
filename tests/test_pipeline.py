@@ -104,7 +104,7 @@ def test_pair_record_difficulty_optional():
     assert pair.difficulty is None
 
 def test_difficulty_levels_constant():
-    assert set(DIFFICULTY_LEVELS) == {"easy", "medium", "hard"}
+    assert set(DIFFICULTY_LEVELS) == {"easy", "medium", "hard", "impossible"}
 
 
 # ===========================================================================

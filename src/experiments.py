@@ -335,6 +335,7 @@ async def run_evaluate_accuracy(
     for pair, resp in zip(pairs, results):
         d = resp.to_dict()
         d["gold_label"] = pair.gold_label
+        d["difficulty"] = pair.difficulty
         d["score_gap"] = pair.extras.get("score_gap")
         d["score_a"] = pair.extras.get("score_a")
         d["score_b"] = pair.extras.get("score_b")

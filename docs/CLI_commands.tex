@@ -61,6 +61,10 @@ python run_evaluate_accuracy.py --n-pairs 500 --template expert_rater \
   \texttt{--base-url}      & \texttt{swissai.../v1}   & OpenAI-compatible endpoint URL. \\
   \texttt{--concurrency}   & \texttt{8}             & Max concurrent HTTP requests. \\
   \texttt{--exclude-ties}  & \texttt{false}         & Omit pairs with \texttt{gold\_label=C} from all accuracy computations. Necessary when evaluating hard-difficulty subsets, where all gold labels are exact score ties (\texttt{C}) and accuracy is otherwise trivially zero. \\
+  \texttt{--pct-ties}      & \texttt{0.0}           & Fraction of the sampled pairs that should have \texttt{gold\_label=C} (value in $[0,1]$). At \texttt{0.0} the sample contains no ties; at \texttt{1.0} only ties. \\
+  \texttt{--difficulties}  & \texttt{easy medium hard} & Difficulty buckets used to populate the non-tie portion of the sample, split as evenly as possible across the listed buckets. Accepts any subset of \texttt{easy}, \texttt{medium}, \texttt{hard}, \texttt{impossible}. \\
+  \texttt{--difficulty}    & \texttt{None}          & Shortcut for single-bucket runs. If set (one of \texttt{easy}, \texttt{medium}, \texttt{hard}, \texttt{impossible}) it overrides \texttt{--difficulties} with this single value. \\
+  \texttt{--gold-label-seed} & \texttt{42}          & Seed for the per-pair A/B re-randomisation applied at load time. Different values produce different \emph{within-bucket} gold-label distributions on the same prompts, so averaging results across several values cancels out the effect of gold imbalance within a bucket. \\
   \bottomrule
 \end{longtable}
 

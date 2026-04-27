@@ -3,7 +3,9 @@ plot_accuracy.py
 ----------------
 Generate figures from a run_evaluate_accuracy JSONL file:
 
-  1. accuracy_by_bucket.png       bar chart: accuracy per hard/medium/easy bucket
+  1. accuracy_by_bucket.png       bar chart: accuracy per difficulty bucket
+                                  (easy / medium / hard / impossible, whichever
+                                  the run contains).
   2. accuracy_confusion_matrix.png heatmap:  gold x predicted, row-normalised
   3. accuracy_label_distribution.png grouped bars: gold vs predicted label share
 
@@ -43,14 +45,49 @@ def load_jsonl(path: Path) -> list[dict]:
     return records
 
 
-def plot_accuracy_by_bucket(metrics: dict, out: Path) -> None:
-    buckets = ["hard", "medium", "easy"]
-    accs = [metrics["accuracy_by_gap_bucket"][b]["accuracy"] for b in buckets]
-    ns = [metrics["accuracy_by_gap_bucket"][b]["n"] for b in buckets]
+def load_meta(jsonl_path: Path) -> dict:
+    meta_path = jsonl_path.with_suffix(".meta.json")
+    if not meta_path.exists():
+        return {}
+    with open(meta_path) as f:
+        return json.load(f)
+
+
+def _run_tag(meta: dict, n_total: int) -> str:
+    """Short subtitle fragment built from meta (difficulty, seeds, n)."""
+    parts = []
+    diff = meta.get("difficulty") or (
+        meta["difficulties"][0] if meta.get("difficulties") and len(meta["difficulties"]) == 1 else None
+    )
+    if diff:
+        parts.append(f"difficulty={diff}")
+    elif meta.get("difficulties"):
+        parts.append("difficulties=" + "+".join(meta["difficulties"]))
+    if meta.get("gold_label_seed") is not None:
+        parts.append(f"gold_seed={meta['gold_label_seed']}")
+    parts.append(f"n={n_total}")
+    return ", ".join(parts)
+
+
+def plot_accuracy_by_bucket(metrics: dict, out: Path, meta: dict) -> None:
+    # Canonical display order: easiest → hardest (impossible last).
+    canonical_order = ["easy", "medium", "hard", "impossible"]
+    available = metrics["accuracy_by_gap_bucket"]
+    buckets = [b for b in canonical_order if b in available] + \
+              [b for b in available if b not in canonical_order]
+    accs = [available[b]["accuracy"] for b in buckets]
+    ns = [available[b]["n"] for b in buckets]
     overall = metrics["accuracy_overall"]
 
+    color_map = {
+        "easy": "#28823c",
+        "medium": "#e08a3c",
+        "hard": "#b42828",
+        "impossible": "#4a4a4a",
+    }
+    colors = [color_map.get(b, "#7a7a7a") for b in buckets]
+
     fig, ax = plt.subplots(figsize=(6, 4))
-    colors = ["#b42828", "#e08a3c", "#28823c"]
     bars = ax.bar(buckets, accs, color=colors, edgecolor="black", linewidth=0.6)
     ax.axhline(1 / 3, color="gray", linestyle="--", linewidth=1, label="Random (1/3)")
     ax.axhline(overall, color="#1f407a", linestyle=":", linewidth=1.2,
@@ -63,7 +100,8 @@ def plot_accuracy_by_bucket(metrics: dict, out: Path) -> None:
     ax.set_ylim(0, 1.0)
     ax.set_ylabel("Accuracy")
     ax.set_xlabel("Score-gap difficulty bucket")
-    ax.set_title("Accuracy vs gold label by difficulty bucket")
+    subtitle = _run_tag(meta, metrics["n_total"])
+    ax.set_title(f"Accuracy by difficulty bucket\n{subtitle}", fontsize=10)
     ax.legend(loc="upper left", fontsize=8)
     ax.grid(axis="y", alpha=0.3)
     fig.tight_layout()
@@ -71,7 +109,7 @@ def plot_accuracy_by_bucket(metrics: dict, out: Path) -> None:
     plt.close(fig)
 
 
-def plot_confusion_matrix(metrics: dict, out: Path) -> None:
+def plot_confusion_matrix(metrics: dict, out: Path, meta: dict) -> None:
     labels = ["A", "B", "C"]
     cm = metrics["confusion_matrix_gold_x_pred"]
     mat = np.array([[cm.get(g, {}).get(p, 0) for p in labels] for g in labels], dtype=float)
@@ -88,7 +126,8 @@ def plot_confusion_matrix(metrics: dict, out: Path) -> None:
     ax.set_yticklabels(labels)
     ax.set_xlabel("Predicted label")
     ax.set_ylabel("Gold label")
-    ax.set_title("Confusion matrix (row-normalised by gold)")
+    subtitle = _run_tag(meta, metrics["n_total"])
+    ax.set_title(f"Confusion matrix (row-normalised by gold)\n{subtitle}", fontsize=10)
 
     for i in range(len(labels)):
         for j in range(len(labels)):
@@ -104,7 +143,7 @@ def plot_confusion_matrix(metrics: dict, out: Path) -> None:
     plt.close(fig)
 
 
-def plot_label_distribution(metrics: dict, out: Path) -> None:
+def plot_label_distribution(metrics: dict, out: Path, meta: dict) -> None:
     labels = ["A", "B", "C"]
     n_total = metrics["n_total"]
     pred = metrics["label_distribution"]
@@ -133,7 +172,8 @@ def plot_label_distribution(metrics: dict, out: Path) -> None:
     ax.set_ylabel("Share of pairs")
     ax.set_xlabel("Label")
     ax.set_ylim(0, max(max(gold_share), max(pred_share)) * 1.25)
-    ax.set_title("Gold vs predicted label distribution")
+    subtitle = _run_tag(meta, metrics["n_total"])
+    ax.set_title(f"Gold vs predicted label distribution\n{subtitle}", fontsize=10)
     ax.legend()
     ax.grid(axis="y", alpha=0.3)
     fig.tight_layout()
@@ -146,12 +186,18 @@ def main():
     out = args.out or (args.jsonl.parent / "figures" / args.jsonl.stem)
     out.mkdir(parents=True, exist_ok=True)
     records = load_jsonl(args.jsonl)
+    meta = load_meta(args.jsonl)
     metrics = compute_accuracy_breakdown(records)
 
-    plot_accuracy_by_bucket(metrics, out)
-    plot_confusion_matrix(metrics, out)
-    plot_label_distribution(metrics, out)
-    print(f"Saved 3 figures to {out}/")
+    n_figs = 0
+    # The per-bucket bar chart is meaningless for single-bucket runs.
+    if len(metrics["accuracy_by_gap_bucket"]) > 1:
+        plot_accuracy_by_bucket(metrics, out, meta)
+        n_figs += 1
+    plot_confusion_matrix(metrics, out, meta)
+    plot_label_distribution(metrics, out, meta)
+    n_figs += 2
+    print(f"Saved {n_figs} figures to {out}/")
 
 
 if __name__ == "__main__":

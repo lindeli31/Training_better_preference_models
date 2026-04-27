@@ -30,13 +30,14 @@ import argparse
 import asyncio
 import logging
 import os
+import random
 import time
 from datetime import datetime
 from dotenv import load_dotenv
 from pathlib import Path
 
 from src.inference_client import InferenceConfig, SwissAIClient
-from src.dataset import load_dataset_pairs
+from src.dataset import DIFFICULTY_LEVELS, PairRecord, load_stratified_pairs
 from src.experiments import run_evaluate_accuracy
 from src.metrics import compute_accuracy_breakdown, print_summary
 from check_models import validate_model
@@ -72,7 +73,34 @@ def parse_args():
     p.add_argument("--concurrency", type=int, default=8)
     p.add_argument("--exclude-ties", action="store_true",
                    help="Exclude pairs with gold_label=C from accuracy computation.")
+    p.add_argument("--pct-ties", type=float, default=0.0,
+                   help="Fraction of the sample that should be gold_label=C "
+                        "(value in [0, 1]; default 0.0 = no ties).")
+    p.add_argument("--difficulties", nargs="+",
+                   default=["easy", "medium", "hard"],
+                   help="Difficulty buckets to include for the non-tie part "
+                        "of the sample, split equally among them "
+                        "(default: easy medium hard).")
+    p.add_argument("--difficulty", default=None, choices=list(DIFFICULTY_LEVELS),
+                   help="Shortcut for single-bucket runs: if set, overrides "
+                        "--difficulties with this single bucket.")
+    p.add_argument("--gold-label-seed", type=int, default=42,
+                   help="Seed for the per-pair A/B re-randomisation applied at "
+                        "load time. Different values give different within-bucket "
+                        "gold-label distributions on the SAME prompts, which is "
+                        "useful to average out gold imbalance inside a bucket.")
     return p.parse_args()
+
+
+def _rerandomize_gold(pairs: list[PairRecord], seed: int) -> list[PairRecord]:
+    """Flip each pair independently with p=0.5 under the given seed.
+
+    Using PairRecord.flipped() keeps gold_label, response_a/b and extras
+    mutually consistent. This re-randomises which physical response sits
+    in position A without changing which one is 'better'.
+    """
+    rng = random.Random(seed)
+    return [p.flipped() if rng.random() < 0.5 else p for p in pairs]
 
 
 async def main(args):
@@ -89,12 +117,22 @@ async def main(args):
         concurrent_requests=args.concurrency,
     )
 
-    logger.info("Loading dataset (full=True): split=%s | n=%d | seed=%d",
-                args.split, args.n_pairs, args.seed)
-    pairs = load_dataset_pairs(
-        split=args.split, n=args.n_pairs, seed=args.seed, full=True
+    # --difficulty (singular) wins over --difficulties (plural) when set.
+    difficulties = [args.difficulty] if args.difficulty else list(args.difficulties)
+
+    logger.info("Loading stratified dataset: split=%s | n=%d | pct_ties=%.2f | "
+                "difficulties=%s | seed=%d | gold_label_seed=%d",
+                args.split, args.n_pairs, args.pct_ties, difficulties,
+                args.seed, args.gold_label_seed)
+    pairs = load_stratified_pairs(
+        split=args.split,
+        n=args.n_pairs,
+        pct_ties=args.pct_ties,
+        seed=args.seed,
+        difficulties=tuple(difficulties),
     )
-    logger.info("Dataset ready: %d pairs", len(pairs))
+    pairs = _rerandomize_gold(pairs, args.gold_label_seed)
+    logger.info("Dataset ready: %d pairs (after gold re-randomisation)", len(pairs))
 
     run_name = args.run_name or datetime.utcnow().strftime("%Y%m%d_%H%M%S")
 
@@ -111,6 +149,11 @@ async def main(args):
         "temperature": args.temperature,
         "seed": args.seed,
         "concurrency": args.concurrency,
+        "pct_ties": args.pct_ties,
+        "difficulties": difficulties,
+        "difficulty": args.difficulty,
+        "gold_label_seed": args.gold_label_seed,
+        "exclude_ties": args.exclude_ties,
         "prompt_ids": [p.prompt_id for p in pairs],
     }
 
