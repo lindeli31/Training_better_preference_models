@@ -159,6 +159,7 @@ async def run_opro_one(
     seed: int,
     precomputed_baseline_train: dict | None = None,
     precomputed_baseline_val: dict | None = None,
+    proposer_client: SwissAIClient | None = None,
 ) -> dict | None:
     try:
         result = await run_opro(
@@ -171,6 +172,7 @@ async def run_opro_one(
             output_dir=output_dir,
             precomputed_baseline_train=precomputed_baseline_train,
             precomputed_baseline_val=precomputed_baseline_val,
+            proposer_client=proposer_client,
         )
         return {
             "baseline_train": result.baseline_train,
@@ -197,6 +199,7 @@ async def run_opro_tree_one(
     seed: int,
     precomputed_baseline_train: dict | None = None,
     precomputed_baseline_val: dict | None = None,
+    proposer_client: SwissAIClient | None = None,
 ) -> dict | None:
     try:
         result = await run_opro_tree(
@@ -210,6 +213,7 @@ async def run_opro_tree_one(
             output_dir=output_dir,
             precomputed_baseline_train=precomputed_baseline_train,
             precomputed_baseline_val=precomputed_baseline_val,
+            proposer_client=proposer_client,
         )
         return {
             "baseline_train": result.baseline_train,
@@ -440,9 +444,13 @@ async def run_all_methods_for_model(
             concurrent_requests=concurrency,
             extra_body=_thinking_body(thinking),
         )
-        async with SwissAIClient(cfg) as client:
+        proposer_cfg = InferenceConfig(
+            base_url=api_base, api_key=api_key, model=reflection_model,
+            concurrent_requests=concurrency,
+        )
+        async with SwissAIClient(cfg) as client, SwissAIClient(proposer_cfg) as proposer_client:
             if "opro" in methods:
-                logger.info("[%s] Running OPRO", model)
+                logger.info("[%s] Running OPRO (proposer=%s)", model, reflection_model)
                 results["opro"] = await run_opro_one(
                     client=client,
                     train_pairs=train_pairs,
@@ -453,10 +461,11 @@ async def run_all_methods_for_model(
                     seed=seed,
                     precomputed_baseline_train=shared_baseline_train,
                     precomputed_baseline_val=shared_baseline_val,
+                    proposer_client=proposer_client,
                 )
             if "opro_tree" in methods:
-                logger.info("[%s] Running OPRO-Tree (branching=%d)",
-                            model, opro_tree_branching_factor)
+                logger.info("[%s] Running OPRO-Tree (branching=%d, proposer=%s)",
+                            model, opro_tree_branching_factor, reflection_model)
                 results["opro_tree"] = await run_opro_tree_one(
                     client=client,
                     train_pairs=train_pairs,
@@ -468,6 +477,7 @@ async def run_all_methods_for_model(
                     seed=seed,
                     precomputed_baseline_train=shared_baseline_train,
                     precomputed_baseline_val=shared_baseline_val,
+                    proposer_client=proposer_client,
                 )
     return results
 
