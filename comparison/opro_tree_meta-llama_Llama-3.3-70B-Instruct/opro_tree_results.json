@@ -1,0 +1,1019 @@
+{
+  "best_prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a fair, unbiased, and order-independent comparison, adopt a dual-evaluation approach: first, assess each response individually, considering its accuracy, completeness, relevance, clarity, and overall ability to address the user's query as if it were the only response provided. Next, compare the two responses directly, focusing on their relative strengths and weaknesses, and evaluating which one better meets the user's needs. Throughout this process, maintain a neutral and abstract perspective, disregarding the order in which the responses are presented and avoiding any influence from their sequential presentation. To further minimize position bias, pause to reflect on your evaluation process, verifying that your judgment is based solely on the intrinsic merits of each response, including their content, quality, and effectiveness in resolving the user's inquiry. Output A if one response is superior, B if the other is superior, or C if both responses are of equal quality, ensuring that your verdict is the result of a thorough, impartial, and order-agnostic analysis.",
+  "best_train_score": 0.68335,
+  "baseline_train": {
+    "n_pairs_evaluated": 798,
+    "position_consistency": 0.6353,
+    "position_bias_rate": 0.3647,
+    "bias_toward_first_position": 0.2719,
+    "bias_toward_second_position": 0.0865,
+    "tie_inconsistency_rate": 0.0063,
+    "accuracy_ab": 0.5376,
+    "accuracy_ba": 0.5163,
+    "accuracy": 0.5269
+  },
+  "baseline_val": {
+    "n_pairs_evaluated": 198,
+    "position_consistency": 0.7121,
+    "position_bias_rate": 0.2879,
+    "bias_toward_first_position": 0.1667,
+    "bias_toward_second_position": 0.1162,
+    "tie_inconsistency_rate": 0.0051,
+    "accuracy_ab": 0.6313,
+    "accuracy_ba": 0.5808,
+    "accuracy": 0.6061
+  },
+  "train": {
+    "n_pairs_evaluated": 798,
+    "position_consistency": 0.7857,
+    "position_bias_rate": 0.2143,
+    "bias_toward_first_position": 0.1103,
+    "bias_toward_second_position": 0.0752,
+    "tie_inconsistency_rate": 0.0288,
+    "accuracy_ab": 0.5251,
+    "accuracy_ba": 0.5301,
+    "accuracy": 0.5276
+  },
+  "val": {
+    "n_pairs_evaluated": 198,
+    "position_consistency": 0.8535,
+    "position_bias_rate": 0.1465,
+    "bias_toward_first_position": 0.0657,
+    "bias_toward_second_position": 0.0707,
+    "tie_inconsistency_rate": 0.0101,
+    "accuracy_ab": 0.6313,
+    "accuracy_ba": 0.596,
+    "accuracy": 0.6136
+  },
+  "history": [
+    {
+      "prompt": "You are an LLM used to judge and compare assistant completions. You will be given a user prompt and two assistant responses labeled A and B.\n\nOutput only a single letter: A if the first response is better, B if the second response is better, or C if they are equally good.",
+      "score": 0.6,
+      "metrics": {
+        "n_pairs_evaluated": 30,
+        "position_consistency": 0.6333,
+        "position_bias_rate": 0.3667,
+        "bias_toward_first_position": 0.3333,
+        "bias_toward_second_position": 0.0333,
+        "tie_inconsistency_rate": 0.0,
+        "accuracy_ab": 0.6333,
+        "accuracy_ba": 0.5,
+        "accuracy": 0.5667
+      },
+      "branches": [
+        {
+          "prompt": "You are an expert rater. You will be provided with a user prompt and two assistant responses. Your task is to determine which response is better.\n\nOutput only a single letter: A if the first response is better, B if the second response is better, or C if they are equally good.",
+          "score": 0.5917,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.6667,
+            "position_bias_rate": 0.3333,
+            "bias_toward_first_position": 0.3333,
+            "bias_toward_second_position": 0.0,
+            "tie_inconsistency_rate": 0.0,
+            "accuracy_ab": 0.5667,
+            "accuracy_ba": 0.4667,
+            "accuracy": 0.5167
+          }
+        },
+        {
+          "prompt": "You are an LLM used to judge and compare assistant completions. You will be given a user prompt and two assistant responses labeled A and B.\n\nOutput only a single letter: A if the first response is better, B if the second response is better, or C if they are equally good.",
+          "score": 0.6,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.6333,
+            "position_bias_rate": 0.3667,
+            "bias_toward_first_position": 0.3333,
+            "bias_toward_second_position": 0.0333,
+            "tie_inconsistency_rate": 0.0,
+            "accuracy_ab": 0.6333,
+            "accuracy_ba": 0.5,
+            "accuracy": 0.5667
+          }
+        }
+      ]
+    },
+    {
+      "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a fair comparison, carefully consider the content and relevance of both responses, disregarding the order in which they are presented. Assess each response based on its accuracy, completeness, and overall ability to address the user's query. Do not allow the presentation order to influence your judgment. Instead, focus on the intrinsic merits of each response. Output A if one response is superior, B if the other is superior, or C if both responses are of equal quality, thus minimizing any potential bias introduced by the order of presentation.",
+      "score": 0.59165,
+      "metrics": {
+        "n_pairs_evaluated": 30,
+        "position_consistency": 0.7,
+        "position_bias_rate": 0.3,
+        "bias_toward_first_position": 0.2333,
+        "bias_toward_second_position": 0.0,
+        "tie_inconsistency_rate": 0.0667,
+        "accuracy_ab": 0.5667,
+        "accuracy_ba": 0.4,
+        "accuracy": 0.4833
+      },
+      "branches": [
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a fair comparison, consider the content and relevance of each response independently, without regard to the order in which they are presented. Assess the responses based on their accuracy, completeness, and overall ability to address the user's query. Output A if response A is superior, B if response B is superior, or C if both responses are of equal quality, taking care to evaluate them on their individual merits rather than their presentation order. Your goal is to provide a verdict that would remain unchanged even if the responses were swapped.",
+          "score": 0.55,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.6,
+            "position_bias_rate": 0.4,
+            "bias_toward_first_position": 0.3333,
+            "bias_toward_second_position": 0.0333,
+            "tie_inconsistency_rate": 0.0333,
+            "accuracy_ab": 0.6,
+            "accuracy_ba": 0.4,
+            "accuracy": 0.5
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a fair comparison, consider the content and relevance of each response independently, without regard to the order in which they are presented. Assess the responses based on their accuracy, completeness, and overall ability to address the user's query. Output A if response A is superior, B if response B is superior, or C if both responses are of equal quality, taking care to evaluate them on their individual merits rather than their presentation order. Your goal is to provide a verdict that would remain unchanged even if the responses were swapped.",
+          "score": 0.525,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.5667,
+            "position_bias_rate": 0.4333,
+            "bias_toward_first_position": 0.4333,
+            "bias_toward_second_position": 0.0,
+            "tie_inconsistency_rate": 0.0,
+            "accuracy_ab": 0.5333,
+            "accuracy_ba": 0.4333,
+            "accuracy": 0.4833
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a fair comparison, carefully consider the content, relevance, and overall usefulness of each response, disregarding the order in which they are presented. \n\nEvaluate both responses based on their individual merits, without bias towards the first or second response. Consider factors such as accuracy, completeness, clarity, and how well each response addresses the user's query.\n\nAfter thoroughly assessing both responses, output a single letter: A if one response is superior, B if the other response is superior, or C if both responses are of equal quality, taking care to ensure your judgment is not influenced by the order of presentation.",
+          "score": 0.525,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.6333,
+            "position_bias_rate": 0.3667,
+            "bias_toward_first_position": 0.1667,
+            "bias_toward_second_position": 0.0333,
+            "tie_inconsistency_rate": 0.1667,
+            "accuracy_ab": 0.4667,
+            "accuracy_ba": 0.3667,
+            "accuracy": 0.4167
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a fair comparison, carefully consider the content and relevance of both responses, disregarding the order in which they are presented. Assess each response based on its accuracy, completeness, and overall ability to address the user's query. Do not allow the presentation order to influence your judgment. Instead, focus on the intrinsic merits of each response. Output A if one response is superior, B if the other is superior, or C if both responses are of equal quality, thus minimizing any potential bias introduced by the order of presentation.",
+          "score": 0.59165,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.7,
+            "position_bias_rate": 0.3,
+            "bias_toward_first_position": 0.2333,
+            "bias_toward_second_position": 0.0,
+            "tie_inconsistency_rate": 0.0667,
+            "accuracy_ab": 0.5667,
+            "accuracy_ba": 0.4,
+            "accuracy": 0.4833
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a fair comparison, carefully consider the content and relevance of both responses, disregarding their presentation order. \n\nEvaluate each response based on its accuracy, completeness, and overall ability to address the user's query. Do not allow the order in which the responses are presented to influence your judgment. \n\nAfter thoroughly assessing both responses, output a single letter: A if response A is superior, B if response B is superior, or C if both responses are of equal quality. Your goal is to provide an unbiased verdict that reflects the intrinsic value of each response in relation to the user's query.",
+          "score": 0.48335,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.5,
+            "position_bias_rate": 0.5,
+            "bias_toward_first_position": 0.3333,
+            "bias_toward_second_position": 0.1,
+            "tie_inconsistency_rate": 0.0667,
+            "accuracy_ab": 0.6,
+            "accuracy_ba": 0.3333,
+            "accuracy": 0.4667
+          }
+        }
+      ]
+    },
+    {
+      "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a fair and unbiased comparison, consider the responses in a neutral and abstract context, disregarding any influence from the order in which they are presented. Imagine each response as a standalone answer, and assess its accuracy, completeness, relevance, and overall ability to address the user's query independently. Evaluate both responses based on their intrinsic merits, such as the clarity of the information, the depth of understanding, and the effectiveness in resolving the user's inquiry. After carefully considering both responses, output A if one response is superior, B if the other is superior, or C if both responses are of equal quality, ensuring that your judgment is based solely on the content and quality of the responses, rather than their presentation order. To further minimize bias, take a moment to reflect on your evaluation process and verify that your decision is not influenced by the order in which the responses were presented, but rather by a thorough and impartial analysis of their respective strengths and weaknesses.",
+      "score": 0.6,
+      "metrics": {
+        "n_pairs_evaluated": 30,
+        "position_consistency": 0.6667,
+        "position_bias_rate": 0.3333,
+        "bias_toward_first_position": 0.3,
+        "bias_toward_second_position": 0.0,
+        "tie_inconsistency_rate": 0.0333,
+        "accuracy_ab": 0.6333,
+        "accuracy_ba": 0.4333,
+        "accuracy": 0.5333
+      },
+      "branches": [
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a fair and unbiased comparison, consider the responses in a neutral and abstract context, disregarding any influence from the order in which they are presented. Imagine each response as a standalone answer, and assess its accuracy, completeness, relevance, and overall ability to address the user's query independently. Evaluate both responses based on their intrinsic merits, such as the clarity of the information, the depth of understanding, and the effectiveness in resolving the user's inquiry. After carefully considering both responses, output A if one response is superior, B if the other is superior, or C if both responses are of equal quality, ensuring that your judgment is based solely on the content and quality of the responses, rather than their presentation order. To further minimize bias, take a moment to reflect on your evaluation process and verify that the order of the responses did not subtly influence your decision.",
+          "score": 0.55,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.6,
+            "position_bias_rate": 0.4,
+            "bias_toward_first_position": 0.3333,
+            "bias_toward_second_position": 0.0,
+            "tie_inconsistency_rate": 0.0667,
+            "accuracy_ab": 0.6,
+            "accuracy_ba": 0.4,
+            "accuracy": 0.5
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a fair and unbiased comparison, consider the responses in a neutral and abstract context, disregarding any influence from the order in which they are presented. Imagine each response as a standalone answer, and assess its accuracy, completeness, relevance, and overall ability to address the user's query independently. Evaluate both responses based on their intrinsic merits, such as the clarity of the information, the depth of understanding, and the effectiveness in resolving the user's inquiry. After carefully considering both responses, output A if one response is superior, B if the other is superior, or C if both responses are of equal quality, ensuring that your judgment is based solely on the content and quality of the responses, rather than their presentation order. To further minimize bias, take a moment to reflect on your evaluation process and verify that your decision is not influenced by the order in which the responses were presented, but rather by a thorough and impartial analysis of their respective strengths and weaknesses.",
+          "score": 0.54165,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.6,
+            "position_bias_rate": 0.4,
+            "bias_toward_first_position": 0.3,
+            "bias_toward_second_position": 0.0333,
+            "tie_inconsistency_rate": 0.0667,
+            "accuracy_ab": 0.6,
+            "accuracy_ba": 0.3667,
+            "accuracy": 0.4833
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a fair and unbiased comparison, consider the responses in a neutral and abstract context, disregarding any influence from the order in which they are presented. Imagine each response as a standalone answer, and assess its accuracy, completeness, relevance, and overall ability to address the user's query independently. Then, compare the two responses based on their intrinsic merits, focusing on the content, tone, and effectiveness of each in resolving the user's inquiry. Output A if one response is superior, B if the other is superior, or C if both responses are of equal quality. To further minimize bias, take a moment to reflect on your evaluation process, ensuring that your judgment is based solely on the responses' inherent value and not on any extraneous factors, including presentation order. By doing so, you will provide a verdict that is fair, consistent, and unbiased, regardless of which response is presented first. Output your verdict as a single letter: A, B, or C.",
+          "score": 0.45,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.5333,
+            "position_bias_rate": 0.4667,
+            "bias_toward_first_position": 0.3333,
+            "bias_toward_second_position": 0.1,
+            "tie_inconsistency_rate": 0.0333,
+            "accuracy_ab": 0.5,
+            "accuracy_ba": 0.2333,
+            "accuracy": 0.3667
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a fair and unbiased comparison, consider the responses in a neutral and abstract context, disregarding any influence from the order in which they are presented. Imagine each response as a standalone answer, and assess its accuracy, completeness, relevance, and overall ability to address the user's query independently. Evaluate both responses based on their intrinsic merits, such as the clarity of the information, the depth of understanding, and the effectiveness in resolving the user's inquiry. After carefully considering both responses, output A if one response is superior, B if the other is superior, or C if both responses are of equal quality, ensuring that your judgment is based solely on the content and quality of the responses, rather than their presentation order. To further minimize bias, take a moment to reflect on your evaluation process and verify that the order of the responses did not subtly influence your decision.",
+          "score": 0.5417000000000001,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.5667,
+            "position_bias_rate": 0.4333,
+            "bias_toward_first_position": 0.3667,
+            "bias_toward_second_position": 0.0,
+            "tie_inconsistency_rate": 0.0667,
+            "accuracy_ab": 0.6333,
+            "accuracy_ba": 0.4,
+            "accuracy": 0.5167
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a fair and unbiased comparison, consider the responses in a neutral and abstract context, disregarding any influence from the order in which they are presented. Imagine each response as a standalone answer, and assess its accuracy, completeness, relevance, and overall ability to address the user's query independently. Evaluate both responses based on their intrinsic merits, such as the clarity of the information, the depth of understanding, and the effectiveness in resolving the user's inquiry. After carefully considering both responses, output A if one response is superior, B if the other is superior, or C if both responses are of equal quality, ensuring that your judgment is based solely on the content and quality of the responses, rather than their presentation order. To further minimize bias, take a moment to reflect on your evaluation process and verify that your decision is not influenced by the order in which the responses were presented, but rather by a thorough and impartial analysis of their respective strengths and weaknesses.",
+          "score": 0.6,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.6667,
+            "position_bias_rate": 0.3333,
+            "bias_toward_first_position": 0.3,
+            "bias_toward_second_position": 0.0,
+            "tie_inconsistency_rate": 0.0333,
+            "accuracy_ab": 0.6333,
+            "accuracy_ba": 0.4333,
+            "accuracy": 0.5333
+          }
+        }
+      ]
+    },
+    {
+      "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a fair, unbiased, and order-independent comparison, adopt a dual-evaluation approach: first, assess each response individually, considering its accuracy, completeness, relevance, clarity, and overall ability to address the user's query as if it were the only response provided. Next, compare the two responses directly, focusing on their relative strengths and weaknesses, and evaluating which one better meets the user's needs. Throughout this process, maintain a neutral and abstract perspective, disregarding the order in which the responses are presented and avoiding any influence from their sequential presentation. To further minimize position bias, pause to reflect on your evaluation process, verifying that your judgment is based solely on the intrinsic merits of each response, including their content, quality, and effectiveness in resolving the user's inquiry. Output A if one response is superior, B if the other is superior, or C if both responses are of equal quality, ensuring that your verdict is the result of a thorough, impartial, and order-agnostic analysis.",
+      "score": 0.68335,
+      "metrics": {
+        "n_pairs_evaluated": 30,
+        "position_consistency": 0.8,
+        "position_bias_rate": 0.2,
+        "bias_toward_first_position": 0.1333,
+        "bias_toward_second_position": 0.0667,
+        "tie_inconsistency_rate": 0.0,
+        "accuracy_ab": 0.5667,
+        "accuracy_ba": 0.5667,
+        "accuracy": 0.5667
+      },
+      "branches": [
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a fair, unbiased, and order-independent comparison, adopt a dual-evaluation approach: first, assess each response individually, considering its accuracy, completeness, relevance, clarity, and overall ability to address the user's query as if it were the only response provided. Next, compare the two responses directly, focusing on their relative strengths and weaknesses, and evaluating which one better meets the user's needs. Throughout this process, maintain a neutral and abstract perspective, disregarding the order in which the responses are presented and avoiding any influence from their sequential presentation. To further minimize position bias, pause to reflect on your evaluation process, verifying that your judgment is based solely on the intrinsic merits of each response, including their content, quality, and effectiveness in resolving the user's inquiry. Output A if one response is superior, B if the other is superior, or C if both responses are of equal quality, ensuring that your verdict is the result of a thorough, impartial, and order-agnostic analysis.",
+          "score": 0.6166499999999999,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.7333,
+            "position_bias_rate": 0.2667,
+            "bias_toward_first_position": 0.1333,
+            "bias_toward_second_position": 0.0667,
+            "tie_inconsistency_rate": 0.0667,
+            "accuracy_ab": 0.5,
+            "accuracy_ba": 0.5,
+            "accuracy": 0.5
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a fair, unbiased, and order-independent comparison, adopt a dual-evaluation approach: first, assess each response individually, considering its accuracy, completeness, relevance, clarity, and overall ability to address the user's query as if it were the only response provided. Next, compare the two responses directly, focusing on their relative strengths and weaknesses, and evaluating which one better meets the user's needs. Throughout this process, maintain a neutral and abstract perspective, disregarding the order in which the responses are presented and avoiding any influence from their sequential presentation. To further minimize position bias, pause to reflect on your evaluation process, verifying that your judgment is based solely on the intrinsic merits of each response, including their content, quality, and effectiveness in resolving the user's inquiry. Output A if one response is superior, B if the other is superior, or C if both responses are of equal quality, ensuring that your verdict is the result of a thorough, impartial, and order-agnostic analysis.",
+          "score": 0.60835,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.7,
+            "position_bias_rate": 0.3,
+            "bias_toward_first_position": 0.1333,
+            "bias_toward_second_position": 0.1333,
+            "tie_inconsistency_rate": 0.0333,
+            "accuracy_ab": 0.5,
+            "accuracy_ba": 0.5333,
+            "accuracy": 0.5167
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a fair, unbiased, and order-independent comparison, adopt a dual-evaluation approach: first, assess each response individually, considering its accuracy, completeness, relevance, clarity, and overall ability to address the user's query as if it were the only response provided. Next, compare the two responses directly, focusing on their relative strengths and weaknesses, and evaluating which one better meets the user's needs. Throughout this process, maintain a neutral and abstract perspective, disregarding the order in which the responses are presented and avoiding any influence from their sequential presentation. To further minimize position bias, pause to reflect on your evaluation process, verifying that your judgment is based solely on the intrinsic merits of each response, including their content, quality, and effectiveness in resolving the user's inquiry. Output A if one response is superior, B if the other is superior, or C if both responses are of equal quality, ensuring that your verdict is the result of a thorough, impartial, and order-agnostic analysis.",
+          "score": 0.6333500000000001,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.7667,
+            "position_bias_rate": 0.2333,
+            "bias_toward_first_position": 0.1,
+            "bias_toward_second_position": 0.1,
+            "tie_inconsistency_rate": 0.0333,
+            "accuracy_ab": 0.5,
+            "accuracy_ba": 0.5,
+            "accuracy": 0.5
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a fair, unbiased, and order-independent comparison, adopt a dual-evaluation approach: first, assess each response individually, considering its accuracy, completeness, relevance, clarity, and overall ability to address the user's query as if it were the only response provided. Next, compare the two responses directly, focusing on their relative strengths and weaknesses, and evaluating which one better meets the user's needs. Throughout this process, maintain a neutral and abstract perspective, disregarding the order in which the responses are presented and avoiding any influence from their sequential presentation. To further minimize position bias, pause to reflect on your evaluation process, verifying that your judgment is based solely on the intrinsic merits of each response, including their content, quality, and effectiveness in resolving the user's inquiry. Output A if one response is superior, B if the other is superior, or C if both responses are of equal quality, ensuring that your verdict is the result of a thorough, impartial, and order-agnostic analysis.",
+          "score": 0.68335,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.8,
+            "position_bias_rate": 0.2,
+            "bias_toward_first_position": 0.1333,
+            "bias_toward_second_position": 0.0667,
+            "tie_inconsistency_rate": 0.0,
+            "accuracy_ab": 0.5667,
+            "accuracy_ba": 0.5667,
+            "accuracy": 0.5667
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a fair, unbiased, and order-independent comparison, adopt a dual-evaluation approach: first, assess each response individually, considering its accuracy, completeness, relevance, clarity, and overall ability to address the user's query as if it were the only response provided. Next, compare the two responses directly, focusing on their relative strengths and weaknesses, and evaluating which one better meets the user's needs. Throughout this process, maintain a neutral and abstract perspective, disregarding the order in which the responses are presented and avoiding any influence from their sequential presentation. To further minimize position bias, pause to reflect on your evaluation process, verifying that your judgment is based solely on the intrinsic merits of each response, including their content, quality, and effectiveness in resolving the user's inquiry. Output A if one response is superior, B if the other is superior, or C if both responses are of equal quality, ensuring that your verdict is the result of a thorough, impartial, and order-agnostic analysis.",
+          "score": 0.6417,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.7667,
+            "position_bias_rate": 0.2333,
+            "bias_toward_first_position": 0.1333,
+            "bias_toward_second_position": 0.1,
+            "tie_inconsistency_rate": 0.0,
+            "accuracy_ab": 0.5333,
+            "accuracy_ba": 0.5,
+            "accuracy": 0.5167
+          }
+        }
+      ]
+    },
+    {
+      "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a fair, unbiased, and order-independent comparison, adopt a triple-evaluation approach: first, assess each response individually, considering its accuracy, completeness, relevance, clarity, and overall ability to address the user's query as if it were the only response provided. Next, compare the two responses directly, focusing on their relative strengths and weaknesses, and evaluating which one better meets the user's needs. Finally, reverse the order of the responses in your mind and re-evaluate them, ensuring that your judgment remains consistent regardless of the presentation order. Throughout this process, maintain a neutral and abstract perspective, disregarding the order in which the responses are presented and avoiding any influence from their sequential presentation. To further minimize position bias, pause to reflect on your evaluation process, verifying that your judgment is based solely on the intrinsic merits of each response, including their content, quality, and effectiveness in resolving the user's inquiry. Consider the user's query as the central reference point, and evaluate each response's ability to provide a clear, concise, and relevant answer. Output A if one response is superior, B if the other is superior, or C if both responses are of equal quality, ensuring that your verdict is the result of a thorough, impartial, and order-agnostic analysis. To validate your decision, ask yourself: \"Would I arrive at the same conclusion if the responses were presented in reverse order?\" and \"Are my evaluations based solely on the responses' inherent qualities, rather than their presentation order?\"",
+      "score": 0.6333,
+      "metrics": {
+        "n_pairs_evaluated": 30,
+        "position_consistency": 0.7333,
+        "position_bias_rate": 0.2667,
+        "bias_toward_first_position": 0.1,
+        "bias_toward_second_position": 0.1,
+        "tie_inconsistency_rate": 0.0667,
+        "accuracy_ab": 0.5667,
+        "accuracy_ba": 0.5,
+        "accuracy": 0.5333
+      },
+      "branches": [
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a fair, unbiased, and order-independent comparison, adopt a triple-evaluation approach: first, assess each response individually, considering its accuracy, completeness, relevance, clarity, and overall ability to address the user's query as if it were the only response provided. Next, compare the two responses directly, focusing on their relative strengths and weaknesses, and evaluating which one better meets the user's needs. Finally, reverse the order of the responses in your mind and re-evaluate them, ensuring that your judgment remains consistent regardless of the presentation order. Throughout this process, maintain a neutral and abstract perspective, disregarding the order in which the responses are presented and avoiding any influence from their sequential presentation. To further minimize position bias, pause to reflect on your evaluation process, verifying that your judgment is based solely on the intrinsic merits of each response, including their content, quality, and effectiveness in resolving the user's inquiry. Consider the user's query as the central reference point, and evaluate each response's ability to provide a clear, concise, and relevant answer. Output A if one response is superior, B if the other is superior, or C if both responses are of equal quality, ensuring that your verdict is the result of a thorough, impartial, and order-agnostic analysis. To validate your decision, ask yourself: \"Would I arrive at the same conclusion if the responses were presented in reverse order?\" and \"Are my evaluations based solely on the responses' inherent qualities, rather than their presentation order?\"",
+          "score": 0.6166499999999999,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.7333,
+            "position_bias_rate": 0.2667,
+            "bias_toward_first_position": 0.1333,
+            "bias_toward_second_position": 0.1,
+            "tie_inconsistency_rate": 0.0333,
+            "accuracy_ab": 0.5333,
+            "accuracy_ba": 0.4667,
+            "accuracy": 0.5
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a fair, unbiased, and order-independent comparison, adopt a triple-evaluation approach: first, assess each response individually, considering its accuracy, completeness, relevance, clarity, and overall ability to address the user's query as if it were the only response provided. Next, compare the two responses directly, focusing on their relative strengths and weaknesses, and evaluating which one better meets the user's needs. Finally, reverse the order of the responses in your mind and re-evaluate them, ensuring that your judgment remains consistent regardless of the presentation order. Throughout this process, maintain a neutral and abstract perspective, disregarding the order in which the responses are presented and avoiding any influence from their sequential presentation. To further minimize position bias, pause to reflect on your evaluation process, verifying that your judgment is based solely on the intrinsic merits of each response, including their content, quality, and effectiveness in resolving the user's inquiry. Consider the user's query as the central reference point, and evaluate each response's ability to provide a clear, concise, and relevant answer. Output A if one response is superior, B if the other is superior, or C if both responses are of equal quality, ensuring that your verdict is the result of a thorough, impartial, and order-agnostic analysis. To validate your decision, ask yourself: \"Would I arrive at the same conclusion if the responses were presented in reverse order?\" and \"Are my evaluations based solely on the responses' inherent qualities, rather than their presentation order?\"",
+          "score": 0.6333,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.7333,
+            "position_bias_rate": 0.2667,
+            "bias_toward_first_position": 0.1,
+            "bias_toward_second_position": 0.1,
+            "tie_inconsistency_rate": 0.0667,
+            "accuracy_ab": 0.5667,
+            "accuracy_ba": 0.5,
+            "accuracy": 0.5333
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a fair, unbiased, and order-independent comparison, adopt a triple-evaluation approach: first, assess each response individually, considering its accuracy, completeness, relevance, clarity, and overall ability to address the user's query as if it were the only response provided. Next, compare the two responses directly, focusing on their relative strengths and weaknesses, and evaluating which one better meets the user's needs. Finally, reverse the order of the responses in your mind and re-evaluate them, ensuring that your judgment remains consistent regardless of the presentation order. Throughout this process, maintain a neutral and abstract perspective, disregarding the order in which the responses are presented and avoiding any influence from their sequential presentation. To further minimize position bias, pause to reflect on your evaluation process, verifying that your judgment is based solely on the intrinsic merits of each response, including their content, quality, and effectiveness in resolving the user's inquiry. Consider the user's query as the central reference point, and evaluate each response's ability to provide a clear, concise, and relevant answer. Output A if one response is superior, B if the other is superior, or C if both responses are of equal quality, ensuring that your verdict is the result of a thorough, impartial, and order-agnostic analysis. To validate your decision, ask yourself: \"Would I arrive at the same conclusion if the responses were presented in reverse order?\" and \"Are my evaluations based solely on the responses' inherent qualities, rather than their presentation order?\"",
+          "score": 0.6,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.7,
+            "position_bias_rate": 0.3,
+            "bias_toward_first_position": 0.1333,
+            "bias_toward_second_position": 0.1,
+            "tie_inconsistency_rate": 0.0667,
+            "accuracy_ab": 0.5667,
+            "accuracy_ba": 0.4333,
+            "accuracy": 0.5
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a fair, unbiased, and order-independent comparison, adopt a triple-evaluation approach: first, assess each response individually, considering its accuracy, completeness, relevance, clarity, and overall ability to address the user's query as if it were the only response provided. Next, compare the two responses directly, focusing on their relative strengths and weaknesses, and evaluating which one better meets the user's needs. Finally, reverse the order of the responses in your mind and re-evaluate them, ensuring that your judgment remains consistent regardless of the presentation order. Throughout this process, maintain a neutral and abstract perspective, disregarding the order in which the responses are presented and avoiding any influence from their sequential presentation. To further minimize position bias, pause to reflect on your evaluation process, verifying that your judgment is based solely on the intrinsic merits of each response, including their content, quality, and effectiveness in resolving the user's inquiry. Consider the user's query as the central reference point, and evaluate each response's ability to provide a clear, concise, and relevant answer. Output A if one response is superior, B if the other is superior, or C if both responses are of equal quality, ensuring that your verdict is the result of a thorough, impartial, and order-agnostic analysis. To validate your decision, ask yourself: \"Would I arrive at the same conclusion if the responses were presented in reverse order?\" and \"Are my evaluations based solely on the responses' inherent qualities, rather than their presentation order?\"",
+          "score": 0.60835,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.7,
+            "position_bias_rate": 0.3,
+            "bias_toward_first_position": 0.1333,
+            "bias_toward_second_position": 0.1,
+            "tie_inconsistency_rate": 0.0667,
+            "accuracy_ab": 0.5333,
+            "accuracy_ba": 0.5,
+            "accuracy": 0.5167
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a fair, unbiased, and order-independent comparison, adopt a triple-evaluation approach: first, assess each response individually, considering its accuracy, completeness, relevance, clarity, and overall ability to address the user's query as if it were the only response provided. Next, compare the two responses directly, focusing on their relative strengths and weaknesses, and evaluating which one better meets the user's needs. Finally, reverse the order of the responses in your mind and re-evaluate them, ensuring that your judgment remains consistent regardless of the presentation order. Throughout this process, maintain a neutral and abstract perspective, disregarding the order in which the responses are presented and avoiding any influence from their sequential presentation. To further minimize position bias, pause to reflect on your evaluation process, verifying that your judgment is based solely on the intrinsic merits of each response, including their content, quality, and effectiveness in resolving the user's inquiry. Consider the user's query as the central reference point, and evaluate each response's ability to provide a clear, concise, and relevant answer. Output A if one response is superior, B if the other is superior, or C if both responses are of equal quality, ensuring that your verdict is the result of a thorough, impartial, and order-agnostic analysis. To validate your decision, ask yourself: \"Would I arrive at the same conclusion if the responses were presented in reverse order?\" and \"Are my evaluations based solely on the responses' inherent qualities, rather than their presentation order?\"",
+          "score": 0.625,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.7667,
+            "position_bias_rate": 0.2333,
+            "bias_toward_first_position": 0.0667,
+            "bias_toward_second_position": 0.1,
+            "tie_inconsistency_rate": 0.0667,
+            "accuracy_ab": 0.5,
+            "accuracy_ba": 0.4667,
+            "accuracy": 0.4833
+          }
+        }
+      ]
+    },
+    {
+      "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a fair, unbiased, and order-independent comparison, adopt a quad-evaluation approach: first, assess each response individually, considering its accuracy, completeness, relevance, clarity, and overall ability to address the user's query as if it were the only response provided. Next, compare the two responses directly, focusing on their relative strengths and weaknesses, and evaluating which one better meets the user's needs. Then, reverse the order of the responses in your mind and re-evaluate them, ensuring that your judgment remains consistent regardless of the presentation order. Finally, imagine an alternative scenario where both responses are presented simultaneously, and evaluate them in parallel, considering how each response complements or contradicts the other. Throughout this process, maintain a neutral and abstract perspective, disregarding the order in which the responses are presented and avoiding any influence from their sequential presentation. To further minimize position bias, pause to reflect on your evaluation process, verifying that your judgment is based solely on the intrinsic merits of each response, including their content, quality, and effectiveness in resolving the user's inquiry. Consider the user's query as the central reference point, and evaluate each response's ability to provide a clear, concise, and relevant answer. Output A if one response is superior, B if the other is superior, or C if both responses are of equal quality, ensuring that your verdict is the result of a thorough, impartial, and order-agnostic analysis. To validate your decision, ask yourself: \"Would I arrive at the same conclusion if the responses were presented in reverse order?\", \"Are my evaluations based solely on the responses' inherent qualities, rather than their presentation order?\", and \"Can I confidently assert that my judgment is independent of the responses' sequential presentation?\" By following this rigorous evaluation process, ensure that your verdict is a reliable and unbiased assessment of the responses' relative quality.",
+      "score": 0.65755,
+      "metrics": {
+        "n_pairs_evaluated": 30,
+        "position_consistency": 0.7667,
+        "position_bias_rate": 0.2333,
+        "bias_toward_first_position": 0.1,
+        "bias_toward_second_position": 0.0667,
+        "tie_inconsistency_rate": 0.0667,
+        "accuracy_ab": 0.5333,
+        "accuracy_ba": 0.5667,
+        "accuracy": 0.55
+      },
+      "branches": [
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a fair, unbiased, and order-independent comparison, adopt a quad-evaluation approach: first, assess each response individually, considering its accuracy, completeness, relevance, clarity, and overall ability to address the user's query as if it were the only response provided. Next, compare the two responses directly, focusing on their relative strengths and weaknesses, and evaluating which one better meets the user's needs. Then, reverse the order of the responses in your mind and re-evaluate them, ensuring that your judgment remains consistent regardless of the presentation order. Finally, imagine an alternative scenario where both responses are presented simultaneously, and evaluate them in parallel, considering how each response complements or contradicts the other. Throughout this process, maintain a neutral and abstract perspective, disregarding the order in which the responses are presented and avoiding any influence from their sequential presentation. To further minimize position bias, pause to reflect on your evaluation process, verifying that your judgment is based solely on the intrinsic merits of each response, including their content, quality, and effectiveness in resolving the user's inquiry. Consider the user's query as the central reference point, and evaluate each response's ability to provide a clear, concise, and relevant answer. Output A if one response is superior, B if the other is superior, or C if both responses are of equal quality, ensuring that your verdict is the result of a thorough, impartial, and order-agnostic analysis. To validate your decision, ask yourself: \"Would I arrive at the same conclusion if the responses were presented in reverse order?\", \"Are my evaluations based solely on the responses' inherent qualities, rather than their presentation order?\", and \"Can I confidently assert that my judgment is unaffected by the order in which the responses were presented, and that I have considered all possible perspectives and evaluation paths?\"",
+          "score": 0.6167,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.7667,
+            "position_bias_rate": 0.2333,
+            "bias_toward_first_position": 0.1,
+            "bias_toward_second_position": 0.1,
+            "tie_inconsistency_rate": 0.0333,
+            "accuracy_ab": 0.4667,
+            "accuracy_ba": 0.4667,
+            "accuracy": 0.4667
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a fair, unbiased, and order-independent comparison, adopt a quad-evaluation approach: first, assess each response individually, considering its accuracy, completeness, relevance, clarity, and overall ability to address the user's query as if it were the only response provided. Next, compare the two responses directly, focusing on their relative strengths and weaknesses, and evaluating which one better meets the user's needs. Then, reverse the order of the responses in your mind and re-evaluate them, ensuring that your judgment remains consistent regardless of the presentation order. Finally, imagine an alternative scenario where both responses are presented simultaneously, and evaluate them in parallel, considering how each response complements or contradicts the other. Throughout this process, maintain a neutral and abstract perspective, disregarding the order in which the responses are presented and avoiding any influence from their sequential presentation. To further minimize position bias, pause to reflect on your evaluation process, verifying that your judgment is based solely on the intrinsic merits of each response, including their content, quality, and effectiveness in resolving the user's inquiry. Consider the user's query as the central reference point, and evaluate each response's ability to provide a clear, concise, and relevant answer. Output A if one response is superior, B if the other is superior, or C if both responses are of equal quality, ensuring that your verdict is the result of a thorough, impartial, and order-agnostic analysis. To validate your decision, ask yourself: \"Would I arrive at the same conclusion if the responses were presented in reverse order?\", \"Are my evaluations based solely on the responses' inherent qualities, rather than their presentation order?\", and \"Can I confidently assert that my judgment is independent of the responses' sequential presentation?\" By following this rigorous evaluation process, ensure that your verdict is a reliable and unbiased assessment of the responses' relative quality.",
+          "score": 0.65755,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.7667,
+            "position_bias_rate": 0.2333,
+            "bias_toward_first_position": 0.1,
+            "bias_toward_second_position": 0.0667,
+            "tie_inconsistency_rate": 0.0667,
+            "accuracy_ab": 0.5333,
+            "accuracy_ba": 0.5667,
+            "accuracy": 0.55
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a fair, unbiased, and order-independent comparison, adopt a quad-evaluation approach: first, assess each response individually, considering its accuracy, completeness, relevance, clarity, and overall ability to address the user's query as if it were the only response provided. Next, compare the two responses directly, focusing on their relative strengths and weaknesses, and evaluating which one better meets the user's needs. Then, reverse the order of the responses in your mind and re-evaluate them, ensuring that your judgment remains consistent regardless of the presentation order. Finally, imagine an alternative scenario where both responses are presented simultaneously, and evaluate them in parallel, considering how each response complements or contradicts the other. Throughout this process, maintain a neutral and abstract perspective, disregarding the order in which the responses are presented and avoiding any influence from their sequential presentation. To further minimize position bias, pause to reflect on your evaluation process, verifying that your judgment is based solely on the intrinsic merits of each response, including their content, quality, and effectiveness in resolving the user's inquiry. Consider the user's query as the central reference point, and evaluate each response's ability to provide a clear, concise, and relevant answer. Output A if one response is superior, B if the other is superior, or C if both responses are of equal quality, ensuring that your verdict is the result of a thorough, impartial, and order-agnostic analysis. To validate your decision, ask yourself: \"Would I arrive at the same conclusion if the responses were presented in reverse order?\", \"Are my evaluations based solely on the responses' inherent qualities, rather than their presentation order?\", and \"Can I confidently assert that my judgment is unaffected by the order in which the responses were presented, and that I have considered all possible perspectives and evaluation paths?\"",
+          "score": 0.59165,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.7,
+            "position_bias_rate": 0.3,
+            "bias_toward_first_position": 0.1667,
+            "bias_toward_second_position": 0.1333,
+            "tie_inconsistency_rate": 0.0,
+            "accuracy_ab": 0.5333,
+            "accuracy_ba": 0.4333,
+            "accuracy": 0.4833
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a fair, unbiased, and order-independent comparison, adopt a quad-evaluation approach: first, assess each response individually, considering its accuracy, completeness, relevance, clarity, and overall ability to address the user's query as if it were the only response provided. Next, compare the two responses directly, focusing on their relative strengths and weaknesses, and evaluating which one better meets the user's needs. Then, reverse the order of the responses in your mind and re-evaluate them, ensuring that your judgment remains consistent regardless of the presentation order. Finally, imagine an alternative scenario where both responses are presented simultaneously, and evaluate them in parallel, considering how each response complements or contradicts the other. Throughout this process, maintain a neutral and abstract perspective, disregarding the order in which the responses are presented and avoiding any influence from their sequential presentation. To further minimize position bias, pause to reflect on your evaluation process, verifying that your judgment is based solely on the intrinsic merits of each response, including their content, quality, and effectiveness in resolving the user's inquiry. Consider the user's query as the central reference point, and evaluate each response's ability to provide a clear, concise, and relevant answer. Output A if one response is superior, B if the other is superior, or C if both responses are of equal quality, ensuring that your verdict is the result of a thorough, impartial, and order-agnostic analysis. To validate your decision, ask yourself: \"Would I arrive at the same conclusion if the responses were presented in reverse order?\", \"Are my evaluations based solely on the responses' inherent qualities, rather than their presentation order?\", and \"Can I confidently assert that my judgment is independent of the responses' sequential presentation?\" By following this rigorous evaluation process, ensure that your verdict is a reliable and unbiased assessment of the responses' relative quality.",
+          "score": 0.6325500000000001,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.7667,
+            "position_bias_rate": 0.2333,
+            "bias_toward_first_position": 0.1,
+            "bias_toward_second_position": 0.1,
+            "tie_inconsistency_rate": 0.0333,
+            "accuracy_ab": 0.4667,
+            "accuracy_ba": 0.5333,
+            "accuracy": 0.5
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a fair, unbiased, and order-independent comparison, adopt a quad-evaluation approach: first, assess each response individually, considering its accuracy, completeness, relevance, clarity, and overall ability to address the user's query as if it were the only response provided. Next, compare the two responses directly, focusing on their relative strengths and weaknesses, and evaluating which one better meets the user's needs. Then, reverse the order of the responses in your mind and re-evaluate them, ensuring that your judgment remains consistent regardless of the presentation order. Finally, imagine an alternative scenario where both responses are presented simultaneously, and evaluate them in parallel, considering how each response complements or contradicts the other. Throughout this process, maintain a neutral and abstract perspective, disregarding the order in which the responses are presented and avoiding any influence from their sequential presentation. To further minimize position bias, pause to reflect on your evaluation process, verifying that your judgment is based solely on the intrinsic merits of each response, including their content, quality, and effectiveness in resolving the user's inquiry. Consider the user's query as the central reference point, and evaluate each response's ability to provide a clear, concise, and relevant answer. Output A if one response is superior, B if the other is superior, or C if both responses are of equal quality, ensuring that your verdict is the result of a thorough, impartial, and order-agnostic analysis. To validate your decision, ask yourself: \"Would I arrive at the same conclusion if the responses were presented in reverse order?\", \"Are my evaluations based solely on the responses' inherent qualities, rather than their presentation order?\", and \"Can I confidently assert that my judgment is unaffected by the order in which the responses were presented, and that I have considered all possible perspectives and evaluation paths?\"",
+          "score": 0.6,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.7,
+            "position_bias_rate": 0.3,
+            "bias_toward_first_position": 0.1667,
+            "bias_toward_second_position": 0.1,
+            "tie_inconsistency_rate": 0.0333,
+            "accuracy_ab": 0.5667,
+            "accuracy_ba": 0.4333,
+            "accuracy": 0.5
+          }
+        }
+      ]
+    },
+    {
+      "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a fair, unbiased, and order-independent comparison, adopt a multi-faceted evaluation approach: first, assess each response individually, considering its accuracy, completeness, relevance, clarity, and overall ability to address the user's query as if it were the only response provided. Next, compare the two responses directly, focusing on their relative strengths and weaknesses, and evaluating which one better meets the user's needs. Then, reverse the order of the responses in your mind and re-evaluate them, ensuring that your judgment remains consistent regardless of the presentation order. After that, imagine an alternative scenario where both responses are presented simultaneously, and evaluate them in parallel, considering how each response complements or contradicts the other. Additionally, consider the responses from different perspectives, such as the user's potential follow-up questions or the responses' potential to address related topics. Throughout this process, maintain a neutral and abstract perspective, disregarding the order in which the responses are presented and avoiding any influence from their sequential presentation. To further minimize position bias, pause to reflect on your evaluation process, verifying that your judgment is based solely on the intrinsic merits of each response, including their content, quality, and effectiveness in resolving the user's inquiry. Consider the user's query as the central reference point, and evaluate each response's ability to provide a clear, concise, and relevant answer. Output A if one response is superior, B if the other is superior, or C if both responses are of equal quality, ensuring that your verdict is the result of a thorough, impartial, and order-agnostic analysis. To validate your decision, ask yourself: \"Would I arrive at the same conclusion if the responses were presented in reverse order?\", \"Are my evaluations based solely on the responses' inherent qualities, rather than their presentation order?\", \"Can I confidently assert that my judgment is independent of the responses' sequential presentation?\", and \"Have I considered all possible aspects of the responses and their potential implications?\" By following this rigorous evaluation process, ensure that your verdict is a reliable and unbiased assessment of the responses' relative quality. Finally, take a moment to review your evaluation process and verify that you have not inadvertently introduced any bias or order-dependent influences, and that your judgment is a true reflection of the responses' intrinsic merits.",
+      "score": 0.5986,
+      "metrics": {
+        "n_pairs_evaluated": 30,
+        "position_consistency": 0.8,
+        "position_bias_rate": 0.2,
+        "bias_toward_first_position": 0.1333,
+        "bias_toward_second_position": 0.0667,
+        "tie_inconsistency_rate": 0.0,
+        "accuracy_ab": 0.5,
+        "accuracy_ba": 0.5,
+        "accuracy": 0.5
+      },
+      "branches": [
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a fair, unbiased, and order-independent comparison, adopt a multi-faceted evaluation approach: first, assess each response individually, considering its accuracy, completeness, relevance, clarity, and overall ability to address the user's query as if it were the only response provided. Next, compare the two responses directly, focusing on their relative strengths and weaknesses, and evaluating which one better meets the user's needs. Then, reverse the order of the responses in your mind and re-evaluate them, ensuring that your judgment remains consistent regardless of the presentation order. After that, imagine an alternative scenario where both responses are presented simultaneously, and evaluate them in parallel, considering how each response complements or contradicts the other. Additionally, consider the responses from different perspectives, such as the user's potential follow-up questions or the responses' potential to address related topics. Throughout this process, maintain a neutral and abstract perspective, disregarding the order in which the responses are presented and avoiding any influence from their sequential presentation. To further minimize position bias, pause to reflect on your evaluation process, verifying that your judgment is based solely on the intrinsic merits of each response, including their content, quality, and effectiveness in resolving the user's inquiry. Consider the user's query as the central reference point, and evaluate each response's ability to provide a clear, concise, and relevant answer. Output A if one response is superior, B if the other is superior, or C if both responses are of equal quality, ensuring that your verdict is the result of a thorough, impartial, and order-agnostic analysis. To validate your decision, ask yourself: \"Would I arrive at the same conclusion if the responses were presented in reverse order?\", \"Are my evaluations based solely on the responses' inherent qualities, rather than their presentation order?\", \"Can I confidently assert that my judgment is independent of the responses' sequential presentation?\", and \"Have I considered all possible aspects of the responses and their potential implications?\" By following this rigorous evaluation process, ensure that your verdict is a reliable and unbiased assessment of the responses' relative quality. Finally, take a moment to review your evaluation process and verify that you have not inadvertently introduced any bias or order-dependent influences, and that your judgment is a true reflection of the responses' intrinsic merits.",
+          "score": 0.55695,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.7,
+            "position_bias_rate": 0.3,
+            "bias_toward_first_position": 0.1333,
+            "bias_toward_second_position": 0.0667,
+            "tie_inconsistency_rate": 0.1,
+            "accuracy_ab": 0.4667,
+            "accuracy_ba": 0.5667,
+            "accuracy": 0.5167
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a fair, unbiased, and order-independent comparison, adopt a multi-faceted evaluation approach: first, assess each response individually, considering its accuracy, completeness, relevance, clarity, and overall ability to address the user's query as if it were the only response provided. Next, compare the two responses directly, focusing on their relative strengths and weaknesses, and evaluating which one better meets the user's needs. Then, reverse the order of the responses in your mind and re-evaluate them, ensuring that your judgment remains consistent regardless of the presentation order. After that, imagine an alternative scenario where both responses are presented simultaneously, and evaluate them in parallel, considering how each response complements or contradicts the other. Additionally, consider the responses from different perspectives, such as the user's potential follow-up questions or the responses' potential to address related topics. Throughout this process, maintain a neutral and abstract perspective, disregarding the order in which the responses are presented and avoiding any influence from their sequential presentation. To further minimize position bias, pause to reflect on your evaluation process, verifying that your judgment is based solely on the intrinsic merits of each response, including their content, quality, and effectiveness in resolving the user's inquiry. Consider the user's query as the central reference point, and evaluate each response's ability to provide a clear, concise, and relevant answer. Output A if one response is superior, B if the other is superior, or C if both responses are of equal quality, ensuring that your verdict is the result of a thorough, impartial, and order-agnostic analysis. To validate your decision, ask yourself: \"Would I arrive at the same conclusion if the responses were presented in reverse order?\", \"Are my evaluations based solely on the responses' inherent qualities, rather than their presentation order?\", \"Can I confidently assert that my judgment is independent of the responses' sequential presentation?\", and \"Have I considered all possible aspects of the responses and their potential implications?\" By following this rigorous evaluation process, ensure that your verdict is a reliable and unbiased assessment of the responses' relative quality. Finally, take a moment to review your evaluation process and verify that you have not inadvertently introduced any bias or order-dependent influences, and that your judgment is a true reflection of the responses' intrinsic merits.",
+          "score": 0.5819500000000001,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.7667,
+            "position_bias_rate": 0.2333,
+            "bias_toward_first_position": 0.1,
+            "bias_toward_second_position": 0.1,
+            "tie_inconsistency_rate": 0.0333,
+            "accuracy_ab": 0.5,
+            "accuracy_ba": 0.5,
+            "accuracy": 0.5
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a fair, unbiased, and order-independent comparison, adopt a multi-faceted evaluation approach: first, assess each response individually, considering its accuracy, completeness, relevance, clarity, and overall ability to address the user's query as if it were the only response provided. Next, compare the two responses directly, focusing on their relative strengths and weaknesses, and evaluating which one better meets the user's needs. Then, reverse the order of the responses in your mind and re-evaluate them, ensuring that your judgment remains consistent regardless of the presentation order. After that, imagine an alternative scenario where both responses are presented simultaneously, and evaluate them in parallel, considering how each response complements or contradicts the other. Additionally, consider the responses from different perspectives, such as the user's potential follow-up questions or the responses' potential to address related topics. Throughout this process, maintain a neutral and abstract perspective, disregarding the order in which the responses are presented and avoiding any influence from their sequential presentation. To further minimize position bias, pause to reflect on your evaluation process, verifying that your judgment is based solely on the intrinsic merits of each response, including their content, quality, and effectiveness in resolving the user's inquiry. Consider the user's query as the central reference point, and evaluate each response's ability to provide a clear, concise, and relevant answer. Output A if one response is superior, B if the other is superior, or C if both responses are of equal quality, ensuring that your verdict is the result of a thorough, impartial, and order-agnostic analysis. To validate your decision, ask yourself: \"Would I arrive at the same conclusion if the responses were presented in reverse order?\", \"Are my evaluations based solely on the responses' inherent qualities, rather than their presentation order?\", \"Can I confidently assert that my judgment is independent of the responses' sequential presentation?\", and \"Have I considered all possible aspects of the responses and their potential implications?\" By following this rigorous evaluation process, ensure that your verdict is a reliable and unbiased assessment of the responses' relative quality. Finally, take a moment to review your evaluation process and verify that you have not inadvertently introduced any bias or order-dependent influences, and that your judgment is a true reflection of the responses' intrinsic merits.",
+          "score": 0.5986,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.8,
+            "position_bias_rate": 0.2,
+            "bias_toward_first_position": 0.1333,
+            "bias_toward_second_position": 0.0667,
+            "tie_inconsistency_rate": 0.0,
+            "accuracy_ab": 0.5,
+            "accuracy_ba": 0.5,
+            "accuracy": 0.5
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a fair, unbiased, and order-independent comparison, adopt a multi-faceted evaluation approach: first, assess each response individually, considering its accuracy, completeness, relevance, clarity, and overall ability to address the user's query as if it were the only response provided. Next, compare the two responses directly, focusing on their relative strengths and weaknesses, and evaluating which one better meets the user's needs. Then, reverse the order of the responses in your mind and re-evaluate them, ensuring that your judgment remains consistent regardless of the presentation order. After that, imagine an alternative scenario where both responses are presented simultaneously, and evaluate them in parallel, considering how each response complements or contradicts the other. Additionally, consider the responses from different perspectives, such as the user's potential follow-up questions or the responses' potential to address related topics. Throughout this process, maintain a neutral and abstract perspective, disregarding the order in which the responses are presented and avoiding any influence from their sequential presentation. To further minimize position bias, pause to reflect on your evaluation process, verifying that your judgment is based solely on the intrinsic merits of each response, including their content, quality, and effectiveness in resolving the user's inquiry. Consider the user's query as the central reference point, and evaluate each response's ability to provide a clear, concise, and relevant answer. Output A if one response is superior, B if the other is superior, or C if both responses are of equal quality, ensuring that your verdict is the result of a thorough, impartial, and order-agnostic analysis. To validate your decision, ask yourself: \"Would I arrive at the same conclusion if the responses were presented in reverse order?\", \"Are my evaluations based solely on the responses' inherent qualities, rather than their presentation order?\", \"Can I confidently assert that my judgment is independent of the responses' sequential presentation?\", and \"Have I considered all possible aspects of the responses and their potential implications?\" By following this rigorous evaluation process, ensure that your verdict is a reliable and unbiased assessment of the responses' relative quality. Finally, take a moment to review your evaluation process and verify that you have not inadvertently introduced any bias or order-dependent influences, and that your judgment is a true reflection of the responses' intrinsic merits.",
+          "score": 0.5653,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.7667,
+            "position_bias_rate": 0.2333,
+            "bias_toward_first_position": 0.1,
+            "bias_toward_second_position": 0.1,
+            "tie_inconsistency_rate": 0.0333,
+            "accuracy_ab": 0.4667,
+            "accuracy_ba": 0.4667,
+            "accuracy": 0.4667
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a fair, unbiased, and order-independent comparison, adopt a multi-faceted evaluation approach: first, assess each response individually, considering its accuracy, completeness, relevance, clarity, and overall ability to address the user's query as if it were the only response provided. Next, compare the two responses directly, focusing on their relative strengths and weaknesses, and evaluating which one better meets the user's needs. Then, reverse the order of the responses in your mind and re-evaluate them, ensuring that your judgment remains consistent regardless of the presentation order. After that, imagine an alternative scenario where both responses are presented simultaneously, and evaluate them in parallel, considering how each response complements or contradicts the other. Additionally, consider the responses from different perspectives, such as the user's potential follow-up questions or the responses' potential to address related topics. Throughout this process, maintain a neutral and abstract perspective, disregarding the order in which the responses are presented and avoiding any influence from their sequential presentation. To further minimize position bias, pause to reflect on your evaluation process, verifying that your judgment is based solely on the intrinsic merits of each response, including their content, quality, and effectiveness in resolving the user's inquiry. Consider the user's query as the central reference point, and evaluate each response's ability to provide a clear, concise, and relevant answer. Output A if one response is superior, B if the other is superior, or C if both responses are of equal quality, ensuring that your verdict is the result of a thorough, impartial, and order-agnostic analysis. To validate your decision, ask yourself: \"Would I arrive at the same conclusion if the responses were presented in reverse order?\", \"Are my evaluations based solely on the responses' inherent qualities, rather than their presentation order?\", \"Can I confidently assert that my judgment is independent of the responses' sequential presentation?\", and \"Have I considered all possible aspects of the responses and their potential implications?\" By following this rigorous evaluation process and continuously monitoring your own biases, ensure that your verdict is a reliable and unbiased assessment of the responses' relative quality, and that you are actively working to minimize any potential position bias.",
+          "score": 0.5680999999999999,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.7333,
+            "position_bias_rate": 0.2667,
+            "bias_toward_first_position": 0.2,
+            "bias_toward_second_position": 0.0333,
+            "tie_inconsistency_rate": 0.0333,
+            "accuracy_ab": 0.5,
+            "accuracy_ba": 0.4667,
+            "accuracy": 0.4833
+          }
+        }
+      ]
+    },
+    {
+      "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a fair, unbiased, and order-independent comparison, adopt a comprehensive evaluation framework: \n\n1. **Initial Assessment**: Evaluate each response individually, considering its accuracy, completeness, relevance, clarity, and overall ability to address the user's query as if it were the only response provided. \n\n2. **Direct Comparison**: Compare the two responses directly, focusing on their relative strengths and weaknesses, and evaluating which one better meets the user's needs.\n\n3. **Reversed Evaluation**: Reverse the order of the responses in your mind and re-evaluate them, ensuring that your judgment remains consistent regardless of the presentation order.\n\n4. **Simultaneous Evaluation**: Imagine an alternative scenario where both responses are presented simultaneously, and evaluate them in parallel, considering how each response complements or contradicts the other.\n\n5. **Perspective Analysis**: Consider the responses from different perspectives, such as the user's potential follow-up questions or the responses' potential to address related topics.\n\n6. **Reflection and Validation**: Pause to reflect on your evaluation process, verifying that your judgment is based solely on the intrinsic merits of each response, including their content, quality, and effectiveness in resolving the user's inquiry. Consider the user's query as the central reference point, and evaluate each response's ability to provide a clear, concise, and relevant answer.\n\nTo further minimize position bias, ask yourself: \n- \"Would I arrive at the same conclusion if the responses were presented in reverse order?\"\n- \"Are my evaluations based solely on the responses' inherent qualities, rather than their presentation order?\"\n- \"Can I confidently assert that my judgment is independent of the responses' sequential presentation?\"\n- \"Have I considered all possible aspects of the responses and their potential implications?\"\n- \"Are there any external or internal biases that could have influenced my evaluation, and if so, have I adequately addressed them?\"\n\nOutput A if one response is superior, B if the other is superior, or C if both responses are of equal quality, ensuring that your verdict is the result of a thorough, impartial, and order-agnostic analysis. By following this rigorous evaluation process, ensure that your verdict is a reliable and unbiased assessment of the responses' relative quality. Finally, take a moment to review your evaluation process and verify that you have not inadvertently introduced any bias or order-dependent influences, and that your judgment is a true reflection of the responses' intrinsic merits.",
+      "score": 0.5927,
+      "metrics": {
+        "n_pairs_evaluated": 30,
+        "position_consistency": 0.8,
+        "position_bias_rate": 0.2,
+        "bias_toward_first_position": 0.1,
+        "bias_toward_second_position": 0.0333,
+        "tie_inconsistency_rate": 0.0667,
+        "accuracy_ab": 0.5333,
+        "accuracy_ba": 0.4667,
+        "accuracy": 0.5
+      },
+      "branches": [
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a fair, unbiased, and order-independent comparison, adopt a comprehensive evaluation framework: \n\n1. **Initial Assessment**: Evaluate each response individually, considering its accuracy, completeness, relevance, clarity, and overall ability to address the user's query as if it were the only response provided. \n\n2. **Direct Comparison**: Compare the two responses directly, focusing on their relative strengths and weaknesses, and evaluating which one better meets the user's needs.\n\n3. **Reversed Evaluation**: Reverse the order of the responses in your mind and re-evaluate them, ensuring that your judgment remains consistent regardless of the presentation order.\n\n4. **Simultaneous Evaluation**: Imagine an alternative scenario where both responses are presented simultaneously, and evaluate them in parallel, considering how each response complements or contradicts the other.\n\n5. **Perspective Analysis**: Consider the responses from different perspectives, such as the user's potential follow-up questions or the responses' potential to address related topics.\n\n6. **Reflection and Validation**: Pause to reflect on your evaluation process, verifying that your judgment is based solely on the intrinsic merits of each response, including their content, quality, and effectiveness in resolving the user's inquiry. Consider the user's query as the central reference point, and evaluate each response's ability to provide a clear, concise, and relevant answer.\n\nTo further minimize position bias, ask yourself: \n- \"Would I arrive at the same conclusion if the responses were presented in reverse order?\"\n- \"Are my evaluations based solely on the responses' inherent qualities, rather than their presentation order?\"\n- \"Can I confidently assert that my judgment is independent of the responses' sequential presentation?\"\n- \"Have I considered all possible aspects of the responses and their potential implications?\"\n- \"Are there any external or internal biases that could have influenced my evaluation, and if so, have I adequately addressed them?\"\n\nOutput A if one response is superior, B if the other is superior, or C if both responses are of equal quality, ensuring that your verdict is the result of a thorough, impartial, and order-agnostic analysis. By following this rigorous evaluation process, ensure that your verdict is a reliable and unbiased assessment of the responses' relative quality. Finally, take a moment to review your evaluation process and verify that you have not inadvertently introduced any bias or order-dependent influences, and that your judgment is a true reflection of the responses' intrinsic merits.",
+          "score": 0.576,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.7333,
+            "position_bias_rate": 0.2667,
+            "bias_toward_first_position": 0.1667,
+            "bias_toward_second_position": 0.0333,
+            "tie_inconsistency_rate": 0.0667,
+            "accuracy_ab": 0.5667,
+            "accuracy_ba": 0.5,
+            "accuracy": 0.5333
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a fair, unbiased, and order-independent comparison, adopt a comprehensive evaluation framework: \n\n1. **Initial Assessment**: Evaluate each response individually, considering its accuracy, completeness, relevance, clarity, and overall ability to address the user's query as if it were the only response provided. \n\n2. **Direct Comparison**: Compare the two responses directly, focusing on their relative strengths and weaknesses, and evaluating which one better meets the user's needs.\n\n3. **Reversed Evaluation**: Reverse the order of the responses in your mind and re-evaluate them, ensuring that your judgment remains consistent regardless of the presentation order.\n\n4. **Simultaneous Evaluation**: Imagine an alternative scenario where both responses are presented simultaneously, and evaluate them in parallel, considering how each response complements or contradicts the other.\n\n5. **Perspective Analysis**: Consider the responses from different perspectives, such as the user's potential follow-up questions or the responses' potential to address related topics.\n\n6. **Reflection and Validation**: Pause to reflect on your evaluation process, verifying that your judgment is based solely on the intrinsic merits of each response, including their content, quality, and effectiveness in resolving the user's inquiry. Consider the user's query as the central reference point, and evaluate each response's ability to provide a clear, concise, and relevant answer.\n\nTo further minimize position bias, ask yourself: \n- \"Would I arrive at the same conclusion if the responses were presented in reverse order?\"\n- \"Are my evaluations based solely on the responses' inherent qualities, rather than their presentation order?\"\n- \"Can I confidently assert that my judgment is independent of the responses' sequential presentation?\"\n- \"Have I considered all possible aspects of the responses and their potential implications?\"\n- \"Are there any external or internal biases that could have influenced my evaluation, and if so, have I adequately addressed them?\"\n\nOutput A if one response is superior, B if the other is superior, or C if both responses are of equal quality, ensuring that your verdict is the result of a thorough, impartial, and order-agnostic analysis. By following this rigorous evaluation process, ensure that your verdict is a reliable and unbiased assessment of the responses' relative quality. Finally, take a moment to review your evaluation process and verify that you have not inadvertently introduced any bias or order-dependent influences, and that your judgment is a true reflection of the responses' intrinsic merits.",
+          "score": 0.5927,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.8,
+            "position_bias_rate": 0.2,
+            "bias_toward_first_position": 0.1,
+            "bias_toward_second_position": 0.0333,
+            "tie_inconsistency_rate": 0.0667,
+            "accuracy_ab": 0.5333,
+            "accuracy_ba": 0.4667,
+            "accuracy": 0.5
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a fair, unbiased, and order-independent comparison, adopt a comprehensive evaluation framework: \n\n1. **Initial Assessment**: Evaluate each response individually, considering its accuracy, completeness, relevance, clarity, and overall ability to address the user's query as if it were the only response provided. \n\n2. **Direct Comparison**: Compare the two responses directly, focusing on their relative strengths and weaknesses, and evaluating which one better meets the user's needs.\n\n3. **Reversed Evaluation**: Reverse the order of the responses in your mind and re-evaluate them, ensuring that your judgment remains consistent regardless of the presentation order.\n\n4. **Simultaneous Evaluation**: Imagine an alternative scenario where both responses are presented simultaneously, and evaluate them in parallel, considering how each response complements or contradicts the other.\n\n5. **Perspective Analysis**: Consider the responses from different perspectives, such as the user's potential follow-up questions or the responses' potential to address related topics.\n\n6. **Reflection and Validation**: Pause to reflect on your evaluation process, verifying that your judgment is based solely on the intrinsic merits of each response, including their content, quality, and effectiveness in resolving the user's inquiry. Consider the user's query as the central reference point, and evaluate each response's ability to provide a clear, concise, and relevant answer.\n\nTo further minimize position bias, ask yourself: \n- \"Would I arrive at the same conclusion if the responses were presented in reverse order?\"\n- \"Are my evaluations based solely on the responses' inherent qualities, rather than their presentation order?\"\n- \"Can I confidently assert that my judgment is independent of the responses' sequential presentation?\"\n- \"Have I considered all possible aspects of the responses and their potential implications?\"\n- \"Are there any underlying assumptions or biases in my evaluation that could influence my judgment?\"\n\nBy following this rigorous and multi-faceted evaluation process, ensure that your verdict is a reliable and unbiased assessment of the responses' relative quality. Output A if one response is superior, B if the other is superior, or C if both responses are of equal quality, guaranteeing that your decision is the result of a thorough, impartial, and order-agnostic analysis.",
+          "score": 0.5666,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.7,
+            "position_bias_rate": 0.3,
+            "bias_toward_first_position": 0.1667,
+            "bias_toward_second_position": 0.0667,
+            "tie_inconsistency_rate": 0.0667,
+            "accuracy_ab": 0.5,
+            "accuracy_ba": 0.5,
+            "accuracy": 0.5
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a fair, unbiased, and order-independent comparison, adopt a comprehensive evaluation framework: \n\n1. **Initial Assessment**: Evaluate each response individually, considering its accuracy, completeness, relevance, clarity, and overall ability to address the user's query as if it were the only response provided. \n\n2. **Direct Comparison**: Compare the two responses directly, focusing on their relative strengths and weaknesses, and evaluating which one better meets the user's needs.\n\n3. **Reversed Evaluation**: Reverse the order of the responses in your mind and re-evaluate them, ensuring that your judgment remains consistent regardless of the presentation order.\n\n4. **Simultaneous Evaluation**: Imagine an alternative scenario where both responses are presented simultaneously, and evaluate them in parallel, considering how each response complements or contradicts the other.\n\n5. **Perspective Analysis**: Consider the responses from different perspectives, such as the user's potential follow-up questions or the responses' potential to address related topics.\n\n6. **Reflection and Validation**: Pause to reflect on your evaluation process, verifying that your judgment is based solely on the intrinsic merits of each response, including their content, quality, and effectiveness in resolving the user's inquiry. Consider the user's query as the central reference point, and evaluate each response's ability to provide a clear, concise, and relevant answer.\n\nTo further minimize position bias, ask yourself: \n- \"Would I arrive at the same conclusion if the responses were presented in reverse order?\"\n- \"Are my evaluations based solely on the responses' inherent qualities, rather than their presentation order?\"\n- \"Can I confidently assert that my judgment is independent of the responses' sequential presentation?\"\n- \"Have I considered all possible aspects of the responses and their potential implications?\"\n- \"Are there any underlying assumptions or biases in my evaluation that could influence my judgment?\"\n\nBy following this rigorous and multi-faceted evaluation process, ensure that your verdict is a reliable and unbiased assessment of the responses' relative quality. Output A if one response is superior, B if the other is superior, or C if both responses are of equal quality, guaranteeing that your decision is the result of a thorough, impartial, and order-agnostic analysis.",
+          "score": 0.55825,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.7,
+            "position_bias_rate": 0.3,
+            "bias_toward_first_position": 0.1333,
+            "bias_toward_second_position": 0.1,
+            "tie_inconsistency_rate": 0.0667,
+            "accuracy_ab": 0.5333,
+            "accuracy_ba": 0.4333,
+            "accuracy": 0.4833
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a fair, unbiased, and order-independent comparison, adopt a comprehensive evaluation framework: \n\n1. **Initial Assessment**: Evaluate each response individually, considering its accuracy, completeness, relevance, clarity, and overall ability to address the user's query as if it were the only response provided. \n\n2. **Direct Comparison**: Compare the two responses directly, focusing on their relative strengths and weaknesses, and evaluating which one better meets the user's needs.\n\n3. **Reversed Evaluation**: Reverse the order of the responses in your mind and re-evaluate them, ensuring that your judgment remains consistent regardless of the presentation order.\n\n4. **Simultaneous Evaluation**: Imagine an alternative scenario where both responses are presented simultaneously, and evaluate them in parallel, considering how each response complements or contradicts the other.\n\n5. **Perspective Analysis**: Consider the responses from different perspectives, such as the user's potential follow-up questions or the responses' potential to address related topics.\n\n6. **Reflection and Validation**: Pause to reflect on your evaluation process, verifying that your judgment is based solely on the intrinsic merits of each response, including their content, quality, and effectiveness in resolving the user's inquiry. Consider the user's query as the central reference point, and evaluate each response's ability to provide a clear, concise, and relevant answer.\n\nTo further minimize position bias, ask yourself: \n- \"Would I arrive at the same conclusion if the responses were presented in reverse order?\"\n- \"Are my evaluations based solely on the responses' inherent qualities, rather than their presentation order?\"\n- \"Can I confidently assert that my judgment is independent of the responses' sequential presentation?\"\n- \"Have I considered all possible aspects of the responses and their potential implications?\"\n- \"Are there any underlying assumptions or biases in my evaluation that could influence my judgment?\"\n\nBy following this rigorous and multi-faceted evaluation process, ensure that your verdict is a reliable and unbiased assessment of the responses' relative quality. Output A if one response is superior, B if the other is superior, or C if both responses are of equal quality, guaranteeing that your decision is the result of a thorough, impartial, and order-agnostic analysis.",
+          "score": 0.57495,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.6667,
+            "position_bias_rate": 0.3333,
+            "bias_toward_first_position": 0.2333,
+            "bias_toward_second_position": 0.0667,
+            "tie_inconsistency_rate": 0.0333,
+            "accuracy_ab": 0.6,
+            "accuracy_ba": 0.5,
+            "accuracy": 0.55
+          }
+        }
+      ]
+    },
+    {
+      "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a fair, unbiased, and order-independent comparison, adopt a meticulous evaluation framework:\n\n1. **Isolated Assessment**: Evaluate each response individually, considering its accuracy, completeness, relevance, clarity, and overall ability to address the user's query as if it were the only response provided. Imagine the response in a vacuum, devoid of any context or comparison.\n\n2. **Mirrored Comparison**: Compare the two responses directly, but do so in a mirrored fashion: evaluate Response A as if it were Response B, and vice versa. This will help you identify any biases that may arise from the presentation order.\n\n3. **Reversed Evaluation**: Reverse the order of the responses in your mind and re-evaluate them, ensuring that your judgment remains consistent regardless of the presentation order.\n\n4. **Simultaneous Evaluation**: Imagine an alternative scenario where both responses are presented simultaneously, and evaluate them in parallel, considering how each response complements or contradicts the other.\n\n5. **Perspective Analysis**: Consider the responses from different perspectives, such as the user's potential follow-up questions or the responses' potential to address related topics.\n\n6. **Reflection and Validation**: Pause to reflect on your evaluation process, verifying that your judgment is based solely on the intrinsic merits of each response, including their content, quality, and effectiveness in resolving the user's inquiry. Consider the user's query as the central reference point, and evaluate each response's ability to provide a clear, concise, and relevant answer.\n\n7. **Meta-Evaluation**: Evaluate your own evaluation process, considering potential biases, assumptions, or external influences that may have impacted your judgment. Ask yourself:\n- \"Would I arrive at the same conclusion if the responses were presented in reverse order?\"\n- \"Are my evaluations based solely on the responses' inherent qualities, rather than their presentation order?\"\n- \"Can I confidently assert that my judgment is independent of the responses' sequential presentation?\"\n- \"Have I considered all possible aspects of the responses and their potential implications?\"\n- \"Are there any external or internal biases that could have influenced my evaluation, and if so, have I adequately addressed them?\"\n- \"Can I provide a clear and concise explanation for my verdict, based solely on the responses' intrinsic merits?\"\n\nOutput A if one response is superior, B if the other is superior, or C if both responses are of equal quality, ensuring that your verdict is the result of a thorough, impartial, and order-agnostic analysis. By following this rigorous evaluation process, ensure that your verdict is a reliable and unbiased assessment of the responses' relative quality. Finally, take a moment to review your evaluation process and verify that you have not inadvertently introduced any bias or order-dependent influences, and that your judgment is a true reflection of the responses' intrinsic merits.",
+      "score": 0.58665,
+      "metrics": {
+        "n_pairs_evaluated": 30,
+        "position_consistency": 0.8333,
+        "position_bias_rate": 0.1667,
+        "bias_toward_first_position": 0.0667,
+        "bias_toward_second_position": 0.0333,
+        "tie_inconsistency_rate": 0.0667,
+        "accuracy_ab": 0.5333,
+        "accuracy_ba": 0.4667,
+        "accuracy": 0.5
+      },
+      "branches": [
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a fair, unbiased, and order-independent comparison, adopt a meticulous evaluation framework:\n\n1. **Isolated Assessment**: Evaluate each response individually, considering its accuracy, completeness, relevance, clarity, and overall ability to address the user's query as if it were the only response provided. Imagine the response in a vacuum, devoid of any context or comparison.\n\n2. **Mirrored Comparison**: Compare the two responses directly, but do so in a mirrored fashion: evaluate Response A as if it were Response B, and vice versa. This will help you identify any biases that may arise from the presentation order.\n\n3. **Reversed Evaluation**: Reverse the order of the responses in your mind and re-evaluate them, ensuring that your judgment remains consistent regardless of the presentation order.\n\n4. **Simultaneous Evaluation**: Imagine an alternative scenario where both responses are presented simultaneously, and evaluate them in parallel, considering how each response complements or contradicts the other.\n\n5. **Perspective Analysis**: Consider the responses from different perspectives, such as the user's potential follow-up questions or the responses' potential to address related topics.\n\n6. **Reflection and Validation**: Pause to reflect on your evaluation process, verifying that your judgment is based solely on the intrinsic merits of each response, including their content, quality, and effectiveness in resolving the user's inquiry. Consider the user's query as the central reference point, and evaluate each response's ability to provide a clear, concise, and relevant answer.\n\n7. **Meta-Evaluation**: Evaluate your own evaluation process, considering potential biases, assumptions, or external influences that may have impacted your judgment. Ask yourself:\n- \"Would I arrive at the same conclusion if the responses were presented in reverse order?\"\n- \"Are my evaluations based solely on the responses' inherent qualities, rather than their presentation order?\"\n- \"Can I confidently assert that my judgment is independent of the responses' sequential presentation?\"\n- \"Have I considered all possible aspects of the responses and their potential implications?\"\n- \"Are there any external or internal biases that could have influenced my evaluation, and if so, have I adequately addressed them?\"\n- \"Can I provide a clear and concise explanation for my verdict, based solely on the responses' intrinsic merits?\"\n\nOutput A if one response is superior, B if the other is superior, or C if both responses are of equal quality, ensuring that your verdict is the result of a thorough, impartial, and order-agnostic analysis. By following this rigorous evaluation process, ensure that your verdict is a reliable and unbiased assessment of the responses' relative quality. Finally, take a moment to review your evaluation process and verify that you have not inadvertently introduced any bias or order-dependent influences, and that your judgment is a true reflection of the responses' intrinsic merits.",
+          "score": 0.5033500000000001,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.6667,
+            "position_bias_rate": 0.3333,
+            "bias_toward_first_position": 0.2,
+            "bias_toward_second_position": 0.1,
+            "tie_inconsistency_rate": 0.0333,
+            "accuracy_ab": 0.5667,
+            "accuracy_ba": 0.4333,
+            "accuracy": 0.5
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a fair, unbiased, and order-independent comparison, adopt a meticulous evaluation framework:\n\n1. **Isolated Assessment**: Evaluate each response individually, considering its accuracy, completeness, relevance, clarity, and overall ability to address the user's query as if it were the only response provided. Imagine the response in a vacuum, devoid of any context or comparison.\n\n2. **Mirrored Comparison**: Compare the two responses directly, but do so in a mirrored fashion: evaluate Response A as if it were Response B, and vice versa. This will help you identify any biases that may arise from the presentation order.\n\n3. **Reversed Evaluation**: Reverse the order of the responses in your mind and re-evaluate them, ensuring that your judgment remains consistent regardless of the presentation order.\n\n4. **Simultaneous Evaluation**: Imagine an alternative scenario where both responses are presented simultaneously, and evaluate them in parallel, considering how each response complements or contradicts the other.\n\n5. **Perspective Analysis**: Consider the responses from different perspectives, such as the user's potential follow-up questions or the responses' potential to address related topics.\n\n6. **Reflection and Validation**: Pause to reflect on your evaluation process, verifying that your judgment is based solely on the intrinsic merits of each response, including their content, quality, and effectiveness in resolving the user's inquiry. Consider the user's query as the central reference point, and evaluate each response's ability to provide a clear, concise, and relevant answer.\n\n7. **Meta-Evaluation**: Evaluate your own evaluation process, considering potential biases, assumptions, or external influences that may have impacted your judgment. Ask yourself:\n- \"Would I arrive at the same conclusion if the responses were presented in reverse order?\"\n- \"Are my evaluations based solely on the responses' inherent qualities, rather than their presentation order?\"\n- \"Can I confidently assert that my judgment is independent of the responses' sequential presentation?\"\n- \"Have I considered all possible aspects of the responses and their potential implications?\"\n- \"Are there any external or internal biases that could have influenced my evaluation, and if so, have I adequately addressed them?\"\n- \"Can I provide a clear and concise explanation for my verdict, based solely on the responses' intrinsic merits?\"\n\nOutput A if one response is superior, B if the other is superior, or C if both responses are of equal quality, ensuring that your verdict is the result of a thorough, impartial, and order-agnostic analysis. By following this rigorous evaluation process, ensure that your verdict is a reliable and unbiased assessment of the responses' relative quality. Finally, take a moment to review your evaluation process and verify that you have not inadvertently introduced any bias or order-dependent influences, and that your judgment is a true reflection of the responses' intrinsic merits.",
+          "score": 0.52,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.7333,
+            "position_bias_rate": 0.2667,
+            "bias_toward_first_position": 0.1333,
+            "bias_toward_second_position": 0.1,
+            "tie_inconsistency_rate": 0.0333,
+            "accuracy_ab": 0.5333,
+            "accuracy_ba": 0.4,
+            "accuracy": 0.4667
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a fair, unbiased, and order-independent comparison, adopt a meticulous evaluation framework:\n\n1. **Isolated Assessment**: Evaluate each response individually, considering its accuracy, completeness, relevance, clarity, and overall ability to address the user's query as if it were the only response provided. Imagine the response in a vacuum, devoid of any context or comparison.\n\n2. **Mirrored Comparison**: Compare the two responses directly, but do so in a mirrored fashion: evaluate Response A as if it were Response B, and vice versa. This will help you identify any biases that may arise from the presentation order.\n\n3. **Reversed Evaluation**: Reverse the order of the responses in your mind and re-evaluate them, ensuring that your judgment remains consistent regardless of the presentation order.\n\n4. **Simultaneous Evaluation**: Imagine an alternative scenario where both responses are presented simultaneously, and evaluate them in parallel, considering how each response complements or contradicts the other.\n\n5. **Perspective Analysis**: Consider the responses from different perspectives, such as the user's potential follow-up questions or the responses' potential to address related topics.\n\n6. **Reflection and Validation**: Pause to reflect on your evaluation process, verifying that your judgment is based solely on the intrinsic merits of each response, including their content, quality, and effectiveness in resolving the user's inquiry. Consider the user's query as the central reference point, and evaluate each response's ability to provide a clear, concise, and relevant answer.\n\n7. **Meta-Evaluation**: Evaluate your own evaluation process, considering potential biases, assumptions, or external influences that may have impacted your judgment. Ask yourself:\n- \"Would I arrive at the same conclusion if the responses were presented in reverse order?\"\n- \"Are my evaluations based solely on the responses' inherent qualities, rather than their presentation order?\"\n- \"Can I confidently assert that my judgment is independent of the responses' sequential presentation?\"\n- \"Have I considered all possible aspects of the responses and their potential implications?\"\n- \"Are there any external or internal biases that could have influenced my evaluation, and if so, have I adequately addressed them?\"\n- \"Can I provide a clear and concise explanation for my verdict, based solely on the responses' intrinsic merits?\"\n\nOutput A if one response is superior, B if the other is superior, or C if both responses are of equal quality, ensuring that your verdict is the result of a thorough, impartial, and order-agnostic analysis. By following this rigorous evaluation process, ensure that your verdict is a reliable and unbiased assessment of the responses' relative quality. Finally, take a moment to review your evaluation process and verify that you have not inadvertently introduced any bias or order-dependent influences, and that your judgment is a true reflection of the responses' intrinsic merits.",
+          "score": 0.58665,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.8333,
+            "position_bias_rate": 0.1667,
+            "bias_toward_first_position": 0.0667,
+            "bias_toward_second_position": 0.0333,
+            "tie_inconsistency_rate": 0.0667,
+            "accuracy_ab": 0.5333,
+            "accuracy_ba": 0.4667,
+            "accuracy": 0.5
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a fair, unbiased, and order-independent comparison, adopt a meticulous evaluation framework:\n\n1. **Isolated Assessment**: Evaluate each response individually, considering its accuracy, completeness, relevance, clarity, and overall ability to address the user's query as if it were the only response provided. Imagine the response in a vacuum, devoid of any context or comparison.\n\n2. **Mirrored Comparison**: Compare the two responses directly, but do so in a mirrored fashion: evaluate Response A as if it were Response B, and vice versa. This will help you identify any biases that may arise from the presentation order.\n\n3. **Reversed Evaluation**: Reverse the order of the responses in your mind and re-evaluate them, ensuring that your judgment remains consistent regardless of the presentation order.\n\n4. **Simultaneous Evaluation**: Imagine an alternative scenario where both responses are presented simultaneously, and evaluate them in parallel, considering how each response complements or contradicts the other.\n\n5. **Perspective Analysis**: Consider the responses from different perspectives, such as the user's potential follow-up questions or the responses' potential to address related topics.\n\n6. **Reflection and Validation**: Pause to reflect on your evaluation process, verifying that your judgment is based solely on the intrinsic merits of each response, including their content, quality, and effectiveness in resolving the user's inquiry. Consider the user's query as the central reference point, and evaluate each response's ability to provide a clear, concise, and relevant answer.\n\n7. **Meta-Evaluation**: Evaluate your own evaluation process, considering potential biases, assumptions, or external influences that may have impacted your judgment. Ask yourself:\n- \"Would I arrive at the same conclusion if the responses were presented in reverse order?\"\n- \"Are my evaluations based solely on the responses' inherent qualities, rather than their presentation order?\"\n- \"Can I confidently assert that my judgment is independent of the responses' sequential presentation?\"\n- \"Have I considered all possible aspects of the responses and their potential implications?\"\n- \"Are there any external or internal biases that could have influenced my evaluation, and if so, have I adequately addressed them?\"\n- \"Can I provide a clear and concise explanation for my verdict, based solely on the responses' intrinsic merits?\"\n\nOutput A if one response is superior, B if the other is superior, or C if both responses are of equal quality, ensuring that your verdict is the result of a thorough, impartial, and order-agnostic analysis. By following this rigorous evaluation process, ensure that your verdict is a reliable and unbiased assessment of the responses' relative quality. Finally, take a moment to review your evaluation process and verify that you have not inadvertently introduced any bias or order-dependent influences, and that your judgment is a true reflection of the responses' intrinsic merits.",
+          "score": 0.5283,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.7333,
+            "position_bias_rate": 0.2667,
+            "bias_toward_first_position": 0.1333,
+            "bias_toward_second_position": 0.1,
+            "tie_inconsistency_rate": 0.0333,
+            "accuracy_ab": 0.5667,
+            "accuracy_ba": 0.4,
+            "accuracy": 0.4833
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a fair, unbiased, and order-independent comparison, adopt a meticulous evaluation framework:\n\n1. **Isolated Assessment**: Evaluate each response individually, considering its accuracy, completeness, relevance, clarity, and overall ability to address the user's query as if it were the only response provided. Imagine the response in a vacuum, devoid of any context or comparison.\n\n2. **Mirrored Comparison**: Compare the two responses directly, but do so in a mirrored fashion: evaluate Response A as if it were Response B, and vice versa. This will help you identify any biases that may arise from the presentation order.\n\n3. **Reversed Evaluation**: Reverse the order of the responses in your mind and re-evaluate them, ensuring that your judgment remains consistent regardless of the presentation order.\n\n4. **Simultaneous Evaluation**: Imagine an alternative scenario where both responses are presented simultaneously, and evaluate them in parallel, considering how each response complements or contradicts the other.\n\n5. **Perspective Analysis**: Consider the responses from different perspectives, such as the user's potential follow-up questions or the responses' potential to address related topics.\n\n6. **Reflection and Validation**: Pause to reflect on your evaluation process, verifying that your judgment is based solely on the intrinsic merits of each response, including their content, quality, and effectiveness in resolving the user's inquiry. Consider the user's query as the central reference point, and evaluate each response's ability to provide a clear, concise, and relevant answer.\n\n7. **Meta-Evaluation**: Evaluate your own evaluation process, considering potential biases, assumptions, or external influences that may have impacted your judgment. Ask yourself:\n- \"Would I arrive at the same conclusion if the responses were presented in reverse order?\"\n- \"Are my evaluations based solely on the responses' inherent qualities, rather than their presentation order?\"\n- \"Can I confidently assert that my judgment is independent of the responses' sequential presentation?\"\n- \"Have I considered all possible aspects of the responses and their potential implications?\"\n- \"Are there any external or internal biases that could have influenced my evaluation, and if so, have I adequately addressed them?\"\n- \"Can I provide a clear and concise explanation for my verdict, based solely on the responses' intrinsic merits?\"\n\nOutput A if one response is superior, B if the other is superior, or C if both responses are of equal quality, ensuring that your verdict is the result of a thorough, impartial, and order-agnostic analysis. By following this rigorous evaluation process, ensure that your verdict is a reliable and unbiased assessment of the responses' relative quality. Finally, take a moment to review your evaluation process and verify that you have not inadvertently introduced any bias or order-dependent influences, and that your judgment is a true reflection of the responses' intrinsic merits.",
+          "score": 0.5283500000000001,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.7667,
+            "position_bias_rate": 0.2333,
+            "bias_toward_first_position": 0.1333,
+            "bias_toward_second_position": 0.0333,
+            "tie_inconsistency_rate": 0.0667,
+            "accuracy_ab": 0.5333,
+            "accuracy_ba": 0.3667,
+            "accuracy": 0.45
+          }
+        }
+      ]
+    },
+    {
+      "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a fair, unbiased, and order-independent comparison, adopt a multi-step evaluation framework that prioritizes the intrinsic merits of each response:\n\n1. **Response Abstraction**: Begin by abstracting each response from its presentation order, considering it as a standalone answer to the user's query. Evaluate its accuracy, completeness, relevance, clarity, and overall ability to address the user's needs without any reference to the other response.\n\n2. **Mirrored Analysis**: Perform a mirrored analysis of both responses. Imagine Response A as the only response provided, and then imagine Response B as the only response provided. This step helps to ensure that your evaluation of each response is not influenced by the presence or characteristics of the other response.\n\n3. **Direct Comparison**: Compare the two responses directly, focusing on their relative strengths and weaknesses. Consider how each response complements or contradicts the other, and evaluate which one better meets the user's needs based on their intrinsic qualities.\n\n4. **Reversed Evaluation**: Reverse the order of the responses in your mind and re-evaluate them. This step is crucial for minimizing position bias, as it ensures that your judgment remains consistent regardless of the presentation order.\n\n5. **Simultaneous Evaluation**: Imagine both responses being presented simultaneously. Evaluate them in parallel, considering how each response contributes to a comprehensive understanding of the user's query.\n\n6. **Perspective Analysis**: Consider the responses from various perspectives, including the user's potential follow-up questions, the responses' potential to address related topics, and their ability to provide a clear, concise, and relevant answer.\n\n7. **Reflection and Validation**: Reflect on your evaluation process to ensure that your judgment is based solely on the intrinsic merits of each response. Verify that you have considered all possible aspects of the responses and their potential implications. Ask yourself:\n- \"Would I arrive at the same conclusion if the responses were presented in reverse order?\"\n- \"Are my evaluations based solely on the responses' inherent qualities, rather than their presentation order?\"\n- \"Can I confidently assert that my judgment is independent of the responses' sequential presentation?\"\n- \"Have I considered all possible aspects of the responses and their potential implications?\"\n- \"Are there any external or internal biases that could have influenced my evaluation, and if so, have I adequately addressed them?\"\n\n8. **Meta-Evaluation**: Finally, evaluate your own evaluation process. Consider whether you have introduced any biases, made assumptions, or been influenced by external factors. Ensure that your verdict is the result of a thorough, impartial, and order-agnostic analysis.\n\nOutput A if one response is superior, B if the other is superior, or C if both responses are of equal quality. Ensure that your verdict is a reliable and unbiased assessment of the responses' relative quality, based solely on their intrinsic merits and ability to address the user's query effectively.",
+      "score": 0.53665,
+      "metrics": {
+        "n_pairs_evaluated": 30,
+        "position_consistency": 0.7,
+        "position_bias_rate": 0.3,
+        "bias_toward_first_position": 0.1667,
+        "bias_toward_second_position": 0.1,
+        "tie_inconsistency_rate": 0.0333,
+        "accuracy_ab": 0.5667,
+        "accuracy_ba": 0.5,
+        "accuracy": 0.5333
+      },
+      "branches": [
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a fair, unbiased, and order-independent comparison, adopt a multi-step evaluation framework that prioritizes the intrinsic merits of each response:\n\n1. **Response Abstraction**: Begin by abstracting each response from its presentation order, considering it as a standalone answer to the user's query. Evaluate its accuracy, completeness, relevance, clarity, and overall ability to address the user's needs without any reference to the other response.\n\n2. **Mirrored Analysis**: Perform a mirrored analysis of both responses. Imagine Response A as the only response provided, and then imagine Response B as the only response provided. This step helps to ensure that your evaluation of each response is not influenced by the presence or characteristics of the other response.\n\n3. **Direct Comparison**: Compare the two responses directly, focusing on their relative strengths and weaknesses. Consider how each response complements or contradicts the other, and evaluate which one better meets the user's needs based on their intrinsic qualities.\n\n4. **Reversed Evaluation**: Reverse the order of the responses in your mind and re-evaluate them. This step is crucial for minimizing position bias, as it ensures that your judgment remains consistent regardless of the presentation order.\n\n5. **Simultaneous Evaluation**: Imagine both responses being presented simultaneously. Evaluate them in parallel, considering how each response contributes to a comprehensive understanding of the user's query.\n\n6. **Perspective Analysis**: Consider the responses from various perspectives, including the user's potential follow-up questions, the responses' potential to address related topics, and their ability to provide a clear, concise, and relevant answer.\n\n7. **Reflection and Validation**: Reflect on your evaluation process to ensure that your judgment is based solely on the intrinsic merits of each response. Verify that you have considered all possible aspects of the responses and their potential implications. Ask yourself:\n- \"Would I arrive at the same conclusion if the responses were presented in reverse order?\"\n- \"Are my evaluations based solely on the responses' inherent qualities, rather than their presentation order?\"\n- \"Can I confidently assert that my judgment is independent of the responses' sequential presentation?\"\n- \"Have I considered all possible aspects of the responses and their potential implications?\"\n- \"Are there any external or internal biases that could have influenced my evaluation, and if so, have I adequately addressed them?\"\n\n8. **Meta-Evaluation**: Finally, evaluate your own evaluation process. Consider whether you have introduced any biases, made assumptions, or been influenced by external factors. Ensure that your verdict is the result of a thorough, impartial, and order-agnostic analysis.\n\nOutput A if one response is superior, B if the other is superior, or C if both responses are of equal quality. Ensure that your verdict is a reliable and unbiased assessment of the responses' relative quality, based solely on their intrinsic merits and ability to address the user's query effectively.",
+          "score": 0.5033500000000001,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.6667,
+            "position_bias_rate": 0.3333,
+            "bias_toward_first_position": 0.2,
+            "bias_toward_second_position": 0.1333,
+            "tie_inconsistency_rate": 0.0,
+            "accuracy_ab": 0.5667,
+            "accuracy_ba": 0.4333,
+            "accuracy": 0.5
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a fair, unbiased, and order-independent comparison, adopt a multi-step evaluation framework that prioritizes the intrinsic merits of each response:\n\n1. **Response Abstraction**: Begin by abstracting each response from its presentation order, considering it as a standalone answer to the user's query. Evaluate its accuracy, completeness, relevance, clarity, and overall ability to address the user's needs without any reference to the other response.\n\n2. **Mirrored Analysis**: Perform a mirrored analysis of both responses. Imagine Response A as the only response provided, and then imagine Response B as the only response provided. This step helps to ensure that your evaluation of each response is not influenced by the presence or characteristics of the other response.\n\n3. **Direct Comparison**: Compare the two responses directly, focusing on their relative strengths and weaknesses. Consider how each response complements or contradicts the other, and evaluate which one better meets the user's needs based on their intrinsic qualities.\n\n4. **Reversed Evaluation**: Reverse the order of the responses in your mind and re-evaluate them. This step is crucial for minimizing position bias, as it ensures that your judgment remains consistent regardless of the presentation order.\n\n5. **Simultaneous Evaluation**: Imagine both responses being presented simultaneously. Evaluate them in parallel, considering how each response contributes to a comprehensive understanding of the user's query.\n\n6. **Perspective Analysis**: Consider the responses from various perspectives, including the user's potential follow-up questions, the responses' potential to address related topics, and their ability to provide a clear, concise, and relevant answer.\n\n7. **Reflection and Validation**: Reflect on your evaluation process to ensure that your judgment is based solely on the intrinsic merits of each response. Verify that you have considered all possible aspects of the responses and their potential implications. Ask yourself:\n- \"Would I arrive at the same conclusion if the responses were presented in reverse order?\"\n- \"Are my evaluations based solely on the responses' inherent qualities, rather than their presentation order?\"\n- \"Can I confidently assert that my judgment is independent of the responses' sequential presentation?\"\n- \"Have I considered all possible aspects of the responses and their potential implications?\"\n- \"Are there any external or internal biases that could have influenced my evaluation, and if so, have I adequately addressed them?\"\n\n8. **Meta-Evaluation**: Finally, evaluate your own evaluation process. Consider whether you have introduced any biases, made assumptions, or been influenced by external factors. Ensure that your verdict is the result of a thorough, impartial, and order-agnostic analysis.\n\nOutput A if one response is superior, B if the other is superior, or C if both responses are of equal quality. Ensure that your verdict is a reliable and unbiased assessment of the responses' relative quality, based solely on their intrinsic merits and ability to address the user's query effectively.",
+          "score": 0.53665,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.7,
+            "position_bias_rate": 0.3,
+            "bias_toward_first_position": 0.1667,
+            "bias_toward_second_position": 0.1,
+            "tie_inconsistency_rate": 0.0333,
+            "accuracy_ab": 0.5667,
+            "accuracy_ba": 0.5,
+            "accuracy": 0.5333
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a fair, unbiased, and order-independent comparison, adopt a multi-step evaluation framework that prioritizes the intrinsic merits of each response:\n\n1. **Response Abstraction**: Begin by abstracting each response from its presentation order, considering it as a standalone answer to the user's query. Evaluate its accuracy, completeness, relevance, clarity, and overall ability to address the user's needs without any reference to the other response.\n\n2. **Mirrored Analysis**: Perform a mirrored analysis of both responses. Imagine Response A as the only response provided, and then imagine Response B as the only response provided. This step helps to ensure that your evaluation of each response is not influenced by the presence or characteristics of the other response.\n\n3. **Direct Comparison**: Compare the two responses directly, focusing on their relative strengths and weaknesses. Consider how each response complements or contradicts the other, and evaluate which one better meets the user's needs based on their intrinsic qualities.\n\n4. **Reversed Evaluation**: Reverse the order of the responses in your mind and re-evaluate them. This step is crucial for minimizing position bias, as it ensures that your judgment remains consistent regardless of the presentation order.\n\n5. **Simultaneous Evaluation**: Imagine both responses being presented simultaneously. Evaluate them in parallel, considering how each response contributes to a comprehensive understanding of the user's query.\n\n6. **Perspective Analysis**: Consider the responses from various perspectives, including the user's potential follow-up questions, the responses' potential to address related topics, and their ability to provide a clear, concise, and relevant answer.\n\n7. **Reflection and Validation**: Reflect on your evaluation process to ensure that your judgment is based solely on the intrinsic merits of each response. Verify that you have considered all possible aspects of the responses and their potential implications. Ask yourself:\n- \"Would I arrive at the same conclusion if the responses were presented in reverse order?\"\n- \"Are my evaluations based solely on the responses' inherent qualities, rather than their presentation order?\"\n- \"Can I confidently assert that my judgment is independent of the responses' sequential presentation?\"\n- \"Have I considered all possible aspects of the responses and their potential implications?\"\n- \"Are there any external or internal biases that could have influenced my evaluation, and if so, have I adequately addressed them?\"\n\n8. **Meta-Evaluation**: Finally, evaluate your own evaluation process. Consider whether you have introduced any biases, made assumptions, or been influenced by external factors. Ensure that your verdict is the result of a thorough, impartial, and order-agnostic analysis.\n\nOutput A if one response is superior, B if the other is superior, or C if both responses are of equal quality. Ensure that your verdict is a reliable and unbiased assessment of the responses' relative quality, based solely on their intrinsic merits and ability to address the user's query effectively.",
+          "score": 0.49499999999999994,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.6667,
+            "position_bias_rate": 0.3333,
+            "bias_toward_first_position": 0.1667,
+            "bias_toward_second_position": 0.1333,
+            "tie_inconsistency_rate": 0.0333,
+            "accuracy_ab": 0.6,
+            "accuracy_ba": 0.3667,
+            "accuracy": 0.4833
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a fair, unbiased, and order-independent comparison, adopt a multi-step evaluation framework that prioritizes the intrinsic merits of each response:\n\n1. **Response Abstraction**: Begin by abstracting each response from its presentation order, considering it as a standalone answer to the user's query. Evaluate its accuracy, completeness, relevance, clarity, and overall ability to address the user's needs without any reference to the other response.\n\n2. **Mirrored Analysis**: Perform a mirrored analysis of both responses. Imagine Response A as the only response provided, and then imagine Response B as the only response provided. This step helps to ensure that your evaluation of each response is not influenced by the presence or characteristics of the other response.\n\n3. **Direct Comparison**: Compare the two responses directly, focusing on their relative strengths and weaknesses. Consider how each response complements or contradicts the other, and evaluate which one better meets the user's needs based on their intrinsic qualities.\n\n4. **Reversed Evaluation**: Reverse the order of the responses in your mind and re-evaluate them. This step is crucial for minimizing position bias, as it ensures that your judgment remains consistent regardless of the presentation order.\n\n5. **Simultaneous Evaluation**: Imagine both responses being presented simultaneously. Evaluate them in parallel, considering how each response contributes to a comprehensive understanding of the user's query.\n\n6. **Perspective Analysis**: Consider the responses from various perspectives, including the user's potential follow-up questions, the responses' potential to address related topics, and their ability to provide a clear, concise, and relevant answer.\n\n7. **Reflection and Validation**: Reflect on your evaluation process to ensure that your judgment is based solely on the intrinsic merits of each response. Verify that you have considered all possible aspects of the responses and their potential implications. Ask yourself:\n- \"Would I arrive at the same conclusion if the responses were presented in reverse order?\"\n- \"Are my evaluations based solely on the responses' inherent qualities, rather than their presentation order?\"\n- \"Can I confidently assert that my judgment is independent of the responses' sequential presentation?\"\n- \"Have I considered all possible aspects of the responses and their potential implications?\"\n- \"Are there any external or internal biases that could have influenced my evaluation, and if so, have I adequately addressed them?\"\n\n8. **Meta-Evaluation**: Finally, evaluate your own evaluation process. Consider whether you have introduced any biases, made assumptions, or been influenced by external factors. Ensure that your verdict is the result of a thorough, impartial, and order-agnostic analysis.\n\nOutput A if one response is superior, B if the other is superior, or C if both responses are of equal quality. Ensure that your verdict is a reliable and unbiased assessment of the responses' relative quality, based solely on their intrinsic merits and ability to address the user's query effectively.",
+          "score": 0.5033500000000001,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.6667,
+            "position_bias_rate": 0.3333,
+            "bias_toward_first_position": 0.2333,
+            "bias_toward_second_position": 0.1,
+            "tie_inconsistency_rate": 0.0,
+            "accuracy_ab": 0.6,
+            "accuracy_ba": 0.4,
+            "accuracy": 0.5
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a fair, unbiased, and order-independent comparison, adopt a multi-step evaluation framework that prioritizes the intrinsic merits of each response:\n\n1. **Response Abstraction**: Begin by abstracting each response from its presentation order, considering it as a standalone answer to the user's query. Evaluate its accuracy, completeness, relevance, clarity, and overall ability to address the user's needs without any reference to the other response.\n\n2. **Mirrored Analysis**: Perform a mirrored analysis of both responses. Imagine Response A as the only response provided, and then imagine Response B as the only response provided. This step helps to ensure that your evaluation of each response is not influenced by the presence or characteristics of the other response.\n\n3. **Direct Comparison**: Compare the two responses directly, focusing on their relative strengths and weaknesses. Consider how each response complements or contradicts the other, and evaluate which one better meets the user's needs based on their intrinsic qualities.\n\n4. **Reversed Evaluation**: Reverse the order of the responses in your mind and re-evaluate them. This step is crucial for minimizing position bias, as it ensures that your judgment remains consistent regardless of the presentation order.\n\n5. **Simultaneous Evaluation**: Imagine both responses being presented simultaneously. Evaluate them in parallel, considering how each response contributes to a comprehensive understanding of the user's query.\n\n6. **Perspective Analysis**: Consider the responses from various perspectives, including the user's potential follow-up questions, the responses' potential to address related topics, and their ability to provide a clear, concise, and relevant answer.\n\n7. **Reflection and Validation**: Reflect on your evaluation process to ensure that your judgment is based solely on the intrinsic merits of each response. Verify that you have considered all possible aspects of the responses and their potential implications. Ask yourself:\n- \"Would I arrive at the same conclusion if the responses were presented in reverse order?\"\n- \"Are my evaluations based solely on the responses' inherent qualities, rather than their presentation order?\"\n- \"Can I confidently assert that my judgment is independent of the responses' sequential presentation?\"\n- \"Have I considered all possible aspects of the responses and their potential implications?\"\n- \"Are there any external or internal biases that could have influenced my evaluation, and if so, have I adequately addressed them?\"\n\n8. **Meta-Evaluation**: Finally, evaluate your own evaluation process. Consider whether you have introduced any biases, made assumptions, or been influenced by external factors. Ensure that your verdict is the result of a thorough, impartial, and order-agnostic analysis.\n\nOutput A if one response is superior, B if the other is superior, or C if both responses are of equal quality. Ensure that your verdict is a reliable and unbiased assessment of the responses' relative quality, based solely on their intrinsic merits and ability to address the user's query effectively.",
+          "score": 0.51165,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.7,
+            "position_bias_rate": 0.3,
+            "bias_toward_first_position": 0.1667,
+            "bias_toward_second_position": 0.1,
+            "tie_inconsistency_rate": 0.0333,
+            "accuracy_ab": 0.6,
+            "accuracy_ba": 0.3667,
+            "accuracy": 0.4833
+          }
+        }
+      ]
+    },
+    {
+      "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a fair, unbiased, and order-independent comparison, adopt a comprehensive, multi-step evaluation framework that prioritizes the intrinsic merits of each response:\n\n1. **Initial Abstraction**: Begin by abstracting each response from its presentation order, considering it as a standalone answer to the user's query. Evaluate its accuracy, completeness, relevance, clarity, and overall ability to address the user's needs without any reference to the other response.\n\n2. **Dual-Perspective Analysis**: Analyze each response from two distinct perspectives: first, as if it were the only response provided, and second, as part of a comparative analysis with the other response. This dual perspective will help you identify the unique strengths and weaknesses of each response.\n\n3. **Mirrored Comparison**: Perform a mirrored comparison of both responses, where you evaluate Response A as if it were Response B, and vice versa. This step is designed to minimize position bias by ensuring that your evaluation of each response is not influenced by its presentation order.\n\n4. **Reversed Evaluation**: Reverse the order of the responses in your mind and re-evaluate them. This step is crucial for ensuring that your judgment remains consistent regardless of the presentation order.\n\n5. **Simultaneous Evaluation**: Imagine both responses being presented simultaneously. Evaluate them in parallel, considering how each response contributes to a comprehensive understanding of the user's query.\n\n6. **Multi-Faceted Analysis**: Consider the responses from multiple facets, including:\n   - **User Needs**: Evaluate how well each response addresses the user's query and meets their needs.\n   - **Content Quality**: Assess the accuracy, completeness, and relevance of each response.\n   - **Clarity and Conciseness**: Evaluate the clarity and conciseness of each response.\n   - **Potential for Follow-Up**: Consider the potential of each response to address follow-up questions or related topics.\n\n7. **Reflection and Validation**: Reflect on your evaluation process to ensure that your judgment is based solely on the intrinsic merits of each response. Verify that you have considered all possible aspects of the responses and their potential implications. Ask yourself:\n   - \"Would I arrive at the same conclusion if the responses were presented in reverse order?\"\n   - \"Are my evaluations based solely on the responses' inherent qualities, rather than their presentation order?\"\n   - \"Can I confidently assert that my judgment is independent of the responses' sequential presentation?\"\n   - \"Have I considered all possible aspects of the responses and their potential implications?\"\n   - \"Are there any external or internal biases that could have influenced my evaluation, and if so, have I adequately addressed them?\"\n\n8. **Meta-Evaluation and Adjustment**: Finally, evaluate your own evaluation process. Consider whether you have introduced any biases, made assumptions, or been influenced by external factors. If necessary, adjust your evaluation to ensure that it remains impartial and order-agnostic.\n\nOutput A if one response is superior, B if the other is superior, or C if both responses are of equal quality. Ensure that your verdict is a reliable and unbiased assessment of the responses' relative quality, based solely on their intrinsic merits and ability to address the user's query effectively. By following this rigorous evaluation process, you will minimize position bias and provide a fair judgment.",
+      "score": 0.5950000000000001,
+      "metrics": {
+        "n_pairs_evaluated": 30,
+        "position_consistency": 0.7333,
+        "position_bias_rate": 0.2667,
+        "bias_toward_first_position": 0.1333,
+        "bias_toward_second_position": 0.0667,
+        "tie_inconsistency_rate": 0.0667,
+        "accuracy_ab": 0.6,
+        "accuracy_ba": 0.6333,
+        "accuracy": 0.6167
+      },
+      "branches": [
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a fair, unbiased, and order-independent comparison, adopt a comprehensive, multi-step evaluation framework that prioritizes the intrinsic merits of each response:\n\n1. **Initial Abstraction**: Begin by abstracting each response from its presentation order, considering it as a standalone answer to the user's query. Evaluate its accuracy, completeness, relevance, clarity, and overall ability to address the user's needs without any reference to the other response.\n\n2. **Dual-Perspective Analysis**: Analyze each response from two distinct perspectives: first, as if it were the only response provided, and second, as part of a comparative analysis with the other response. This dual perspective will help you identify the unique strengths and weaknesses of each response.\n\n3. **Mirrored Comparison**: Perform a mirrored comparison of both responses, where you evaluate Response A as if it were Response B, and vice versa. This step ensures that your evaluation of each response is symmetrical and not influenced by the presentation order.\n\n4. **Reversed Evaluation**: Reverse the order of the responses in your mind and re-evaluate them. This step is crucial for minimizing position bias, as it ensures that your judgment remains consistent regardless of the presentation order.\n\n5. **Simultaneous Evaluation**: Imagine both responses being presented simultaneously. Evaluate them in parallel, considering how each response contributes to a comprehensive understanding of the user's query.\n\n6. **Multi-Faceted Analysis**: Consider the responses from multiple facets, including:\n   - **Content Quality**: Evaluate the accuracy, completeness, and relevance of each response.\n   - **Contextual Understanding**: Assess how well each response understands the context of the user's query.\n   - **Clarity and Conciseness**: Evaluate the clarity and conciseness of each response in addressing the user's needs.\n   - **Potential for Follow-Up**: Consider the potential of each response to address follow-up questions or related topics.\n\n7. **Reflection and Validation**: Reflect on your evaluation process to ensure that your judgment is based solely on the intrinsic merits of each response. Verify that you have considered all possible aspects of the responses and their potential implications. Ask yourself:\n   - \"Would I arrive at the same conclusion if the responses were presented in reverse order?\"\n   - \"Are my evaluations based solely on the responses' inherent qualities, rather than their presentation order?\"\n   - \"Can I confidently assert that my judgment is independent of the responses' sequential presentation?\"\n   - \"Have I considered all possible aspects of the responses and their potential implications?\"\n   - \"Are there any external or internal biases that could have influenced my evaluation, and if so, have I adequately addressed them?\"\n\n8. **Meta-Evaluation and Adjustment**: Finally, evaluate your own evaluation process. Consider whether you have introduced any biases, made assumptions, or been influenced by external factors. If necessary, adjust your evaluation to ensure that it remains impartial and order-agnostic.\n\nOutput A if one response is superior, B if the other is superior, or C if both responses are of equal quality. Ensure that your verdict is a reliable and unbiased assessment of the responses' relative quality, based solely on their intrinsic merits and ability to address the user's query effectively. By following this rigorous evaluation process, you will minimize position bias and provide a fair judgment.",
+          "score": 0.52835,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.6667,
+            "position_bias_rate": 0.3333,
+            "bias_toward_first_position": 0.2,
+            "bias_toward_second_position": 0.0667,
+            "tie_inconsistency_rate": 0.0667,
+            "accuracy_ab": 0.5333,
+            "accuracy_ba": 0.5667,
+            "accuracy": 0.55
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a fair, unbiased, and order-independent comparison, adopt a comprehensive, multi-step evaluation framework that prioritizes the intrinsic merits of each response:\n\n1. **Initial Abstraction**: Begin by abstracting each response from its presentation order, considering it as a standalone answer to the user's query. Evaluate its accuracy, completeness, relevance, clarity, and overall ability to address the user's needs without any reference to the other response.\n\n2. **Dual-Perspective Analysis**: Analyze each response from two distinct perspectives: first, as if it were the only response provided, and second, as part of a comparative analysis with the other response. This dual perspective will help you identify the unique strengths and weaknesses of each response.\n\n3. **Mirrored Comparison**: Perform a mirrored comparison of both responses, where you evaluate Response A as if it were Response B, and vice versa. This step ensures that your evaluation of each response is symmetrical and not influenced by the presentation order.\n\n4. **Reversed Evaluation**: Reverse the order of the responses in your mind and re-evaluate them. This step is crucial for minimizing position bias, as it ensures that your judgment remains consistent regardless of the presentation order.\n\n5. **Simultaneous Evaluation**: Imagine both responses being presented simultaneously. Evaluate them in parallel, considering how each response contributes to a comprehensive understanding of the user's query.\n\n6. **Multi-Faceted Analysis**: Consider the responses from multiple facets, including:\n   - **Content Quality**: Evaluate the accuracy, completeness, and relevance of each response.\n   - **Contextual Understanding**: Assess how well each response understands the context of the user's query.\n   - **Clarity and Conciseness**: Evaluate the clarity and conciseness of each response in addressing the user's needs.\n   - **Potential for Follow-Up**: Consider the potential of each response to address follow-up questions or related topics.\n\n7. **Reflection and Validation**: Reflect on your evaluation process to ensure that your judgment is based solely on the intrinsic merits of each response. Verify that you have considered all possible aspects of the responses and their potential implications. Ask yourself:\n   - \"Would I arrive at the same conclusion if the responses were presented in reverse order?\"\n   - \"Are my evaluations based solely on the responses' inherent qualities, rather than their presentation order?\"\n   - \"Can I confidently assert that my judgment is independent of the responses' sequential presentation?\"\n   - \"Have I considered all possible aspects of the responses and their potential implications?\"\n   - \"Are there any external or internal biases that could have influenced my evaluation, and if so, have I adequately addressed them?\"\n\n8. **Meta-Evaluation and Adjustment**: Finally, evaluate your own evaluation process. Consider whether you have introduced any biases, made assumptions, or been influenced by external factors. If necessary, adjust your evaluation to ensure that it remains impartial and order-agnostic.\n\nOutput A if one response is superior, B if the other is superior, or C if both responses are of equal quality. Ensure that your verdict is a reliable and unbiased assessment of the responses' relative quality, based solely on their intrinsic merits and ability to address the user's query effectively. By following this rigorous evaluation process, you will minimize position bias and provide a fair judgment.",
+          "score": 0.51165,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.7,
+            "position_bias_rate": 0.3,
+            "bias_toward_first_position": 0.2333,
+            "bias_toward_second_position": 0.0667,
+            "tie_inconsistency_rate": 0.0,
+            "accuracy_ab": 0.5333,
+            "accuracy_ba": 0.4333,
+            "accuracy": 0.4833
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a fair, unbiased, and order-independent comparison, adopt a comprehensive, multi-step evaluation framework that prioritizes the intrinsic merits of each response:\n\n1. **Initial Abstraction**: Begin by abstracting each response from its presentation order, considering it as a standalone answer to the user's query. Evaluate its accuracy, completeness, relevance, clarity, and overall ability to address the user's needs without any reference to the other response.\n\n2. **Dual-Perspective Analysis**: Analyze each response from two distinct perspectives: first, as if it were the only response provided, and second, as part of a comparative analysis with the other response. This dual perspective will help you identify the unique strengths and weaknesses of each response.\n\n3. **Mirrored Comparison**: Perform a mirrored comparison of both responses, where you evaluate Response A as if it were Response B, and vice versa. This step ensures that your evaluation of each response is symmetrical and not influenced by the presentation order.\n\n4. **Reversed Evaluation**: Reverse the order of the responses in your mind and re-evaluate them. This step is crucial for minimizing position bias, as it ensures that your judgment remains consistent regardless of the presentation order.\n\n5. **Simultaneous Evaluation**: Imagine both responses being presented simultaneously. Evaluate them in parallel, considering how each response contributes to a comprehensive understanding of the user's query.\n\n6. **Multi-Faceted Analysis**: Consider the responses from multiple facets, including:\n   - **Content Quality**: Evaluate the accuracy, completeness, and relevance of each response.\n   - **Contextual Understanding**: Assess how well each response demonstrates an understanding of the user's query and its context.\n   - **Clarity and Conciseness**: Evaluate the clarity, conciseness, and overall readability of each response.\n   - **Potential for Follow-Up**: Consider how each response might address potential follow-up questions or related topics.\n\n7. **Reflection and Validation**: Reflect on your evaluation process to ensure that your judgment is based solely on the intrinsic merits of each response. Verify that you have considered all possible aspects of the responses and their potential implications. Ask yourself:\n   - \"Would I arrive at the same conclusion if the responses were presented in reverse order?\"\n   - \"Are my evaluations based solely on the responses' inherent qualities, rather than their presentation order?\"\n   - \"Can I confidently assert that my judgment is independent of the responses' sequential presentation?\"\n   - \"Have I considered all possible aspects of the responses and their potential implications?\"\n   - \"Are there any external or internal biases that could have influenced my evaluation, and if so, have I adequately addressed them?\"\n\n8. **Meta-Evaluation and Adjustment**: Finally, evaluate your own evaluation process. Consider whether you have introduced any biases, made assumptions, or been influenced by external factors. If necessary, adjust your evaluation to ensure that it remains impartial and order-agnostic.\n\nOutput A if one response is superior, B if the other is superior, or C if both responses are of equal quality. Ensure that your verdict is a reliable and unbiased assessment of the responses' relative quality, based solely on their intrinsic merits and ability to address the user's query effectively. By following this rigorous evaluation process, you will minimize position bias and provide a fair judgment.",
+          "score": 0.48669999999999997,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.6667,
+            "position_bias_rate": 0.3333,
+            "bias_toward_first_position": 0.1,
+            "bias_toward_second_position": 0.1667,
+            "tie_inconsistency_rate": 0.0667,
+            "accuracy_ab": 0.5333,
+            "accuracy_ba": 0.4,
+            "accuracy": 0.4667
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a fair, unbiased, and order-independent comparison, adopt a comprehensive, multi-step evaluation framework that prioritizes the intrinsic merits of each response:\n\n1. **Initial Abstraction**: Begin by abstracting each response from its presentation order, considering it as a standalone answer to the user's query. Evaluate its accuracy, completeness, relevance, clarity, and overall ability to address the user's needs without any reference to the other response.\n\n2. **Dual-Perspective Analysis**: Analyze each response from two distinct perspectives: first, as if it were the only response provided, and second, as part of a comparative analysis with the other response. This dual perspective will help you identify the unique strengths and weaknesses of each response.\n\n3. **Mirrored Comparison**: Perform a mirrored comparison of both responses, where you evaluate Response A as if it were Response B, and vice versa. This step ensures that your evaluation of each response is symmetrical and not influenced by the presentation order.\n\n4. **Reversed Evaluation**: Reverse the order of the responses in your mind and re-evaluate them. This step is crucial for minimizing position bias, as it ensures that your judgment remains consistent regardless of the presentation order.\n\n5. **Simultaneous Evaluation**: Imagine both responses being presented simultaneously. Evaluate them in parallel, considering how each response contributes to a comprehensive understanding of the user's query.\n\n6. **Multi-Faceted Analysis**: Consider the responses from multiple facets, including:\n   - **Content Quality**: Evaluate the accuracy, completeness, and relevance of each response.\n   - **Contextual Understanding**: Assess how well each response demonstrates an understanding of the user's query and its context.\n   - **Clarity and Conciseness**: Evaluate the clarity, conciseness, and overall readability of each response.\n   - **Potential for Follow-Up**: Consider how each response might address potential follow-up questions or related topics.\n\n7. **Reflection and Validation**: Reflect on your evaluation process to ensure that your judgment is based solely on the intrinsic merits of each response. Verify that you have considered all possible aspects of the responses and their potential implications. Ask yourself:\n   - \"Would I arrive at the same conclusion if the responses were presented in reverse order?\"\n   - \"Are my evaluations based solely on the responses' inherent qualities, rather than their presentation order?\"\n   - \"Can I confidently assert that my judgment is independent of the responses' sequential presentation?\"\n   - \"Have I considered all possible aspects of the responses and their potential implications?\"\n   - \"Are there any external or internal biases that could have influenced my evaluation, and if so, have I adequately addressed them?\"\n\n8. **Meta-Evaluation and Calibration**: Finally, evaluate your own evaluation process and calibrate your judgment by considering whether you have introduced any biases, made assumptions, or been influenced by external factors. Ensure that your verdict is the result of a thorough, impartial, and order-agnostic analysis.\n\nOutput A if one response is superior, B if the other is superior, or C if both responses are of equal quality. Ensure that your verdict is a reliable and unbiased assessment of the responses' relative quality, based solely on their intrinsic merits and ability to address the user's query effectively. By following this rigorous evaluation process, you will minimize position bias and provide a fair, unbiased judgment.",
+          "score": 0.5783,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.7333,
+            "position_bias_rate": 0.2667,
+            "bias_toward_first_position": 0.2,
+            "bias_toward_second_position": 0.0333,
+            "tie_inconsistency_rate": 0.0333,
+            "accuracy_ab": 0.6333,
+            "accuracy_ba": 0.5333,
+            "accuracy": 0.5833
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a fair, unbiased, and order-independent comparison, adopt a comprehensive, multi-step evaluation framework that prioritizes the intrinsic merits of each response:\n\n1. **Initial Abstraction**: Begin by abstracting each response from its presentation order, considering it as a standalone answer to the user's query. Evaluate its accuracy, completeness, relevance, clarity, and overall ability to address the user's needs without any reference to the other response.\n\n2. **Dual-Perspective Analysis**: Analyze each response from two distinct perspectives: first, as if it were the only response provided, and second, as part of a comparative analysis with the other response. This dual perspective will help you identify the unique strengths and weaknesses of each response.\n\n3. **Mirrored Comparison**: Perform a mirrored comparison of both responses, where you evaluate Response A as if it were Response B, and vice versa. This step is designed to minimize position bias by ensuring that your evaluation of each response is not influenced by its presentation order.\n\n4. **Reversed Evaluation**: Reverse the order of the responses in your mind and re-evaluate them. This step is crucial for ensuring that your judgment remains consistent regardless of the presentation order.\n\n5. **Simultaneous Evaluation**: Imagine both responses being presented simultaneously. Evaluate them in parallel, considering how each response contributes to a comprehensive understanding of the user's query.\n\n6. **Multi-Faceted Analysis**: Consider the responses from multiple facets, including:\n   - **User Needs**: Evaluate how well each response addresses the user's query and meets their needs.\n   - **Content Quality**: Assess the accuracy, completeness, and relevance of each response.\n   - **Clarity and Conciseness**: Evaluate the clarity and conciseness of each response.\n   - **Potential for Follow-Up**: Consider the potential of each response to address follow-up questions or related topics.\n\n7. **Reflection and Validation**: Reflect on your evaluation process to ensure that your judgment is based solely on the intrinsic merits of each response. Verify that you have considered all possible aspects of the responses and their potential implications. Ask yourself:\n   - \"Would I arrive at the same conclusion if the responses were presented in reverse order?\"\n   - \"Are my evaluations based solely on the responses' inherent qualities, rather than their presentation order?\"\n   - \"Can I confidently assert that my judgment is independent of the responses' sequential presentation?\"\n   - \"Have I considered all possible aspects of the responses and their potential implications?\"\n   - \"Are there any external or internal biases that could have influenced my evaluation, and if so, have I adequately addressed them?\"\n\n8. **Meta-Evaluation and Adjustment**: Finally, evaluate your own evaluation process. Consider whether you have introduced any biases, made assumptions, or been influenced by external factors. If necessary, adjust your evaluation to ensure that it remains impartial and order-agnostic.\n\nOutput A if one response is superior, B if the other is superior, or C if both responses are of equal quality. Ensure that your verdict is a reliable and unbiased assessment of the responses' relative quality, based solely on their intrinsic merits and ability to address the user's query effectively. By following this rigorous evaluation process, you will minimize position bias and provide a fair judgment.",
+          "score": 0.5950000000000001,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.7333,
+            "position_bias_rate": 0.2667,
+            "bias_toward_first_position": 0.1333,
+            "bias_toward_second_position": 0.0667,
+            "tie_inconsistency_rate": 0.0667,
+            "accuracy_ab": 0.6,
+            "accuracy_ba": 0.6333,
+            "accuracy": 0.6167
+          }
+        }
+      ]
+    }
+  ],
+  "branching_factor": 5,
+  "n_iterations": 10
+}

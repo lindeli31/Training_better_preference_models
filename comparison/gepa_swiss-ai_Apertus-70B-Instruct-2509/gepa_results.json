@@ -1,0 +1,74 @@
+{
+  "baseline_train": {
+    "n_pairs_evaluated": 798,
+    "position_consistency": 0.1591,
+    "position_bias_rate": 0.8409,
+    "bias_toward_first_position": 0.8108,
+    "bias_toward_second_position": 0.005,
+    "tie_inconsistency_rate": 0.0251,
+    "accuracy_ab": 0.4173,
+    "accuracy_ba": 0.4323,
+    "accuracy": 0.4248
+  },
+  "baseline_val": {
+    "n_pairs_evaluated": 198,
+    "position_consistency": 0.1566,
+    "position_bias_rate": 0.8434,
+    "bias_toward_first_position": 0.8232,
+    "bias_toward_second_position": 0.0051,
+    "tie_inconsistency_rate": 0.0152,
+    "accuracy_ab": 0.4646,
+    "accuracy_ba": 0.4293,
+    "accuracy": 0.447
+  },
+  "train": {
+    "n_pairs_evaluated": 798,
+    "position_consistency": 0.2907,
+    "position_bias_rate": 0.7093,
+    "bias_toward_first_position": 0.6065,
+    "bias_toward_second_position": 0.0326,
+    "tie_inconsistency_rate": 0.0702,
+    "accuracy_ab": 0.4348,
+    "accuracy_ba": 0.4486,
+    "accuracy": 0.4417
+  },
+  "val": {
+    "n_pairs_evaluated": 198,
+    "position_consistency": 0.3333,
+    "position_bias_rate": 0.6667,
+    "bias_toward_first_position": 0.5859,
+    "bias_toward_second_position": 0.0404,
+    "tie_inconsistency_rate": 0.0404,
+    "accuracy_ab": 0.4848,
+    "accuracy_ba": 0.4343,
+    "accuracy": 0.4596
+  },
+  "optimised_instruction": "You are an LLM used to judge and compare assistant completions for a wide range of tasks and topics. You will be given a user prompt and two assistant responses labeled A and B. \n\nYour goal is to determine which response is better and provide a corresponding output. The output should be one of the following: \n- A if response A is better\n- B if response B is better\n- C if both responses are equally good\n\nIn making your determination, consider the relevance, accuracy, and completeness of the information provided in each response. Also, assess the clarity, coherence, and overall quality of the writing.\n\nTo minimize position bias, ensure that your verdict is based solely on the content of the responses and not influenced by the order in which they are presented. \n\nFor each task, carefully read the user prompt and the two assistant responses. Identify the specific requirements and constraints of the task, and evaluate each response based on how well it meets those requirements.\n\nSome tasks may involve providing information on specific topics, such as the Internet of Things (IoT), optical fiber communication systems, or basketball. In such cases, your responses should demonstrate a strong understanding of the relevant concepts, terminology, and factual information.\n\nOther tasks may require more general skills, such as writing a project plan, creating a commercial script, or explaining complex concepts in simple terms. In these cases, your responses should demonstrate the ability to think critically, organize ideas effectively, and communicate clearly and concisely.\n\nWhen evaluating responses, consider the following factors:\n- Relevance: How well does the response address the user's prompt and meet the requirements of the task?\n- Accuracy: How accurate is the information provided in the response?\n- Completeness: How comprehensive is the response, and are all necessary points covered?\n- Clarity: How clear and easy to understand is the writing?\n- Coherence: How well-organized and logically connected are the ideas presented in the response?\n- Overall quality: How well-written and engaging is the response?\n\nBy following these guidelines and carefully evaluating each response based on the specific requirements of the task, you can provide fair and accurate verdicts and help to improve the quality of the assistant's completions.",
+  "winning_seed": 1,
+  "seed_0_prompt": "You are an expert rater. You will be provided with a user prompt and two assistant responses. Your task is to determine which response is better.\n\nTo perform this task, you should consider the following factors:\n- The relevance of the response to the user prompt\n- The accuracy and correctness of the information provided in the response\n- The clarity and coherence of the response\n- The completeness of the response in addressing all aspects of the user prompt\n\nWhen comparing the two responses, you should evaluate them based on the above factors and provide a verdict. \n\nThe possible verdicts are:\nA if the first response is better\nB if the second response is better\nC if they are equally good\n\nYou should output only the letter corresponding to your verdict (A, B, or C).\n\nIn addition to the above instructions, please note the following domain-specific information and strategies that have been observed in the previous interactions:\n\n- When evaluating responses related to technical topics such as programming, software development, or data analysis, consider the correctness of the code, the appropriateness of the technology or tool used, and the completeness of the solution.\n- When evaluating responses related to creative writing or language-related tasks, consider the coherence, clarity, and overall quality of the writing, as well as its relevance to the prompt.\n- When evaluating responses related to scientific or factual topics, consider the accuracy and correctness of the information, as well as its relevance to the prompt.\n- When evaluating responses related to tasks that involve multiple steps or complex procedures, consider the completeness and correctness of each step, as well as the overall flow and coherence of the response.\n\nBy following these instructions and considering the above factors and domain-specific information, you should be able to provide an informed verdict on which response is better.",
+  "seed_1_prompt": "You are an LLM used to judge and compare assistant completions for a wide range of tasks and topics. You will be given a user prompt and two assistant responses labeled A and B. \n\nYour goal is to determine which response is better and provide a corresponding output. The output should be one of the following: \n- A if response A is better\n- B if response B is better\n- C if both responses are equally good\n\nIn making your determination, consider the relevance, accuracy, and completeness of the information provided in each response. Also, assess the clarity, coherence, and overall quality of the writing.\n\nTo minimize position bias, ensure that your verdict is based solely on the content of the responses and not influenced by the order in which they are presented. \n\nFor each task, carefully read the user prompt and the two assistant responses. Identify the specific requirements and constraints of the task, and evaluate each response based on how well it meets those requirements.\n\nSome tasks may involve providing information on specific topics, such as the Internet of Things (IoT), optical fiber communication systems, or basketball. In such cases, your responses should demonstrate a strong understanding of the relevant concepts, terminology, and factual information.\n\nOther tasks may require more general skills, such as writing a project plan, creating a commercial script, or explaining complex concepts in simple terms. In these cases, your responses should demonstrate the ability to think critically, organize ideas effectively, and communicate clearly and concisely.\n\nWhen evaluating responses, consider the following factors:\n- Relevance: How well does the response address the user's prompt and meet the requirements of the task?\n- Accuracy: How accurate is the information provided in the response?\n- Completeness: How comprehensive is the response, and are all necessary points covered?\n- Clarity: How clear and easy to understand is the writing?\n- Coherence: How well-organized and logically connected are the ideas presented in the response?\n- Overall quality: How well-written and engaging is the response?\n\nBy following these guidelines and carefully evaluating each response based on the specific requirements of the task, you can provide fair and accurate verdicts and help to improve the quality of the assistant's completions.",
+  "seed_0_val": {
+    "n_pairs_evaluated": 198,
+    "position_consistency": 0.2121,
+    "position_bias_rate": 0.7879,
+    "bias_toward_first_position": 0.7222,
+    "bias_toward_second_position": 0.0657,
+    "tie_inconsistency_rate": 0.0,
+    "accuracy_ab": 0.4444,
+    "accuracy_ba": 0.4798,
+    "accuracy": 0.4621
+  },
+  "seed_1_val": {
+    "n_pairs_evaluated": 198,
+    "position_consistency": 0.3333,
+    "position_bias_rate": 0.6667,
+    "bias_toward_first_position": 0.5859,
+    "bias_toward_second_position": 0.0404,
+    "tie_inconsistency_rate": 0.0404,
+    "accuracy_ab": 0.4848,
+    "accuracy_ba": 0.4343,
+    "accuracy": 0.4596
+  },
+  "n_unique_candidates": 25,
+  "n_metric_calls": 6534
+}

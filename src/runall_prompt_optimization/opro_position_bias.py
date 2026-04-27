@@ -272,6 +272,8 @@ async def run_opro(
     seed: int = 42,
     output_dir: Path = Path("results/opro"),
     proposer_client: SwissAIClient | None = None,
+    precomputed_baseline_train: dict | None = None,
+    precomputed_baseline_val: dict | None = None,
 ) -> OproResult:
     """
     Run the full OPRO optimisation loop.
@@ -297,24 +299,31 @@ async def run_opro(
     rng = random.Random(seed)
     eval_subset = rng.sample(train_pairs, min(eval_pairs, len(train_pairs)))
 
-    # Baseline = SYSTEM_EXPERT_RATER (the EXACT same seed GEPA uses).
-    # Full metrics on train + val so the OPRO baseline row is directly
-    # comparable to the GEPA baseline row in the results JSON.
-    baseline_prompt = SEED_PROMPTS[0]
-    logger.info("Evaluating OPRO baseline (SEED_PROMPTS[0]) on %d train pairs", len(train_pairs))
-    baseline_train = await evaluate_full_metrics(client, train_pairs, baseline_prompt, experiment_id="opro_baseline_train")
-    logger.info(
-        "Baseline (train) consistency=%.3f accuracy=%.3f bias_rate=%.3f",
-        baseline_train["position_consistency"], baseline_train["accuracy"],
-        baseline_train["position_bias_rate"],
-    )
-    logger.info("Evaluating OPRO baseline on %d val pairs", len(val_pairs))
-    baseline_val = await evaluate_full_metrics(client, val_pairs, baseline_prompt, experiment_id="opro_baseline_val")
-    logger.info(
-        "Baseline (val)   consistency=%.3f accuracy=%.3f bias_rate=%.3f",
-        baseline_val["position_consistency"], baseline_val["accuracy"],
-        baseline_val["position_bias_rate"],
-    )
+    if precomputed_baseline_train is not None and precomputed_baseline_val is not None:
+        baseline_train = precomputed_baseline_train
+        baseline_val   = precomputed_baseline_val
+        logger.info(
+            "Using pre-computed shared baseline: "
+            "train cons=%.3f acc=%.3f | val cons=%.3f acc=%.3f",
+            baseline_train["position_consistency"], baseline_train["accuracy"],
+            baseline_val["position_consistency"],   baseline_val["accuracy"],
+        )
+    else:
+        baseline_prompt = SEED_PROMPTS[0]
+        logger.info("Evaluating OPRO baseline (SEED_PROMPTS[0]) on %d train pairs", len(train_pairs))
+        baseline_train = await evaluate_full_metrics(client, train_pairs, baseline_prompt, experiment_id="opro_baseline_train")
+        logger.info(
+            "Baseline (train) consistency=%.3f accuracy=%.3f bias_rate=%.3f",
+            baseline_train["position_consistency"], baseline_train["accuracy"],
+            baseline_train["position_bias_rate"],
+        )
+        logger.info("Evaluating OPRO baseline on %d val pairs", len(val_pairs))
+        baseline_val = await evaluate_full_metrics(client, val_pairs, baseline_prompt, experiment_id="opro_baseline_val")
+        logger.info(
+            "Baseline (val)   consistency=%.3f accuracy=%.3f bias_rate=%.3f",
+            baseline_val["position_consistency"], baseline_val["accuracy"],
+            baseline_val["position_bias_rate"],
+        )
 
     # Two seed prompts that SEED the OPRO history (start of the search).
     # Same seeds as GEPA so the two methods start from comparable points.

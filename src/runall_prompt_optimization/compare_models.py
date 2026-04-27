@@ -27,8 +27,9 @@ load_dotenv()
 from src.datasets.dataset import load_dataset_pairs, load_stratified_pairs
 from src.core.inference_client import InferenceConfig, SwissAIClient
 from src.runall_prompt_optimization.gepa_position_bias import run_gepa
-from src.runall_prompt_optimization.opro_position_bias import run_opro
+from src.runall_prompt_optimization.opro_position_bias import run_opro, evaluate_full_metrics
 from src.runall_prompt_optimization.opro_tree_position_bias import run_opro_tree
+from src.runall_prompt_optimization.scoring import SEED_PROMPTS
 
 logging.basicConfig(
     level=logging.INFO,
@@ -115,6 +116,8 @@ def run_gepa_one(
     eval_pairs: int,
     num_threads: int,
     seed: int,
+    precomputed_baseline_train: dict | None = None,
+    precomputed_baseline_val: dict | None = None,
 ) -> dict | None:
     try:
         result = run_gepa(
@@ -129,6 +132,8 @@ def run_gepa_one(
             seed=seed,
             num_threads=num_threads,
             output_dir=output_dir,
+            precomputed_baseline_train=precomputed_baseline_train,
+            precomputed_baseline_val=precomputed_baseline_val,
         )
         return {
             "baseline_train": result.baseline_train,
@@ -152,6 +157,8 @@ async def run_opro_one(
     n_iterations: int,
     eval_pairs: int,
     seed: int,
+    precomputed_baseline_train: dict | None = None,
+    precomputed_baseline_val: dict | None = None,
 ) -> dict | None:
     try:
         result = await run_opro(
@@ -162,6 +169,8 @@ async def run_opro_one(
             eval_pairs=eval_pairs,
             seed=seed,
             output_dir=output_dir,
+            precomputed_baseline_train=precomputed_baseline_train,
+            precomputed_baseline_val=precomputed_baseline_val,
         )
         return {
             "baseline_train": result.baseline_train,
@@ -186,6 +195,8 @@ async def run_opro_tree_one(
     eval_pairs: int,
     branching_factor: int,
     seed: int,
+    precomputed_baseline_train: dict | None = None,
+    precomputed_baseline_val: dict | None = None,
 ) -> dict | None:
     try:
         result = await run_opro_tree(
@@ -197,6 +208,8 @@ async def run_opro_tree_one(
             branching_factor=branching_factor,
             seed=seed,
             output_dir=output_dir,
+            precomputed_baseline_train=precomputed_baseline_train,
+            precomputed_baseline_val=precomputed_baseline_val,
         )
         return {
             "baseline_train": result.baseline_train,
@@ -379,6 +392,29 @@ async def run_all_methods_for_model(
     tag = _safe_model_tag(model)
     results: dict = {}
 
+    # Compute a single shared baseline for this model so all methods report
+    # the same baseline numbers (same prompt format, same API calls, same data).
+    logger.info("[%s] Computing shared baseline (SEED_PROMPTS[0])", model)
+    bl_cfg = InferenceConfig(
+        base_url=api_base, api_key=api_key, model=model,
+        concurrent_requests=concurrency,
+    )
+    async with SwissAIClient(bl_cfg) as bl_client:
+        shared_baseline_train = await evaluate_full_metrics(
+            bl_client, train_pairs, SEED_PROMPTS[0],
+            experiment_id="shared_baseline_train",
+        )
+        shared_baseline_val = await evaluate_full_metrics(
+            bl_client, val_pairs, SEED_PROMPTS[0],
+            experiment_id="shared_baseline_val",
+        )
+    logger.info(
+        "[%s] Shared baseline — train cons=%.3f acc=%.3f | val cons=%.3f acc=%.3f",
+        model,
+        shared_baseline_train["position_consistency"], shared_baseline_train["accuracy"],
+        shared_baseline_val["position_consistency"],   shared_baseline_val["accuracy"],
+    )
+
     if "gepa" in methods:
         logger.info("[%s] Running GEPA (reflection=%s, budget=%s, threads=%d)",
                     model, reflection_model, auto_budget, concurrency)
@@ -394,6 +430,8 @@ async def run_all_methods_for_model(
             eval_pairs=opro_eval_pairs,
             num_threads=concurrency,
             seed=seed,
+            precomputed_baseline_train=shared_baseline_train,
+            precomputed_baseline_val=shared_baseline_val,
         )
 
     if "opro" in methods or "opro_tree" in methods:
@@ -413,6 +451,8 @@ async def run_all_methods_for_model(
                     n_iterations=opro_n_iterations,
                     eval_pairs=opro_eval_pairs,
                     seed=seed,
+                    precomputed_baseline_train=shared_baseline_train,
+                    precomputed_baseline_val=shared_baseline_val,
                 )
             if "opro_tree" in methods:
                 logger.info("[%s] Running OPRO-Tree (branching=%d)",
@@ -426,6 +466,8 @@ async def run_all_methods_for_model(
                     eval_pairs=opro_eval_pairs,
                     branching_factor=opro_tree_branching_factor,
                     seed=seed,
+                    precomputed_baseline_train=shared_baseline_train,
+                    precomputed_baseline_val=shared_baseline_val,
                 )
     return results
 

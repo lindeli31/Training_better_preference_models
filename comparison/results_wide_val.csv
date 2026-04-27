@@ -1,0 +1,7 @@
+model,method,accuracy_baseline,accuracy_optimised,position_bias_rate_baseline,position_bias_rate_optimised,position_consistency_baseline,position_consistency_optimised,delta_position_consistency,delta_accuracy,delta_position_bias_rate
+meta-llama/Llama-3.3-70B-Instruct,gepa,0.6061,0.596,0.2879,0.3182,0.7121,0.6818,-0.030299999999999994,-0.010099999999999998,0.030299999999999994
+meta-llama/Llama-3.3-70B-Instruct,opro,0.6061,0.5581,0.2879,0.3081,0.7121,0.6919,-0.020199999999999996,-0.04799999999999993,0.020199999999999996
+meta-llama/Llama-3.3-70B-Instruct,opro_tree,0.6061,0.6136,0.2879,0.1465,0.7121,0.8535,0.14140000000000008,0.007500000000000062,-0.1414
+swiss-ai/Apertus-70B-Instruct-2509,gepa,0.447,0.4596,0.8434,0.6667,0.1566,0.3333,0.1767,0.0126,-0.17670000000000008
+swiss-ai/Apertus-70B-Instruct-2509,opro,0.447,0.5278,0.8434,0.3131,0.1566,0.6869,0.5303,0.08080000000000004,-0.5303
+swiss-ai/Apertus-70B-Instruct-2509,opro_tree,0.447,0.4633,0.8434,0.4112,0.1566,0.5888,0.43220000000000003,0.01629999999999998,-0.43220000000000003

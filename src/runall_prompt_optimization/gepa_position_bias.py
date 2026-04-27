@@ -14,18 +14,42 @@ Pipeline
 """
 
 # Standard library
+import asyncio
 import hashlib
 import json
 import logging
 import random
+import threading
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 import dspy
 from src.datasets.dataset import PairRecord
 from src.runall_prompt_optimization.gepa_plots import plot_baseline_vs_optimised, plot_training_trajectory
-from src.core.inference_client import extract_label
+from src.core.inference_client import extract_label, InferenceConfig, SwissAIClient
 from src.eval.metrics import compute_position_bias
 logger = logging.getLogger(__name__)
+
+
+def _run_async(coro):
+    """Run an async coroutine in a new thread with its own event loop.
+    Safe to call from sync code even when an async loop is already running."""
+    result_box: list = [None]
+    exc_box:    list = [None]
+    def _target():
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            result_box[0] = loop.run_until_complete(coro)
+        except Exception as exc:
+            exc_box[0] = exc
+        finally:
+            loop.close()
+    t = threading.Thread(target=_target, daemon=True)
+    t.start()
+    t.join()
+    if exc_box[0]:
+        raise exc_box[0]
+    return result_box[0]
 
 # ---------------------------------------------------------------------------
 # Global metric state — reset at the start of each run_gepa() call.
@@ -38,6 +62,7 @@ _BEAT_BASELINE_LOGGED: set[str] = set()
 _BEAT_BASELINE_MIN_VAL_CALLS = 50
 
 from src.runall_prompt_optimization.scoring import compute_score, _FLIP, SEED_PROMPTS
+from src.runall_prompt_optimization.opro_position_bias import evaluate_full_metrics
 
 # Guardrails shown to the reflection LM on every feedback call. Built once
 # at module load so repeated minibatch calls don't reconstruct the string.
@@ -279,6 +304,8 @@ def run_gepa(
     output_dir: Path = Path("results/gepa"),
     thinking: str = "off",
     reflection_thinking: str = "inherit",
+    precomputed_baseline_train: dict | None = None,
+    precomputed_baseline_val: dict | None = None,
 ) -> GepaResult:
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -313,18 +340,41 @@ def run_gepa(
     trainset = pairs_to_examples(eval_subset)
     valset   = pairs_to_examples(val_pairs)
 
-    # Baseline: always SEED_PROMPTS[0] (same as OPRO).
-    logger.info("Evaluating baseline on %d train + %d val pairs", len(train_pairs), len(val_pairs))
-    baseline_sig   = _JudgeBase.with_instructions(SEED_PROMPTS[0])
-    baseline_judge = PermutationJudge(baseline_sig)
-    baseline_train = evaluate_judge(baseline_judge, train_pairs, num_threads)
-    logger.info("Baseline(train) cons=%.3f acc=%.3f bias=%.3f",
-                baseline_train["position_consistency"], baseline_train["accuracy"],
-                baseline_train["position_bias_rate"])
-    baseline_val = evaluate_judge(baseline_judge, val_pairs, num_threads)
-    logger.info("Baseline(val)   cons=%.3f acc=%.3f bias=%.3f",
-                baseline_val["position_consistency"], baseline_val["accuracy"],
-                baseline_val["position_bias_rate"])
+    # Baseline: use pre-computed values if provided (shared across methods),
+    # otherwise compute via evaluate_full_metrics for consistency with OPRO.
+    if precomputed_baseline_train is not None and precomputed_baseline_val is not None:
+        baseline_train = precomputed_baseline_train
+        baseline_val   = precomputed_baseline_val
+        logger.info(
+            "Using pre-computed shared baseline: "
+            "train cons=%.3f acc=%.3f | val cons=%.3f acc=%.3f",
+            baseline_train["position_consistency"], baseline_train["accuracy"],
+            baseline_val["position_consistency"],   baseline_val["accuracy"],
+        )
+    else:
+        logger.info("Evaluating baseline on %d train + %d val pairs", len(train_pairs), len(val_pairs))
+
+        async def _compute_baseline():
+            cfg = InferenceConfig(
+                base_url=api_base, api_key=api_key, model=model_name,
+                concurrent_requests=num_threads,
+            )
+            async with SwissAIClient(cfg) as c:
+                bt = await evaluate_full_metrics(
+                    c, train_pairs, SEED_PROMPTS[0], experiment_id="gepa_baseline_train"
+                )
+                bv = await evaluate_full_metrics(
+                    c, val_pairs, SEED_PROMPTS[0], experiment_id="gepa_baseline_val"
+                )
+            return bt, bv
+
+        baseline_train, baseline_val = _run_async(_compute_baseline())
+        logger.info("Baseline(train) cons=%.3f acc=%.3f bias=%.3f",
+                    baseline_train["position_consistency"], baseline_train["accuracy"],
+                    baseline_train["position_bias_rate"])
+        logger.info("Baseline(val)   cons=%.3f acc=%.3f bias=%.3f",
+                    baseline_val["position_consistency"], baseline_val["accuracy"],
+                    baseline_val["position_bias_rate"])
 
     gepa_common = dict(
         metric=gepa_metric,
@@ -359,8 +409,27 @@ def run_gepa(
             trainset=trainset,
             valset=valset,
         )
-        t = evaluate_judge(opt_judge, train_pairs, num_threads)
-        v = evaluate_judge(opt_judge, val_pairs,   num_threads)
+        # Evaluate the optimised prompt with the same method as OPRO so that
+        # reported metrics are directly comparable across methods.
+        opt_prompt = opt_judge.judge.signature.instructions
+
+        async def _eval_opt():
+            cfg = InferenceConfig(
+                base_url=api_base, api_key=api_key, model=model_name,
+                concurrent_requests=num_threads,
+            )
+            async with SwissAIClient(cfg) as c:
+                t_ = await evaluate_full_metrics(
+                    c, train_pairs, opt_prompt,
+                    experiment_id=f"gepa_seed{seed_idx}_best_train",
+                )
+                v_ = await evaluate_full_metrics(
+                    c, val_pairs, opt_prompt,
+                    experiment_id=f"gepa_seed{seed_idx}_best_val",
+                )
+            return t_, v_
+
+        t, v = _run_async(_eval_opt())
         history = list(_METRIC_HISTORY)
         logger.info("Seed %d result: train cons=%.3f acc=%.3f | val cons=%.3f acc=%.3f",
                     seed_idx, t["position_consistency"], t["accuracy"],

@@ -109,6 +109,8 @@ async def run_opro_tree(
     seed: int = 42,
     output_dir: Path = Path("results/opro_tree"),
     proposer_client: SwissAIClient | None = None,
+    precomputed_baseline_train: dict | None = None,
+    precomputed_baseline_val: dict | None = None,
 ) -> OproTreeResult:
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -116,28 +118,38 @@ async def run_opro_tree(
     eval_subset = rng.sample(train_pairs, min(eval_pairs, len(train_pairs)))
 
     # -------------------------------------------------------------------
-    # Baseline on full train + val (matches OPRO).
+    # Baseline on full train + val.
     # -------------------------------------------------------------------
-    baseline_prompt = SEED_PROMPTS[0]
-    logger.info("Evaluating OPRO-tree baseline on %d train pairs", len(train_pairs))
-    baseline_train = await evaluate_full_metrics(
-        client, train_pairs, baseline_prompt, experiment_id="opro_tree_baseline_train"
-    )
-    logger.info(
-        "Baseline (train) consistency=%.3f accuracy=%.3f bias_rate=%.3f",
-        baseline_train["position_consistency"],
-        baseline_train["accuracy"],
-        baseline_train["position_bias_rate"],
-    )
-    baseline_val = await evaluate_full_metrics(
-        client, val_pairs, baseline_prompt, experiment_id="opro_tree_baseline_val"
-    )
-    logger.info(
-        "Baseline (val)   consistency=%.3f accuracy=%.3f bias_rate=%.3f",
-        baseline_val["position_consistency"],
-        baseline_val["accuracy"],
-        baseline_val["position_bias_rate"],
-    )
+    if precomputed_baseline_train is not None and precomputed_baseline_val is not None:
+        baseline_train = precomputed_baseline_train
+        baseline_val   = precomputed_baseline_val
+        logger.info(
+            "Using pre-computed shared baseline: "
+            "train cons=%.3f acc=%.3f | val cons=%.3f acc=%.3f",
+            baseline_train["position_consistency"], baseline_train["accuracy"],
+            baseline_val["position_consistency"],   baseline_val["accuracy"],
+        )
+    else:
+        baseline_prompt = SEED_PROMPTS[0]
+        logger.info("Evaluating OPRO-tree baseline on %d train pairs", len(train_pairs))
+        baseline_train = await evaluate_full_metrics(
+            client, train_pairs, baseline_prompt, experiment_id="opro_tree_baseline_train"
+        )
+        logger.info(
+            "Baseline (train) consistency=%.3f accuracy=%.3f bias_rate=%.3f",
+            baseline_train["position_consistency"],
+            baseline_train["accuracy"],
+            baseline_train["position_bias_rate"],
+        )
+        baseline_val = await evaluate_full_metrics(
+            client, val_pairs, baseline_prompt, experiment_id="opro_tree_baseline_val"
+        )
+        logger.info(
+            "Baseline (val)   consistency=%.3f accuracy=%.3f bias_rate=%.3f",
+            baseline_val["position_consistency"],
+            baseline_val["accuracy"],
+            baseline_val["position_bias_rate"],
+        )
 
     # -------------------------------------------------------------------
     # Seed selection: eval both seeds on subset, keep best as current.
