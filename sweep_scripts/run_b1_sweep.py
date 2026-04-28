@@ -33,7 +33,7 @@ from pathlib import Path
 # ensure project root is on the path when running from sweep_scripts/
 _ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(_ROOT))
-sys.path.insert(0, str(_ROOT / "src"))
+sys.path.append(str(_ROOT / "src"))  # appended so installed packages (e.g. datasets) take priority
 
 from dotenv import load_dotenv
 
@@ -42,6 +42,7 @@ from src.datasets.dataset import load_dataset_pairs
 from eval.experiments import run_position_bias
 from core.inference_client import InferenceConfig, SwissAIClient
 from eval.metrics import compute_position_bias
+from core.templates import TEMPLATES as TEMPLATE_REGISTRY
 
 load_dotenv()
 logging.basicConfig(
@@ -73,6 +74,27 @@ def model_key(model: str) -> str:
     return name.lower()[:20]
 
 
+# Generic model-aware template names.  When one of these is requested,
+# resolve_template() picks the model-specific variant from TEMPLATE_REGISTRY
+# and falls back to the _llama version if none exists for the target model.
+GENERIC_OPTIMISED_TEMPLATES = {"gepa", "opro", "opro_tree"}
+
+
+def resolve_template(generic: str, mkey: str) -> str:
+    """Return the concrete template ID for a generic optimised-template name.
+
+    For regular templates (not in GENERIC_OPTIMISED_TEMPLATES) the name is
+    returned unchanged.  For generic names, tries <name>_<mkey> first, then
+    <name>_llama as the universal fallback.
+    """
+    if generic not in GENERIC_OPTIMISED_TEMPLATES:
+        return generic
+    specific = f"{generic}_{mkey}"
+    if specific in TEMPLATE_REGISTRY:
+        return specific
+    return f"{generic}_llama"
+
+
 async def run_one(
     model: str,
     template: str,
@@ -84,6 +106,7 @@ async def run_one(
     output_root: Path = OUTPUT_ROOT,
 ) -> dict | None:
     mkey = model_key(model)
+    resolved = resolve_template(template, mkey)
     out_dir = output_root / mkey / template / difficulty
     metrics_path = out_dir / "metrics.json"
 
@@ -93,7 +116,7 @@ async def run_one(
             return json.load(f)
 
     if dry_run:
-        logger.info("[DRY-RUN] Would run %s | %s | %s", mkey, template, difficulty)
+        logger.info("[DRY-RUN] Would run %s | %s | %s (resolved: %s)", mkey, template, difficulty, resolved)
         return None
 
     pairs = load_dataset_pairs(split="validation", n=None, difficulty=difficulty)
@@ -110,7 +133,7 @@ async def run_one(
     async with SwissAIClient(config) as client:
         results = await run_position_bias(
             client, pairs,
-            template_id=template,
+            template_id=resolved,
             criterion=CRITERION,
             output_dir=out_dir,
         )
@@ -123,6 +146,7 @@ async def run_one(
         "model": model,
         "model_key": mkey,
         "template": template,
+        "resolved_template": resolved,
         "difficulty": difficulty,
         "n_pairs": len(pairs),
     }
@@ -148,20 +172,21 @@ async def main():
                    choices=[model_key(m) for m in MODELS],
                    help="Restrict to these model keys (e.g. apertus llama33 glm47)")
     p.add_argument("--templates", nargs="+", metavar="TEMPLATE",
-                   choices=TEMPLATES,
-                   help="Restrict to these templates (e.g. expert_rater llm_judge opro)")
+                   choices=sorted(set(TEMPLATE_REGISTRY.keys()) | GENERIC_OPTIMISED_TEMPLATES),
+                   help="Templates to run. Use generic names (gepa, opro, opro_tree) to "
+                        "auto-select the model-specific variant with _llama fallback, "
+                        "or a specific ID (e.g. expert_rater, gepa_apertus).")
     p.add_argument("--difficulties", nargs="+", metavar="DIFFICULTY",
                    choices=DIFFICULTIES,
                    help="Restrict to these difficulty levels (e.g. easy medium hard)")
     args = p.parse_args()
 
-    model_keys_filter    = set(args.models)     if args.models      else None
-    templates_filter     = set(args.templates)  if args.templates   else None
-    difficulties_filter  = set(args.difficulties) if args.difficulties else None
-
-    active_models      = [m for m in MODELS      if model_keys_filter   is None or model_key(m) in model_keys_filter]
-    active_templates   = [t for t in TEMPLATES   if templates_filter    is None or t in templates_filter]
-    active_difficulties = [d for d in DIFFICULTIES if difficulties_filter is None or d in difficulties_filter]
+    # When --templates is given, use that list directly (allows templates outside
+    # the default TEMPLATES sweep list, e.g. optimised prompts like gepa_apertus).
+    # When omitted, fall back to the default TEMPLATES list.
+    active_models       = [m for m in MODELS      if not args.models      or model_key(m) in args.models]
+    active_templates    = args.templates or TEMPLATES
+    active_difficulties = [d for d in DIFFICULTIES if not args.difficulties or d in args.difficulties]
 
     api_key = os.environ.get("SWISSAI_API_KEY", "")
     if not api_key and not args.dry_run:
