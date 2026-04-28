@@ -31,7 +31,9 @@ import time
 from pathlib import Path
 
 # ensure project root is on the path when running from sweep_scripts/
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+_ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(_ROOT))
+sys.path.insert(0, str(_ROOT / "src"))
 
 from dotenv import load_dotenv
 
@@ -78,12 +80,14 @@ async def run_one(
     api_key: str,
     concurrency: int,
     dry_run: bool,
+    force: bool = False,
+    output_root: Path = OUTPUT_ROOT,
 ) -> dict | None:
     mkey = model_key(model)
-    out_dir = OUTPUT_ROOT / mkey / template / difficulty
+    out_dir = output_root / mkey / template / difficulty
     metrics_path = out_dir / "metrics.json"
 
-    if metrics_path.exists():
+    if metrics_path.exists() and not dry_run and not force:
         logger.info("[SKIP] %s/%s/%s — metrics.json already exists", mkey, template, difficulty)
         with open(metrics_path) as f:
             return json.load(f)
@@ -134,32 +138,54 @@ async def main():
     p = argparse.ArgumentParser()
     p.add_argument("--dry-run", action="store_true",
                    help="Print plan without making API calls")
+    p.add_argument("--force", action="store_true",
+                   help="Re-run even if metrics.json already exists")
     p.add_argument("--concurrency", type=int, default=8,
                    help="Max concurrent API requests per experiment")
+    p.add_argument("--out", type=Path, default=OUTPUT_ROOT,
+                   help="Root output directory (default: results/b1_sweep)")
+    p.add_argument("--models", nargs="+", metavar="MODEL_KEY",
+                   choices=[model_key(m) for m in MODELS],
+                   help="Restrict to these model keys (e.g. apertus llama33 glm47)")
+    p.add_argument("--templates", nargs="+", metavar="TEMPLATE",
+                   choices=TEMPLATES,
+                   help="Restrict to these templates (e.g. expert_rater llm_judge opro)")
+    p.add_argument("--difficulties", nargs="+", metavar="DIFFICULTY",
+                   choices=DIFFICULTIES,
+                   help="Restrict to these difficulty levels (e.g. easy medium hard)")
     args = p.parse_args()
+
+    model_keys_filter    = set(args.models)     if args.models      else None
+    templates_filter     = set(args.templates)  if args.templates   else None
+    difficulties_filter  = set(args.difficulties) if args.difficulties else None
+
+    active_models      = [m for m in MODELS      if model_keys_filter   is None or model_key(m) in model_keys_filter]
+    active_templates   = [t for t in TEMPLATES   if templates_filter    is None or t in templates_filter]
+    active_difficulties = [d for d in DIFFICULTIES if difficulties_filter is None or d in difficulties_filter]
 
     api_key = os.environ.get("SWISSAI_API_KEY", "")
     if not api_key and not args.dry_run:
         logger.warning("SWISSAI_API_KEY not set — requests may fail")
 
     if not args.dry_run:
-        for model in MODELS:
+        for model in active_models:
             validate_model(model, base_url=BASE_URL, api_key=api_key)
 
-    total = len(MODELS) * len(TEMPLATES) * len(DIFFICULTIES)
+    total = len(active_models) * len(active_templates) * len(active_difficulties)
     logger.info("Planning %d experiments (%d models × %d templates × %d difficulties)",
-                total, len(MODELS), len(TEMPLATES), len(DIFFICULTIES))
+                total, len(active_models), len(active_templates), len(active_difficulties))
 
     t0 = time.perf_counter()
     done = 0
-    for model in MODELS:
-        for template in TEMPLATES:
-            for difficulty in DIFFICULTIES:
+    for model in active_models:
+        for template in active_templates:
+            for difficulty in active_difficulties:
                 done += 1
                 logger.info("[%d/%d] %s | %s | %s",
                             done, total, model_key(model), template, difficulty)
                 await run_one(model, template, difficulty, api_key,
-                              args.concurrency, args.dry_run)
+                              args.concurrency, args.dry_run, args.force,
+                              output_root=args.out)
 
     elapsed = time.perf_counter() - t0
     logger.info("Finished %d experiments in %.1f s", total, elapsed)
