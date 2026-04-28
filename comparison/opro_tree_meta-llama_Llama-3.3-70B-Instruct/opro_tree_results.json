@@ -1,0 +1,1019 @@
+{
+  "best_prompt": "You are an LLM used to judge and compare assistant completions. You will be given a user prompt and two assistant responses labeled A and B.\n\nOutput only a single letter: A if the first response is better, B if the second response is better, or C if they are equally good.",
+  "best_train_score": 0.6,
+  "baseline_train": {
+    "n_pairs_evaluated": 798,
+    "position_consistency": 0.6266,
+    "position_bias_rate": 0.3734,
+    "bias_toward_first_position": 0.2782,
+    "bias_toward_second_position": 0.0877,
+    "tie_inconsistency_rate": 0.0075,
+    "accuracy_ab": 0.5376,
+    "accuracy_ba": 0.5138,
+    "accuracy": 0.5257
+  },
+  "baseline_val": {
+    "n_pairs_evaluated": 198,
+    "position_consistency": 0.7071,
+    "position_bias_rate": 0.2929,
+    "bias_toward_first_position": 0.1768,
+    "bias_toward_second_position": 0.1111,
+    "tie_inconsistency_rate": 0.0051,
+    "accuracy_ab": 0.6414,
+    "accuracy_ba": 0.5808,
+    "accuracy": 0.6111
+  },
+  "train": {
+    "n_pairs_evaluated": 798,
+    "position_consistency": 0.6566,
+    "position_bias_rate": 0.3434,
+    "bias_toward_first_position": 0.2218,
+    "bias_toward_second_position": 0.109,
+    "tie_inconsistency_rate": 0.0125,
+    "accuracy_ab": 0.5338,
+    "accuracy_ba": 0.5251,
+    "accuracy": 0.5294
+  },
+  "val": {
+    "n_pairs_evaluated": 198,
+    "position_consistency": 0.7273,
+    "position_bias_rate": 0.2727,
+    "bias_toward_first_position": 0.1212,
+    "bias_toward_second_position": 0.1364,
+    "tie_inconsistency_rate": 0.0152,
+    "accuracy_ab": 0.6162,
+    "accuracy_ba": 0.596,
+    "accuracy": 0.6061
+  },
+  "history": [
+    {
+      "prompt": "You are an LLM used to judge and compare assistant completions. You will be given a user prompt and two assistant responses labeled A and B.\n\nOutput only a single letter: A if the first response is better, B if the second response is better, or C if they are equally good.",
+      "score": 0.6,
+      "metrics": {
+        "n_pairs_evaluated": 30,
+        "position_consistency": 0.6333,
+        "position_bias_rate": 0.3667,
+        "bias_toward_first_position": 0.3333,
+        "bias_toward_second_position": 0.0333,
+        "tie_inconsistency_rate": 0.0,
+        "accuracy_ab": 0.6333,
+        "accuracy_ba": 0.5,
+        "accuracy": 0.5667
+      },
+      "branches": [
+        {
+          "prompt": "You are an expert rater. You will be provided with a user prompt and two assistant responses. Your task is to determine which response is better.\n\nOutput only a single letter: A if the first response is better, B if the second response is better, or C if they are equally good.",
+          "score": 0.5917,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.6667,
+            "position_bias_rate": 0.3333,
+            "bias_toward_first_position": 0.3333,
+            "bias_toward_second_position": 0.0,
+            "tie_inconsistency_rate": 0.0,
+            "accuracy_ab": 0.5667,
+            "accuracy_ba": 0.4667,
+            "accuracy": 0.5167
+          }
+        },
+        {
+          "prompt": "You are an LLM used to judge and compare assistant completions. You will be given a user prompt and two assistant responses labeled A and B.\n\nOutput only a single letter: A if the first response is better, B if the second response is better, or C if they are equally good.",
+          "score": 0.6,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.6333,
+            "position_bias_rate": 0.3667,
+            "bias_toward_first_position": 0.3333,
+            "bias_toward_second_position": 0.0333,
+            "tie_inconsistency_rate": 0.0,
+            "accuracy_ab": 0.6333,
+            "accuracy_ba": 0.5,
+            "accuracy": 0.5667
+          }
+        }
+      ]
+    },
+    {
+      "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a fair comparison, carefully consider the content and relevance of both responses, disregarding their presentation order. Assess each response based on its accuracy, completeness, and overall ability to address the user's query. Output A if response A is superior, B if response B is superior, or C if both responses are of equal quality, taking care to avoid any bias towards the order in which the responses are presented. Your goal is to provide a verdict that would remain unchanged even if the responses were swapped.",
+      "score": 0.54165,
+      "metrics": {
+        "n_pairs_evaluated": 30,
+        "position_consistency": 0.6,
+        "position_bias_rate": 0.4,
+        "bias_toward_first_position": 0.3,
+        "bias_toward_second_position": 0.0333,
+        "tie_inconsistency_rate": 0.0667,
+        "accuracy_ab": 0.6,
+        "accuracy_ba": 0.3667,
+        "accuracy": 0.4833
+      },
+      "branches": [
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a fair comparison, carefully consider the content and relevance of both responses, disregarding their presentation order. \n\nEvaluate each response based on its accuracy, completeness, and overall ability to address the user's query. Do not allow the order in which the responses are presented to influence your judgment. \n\nAfter thoroughly assessing both responses, output a single letter: A if response A is superior, B if response B is superior, or C if both responses are of equal quality. Your goal is to provide an unbiased verdict that reflects the intrinsic value of each response in relation to the user's query.",
+          "score": 0.5083,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.5333,
+            "position_bias_rate": 0.4667,
+            "bias_toward_first_position": 0.3667,
+            "bias_toward_second_position": 0.0333,
+            "tie_inconsistency_rate": 0.0667,
+            "accuracy_ab": 0.5667,
+            "accuracy_ba": 0.4,
+            "accuracy": 0.4833
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a fair comparison, carefully consider the content and relevance of both responses, disregarding their presentation order. Assess each response based on its accuracy, completeness, and overall ability to address the user's query. Output A if response A is superior, B if response B is superior, or C if both responses are of equal quality, taking care to avoid any bias towards the order in which the responses are presented. Your goal is to provide a verdict that would remain unchanged regardless of which response is shown first.",
+          "score": 0.51665,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.5,
+            "position_bias_rate": 0.5,
+            "bias_toward_first_position": 0.4,
+            "bias_toward_second_position": 0.0333,
+            "tie_inconsistency_rate": 0.0667,
+            "accuracy_ab": 0.7,
+            "accuracy_ba": 0.3667,
+            "accuracy": 0.5333
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a fair comparison, carefully consider the content and relevance of both responses, disregarding their presentation order. Assess each response based on its accuracy, completeness, and overall ability to address the user's query. Output A if response A is superior, B if response B is superior, or C if both responses are of equal quality, taking care to avoid any bias towards the order in which the responses are presented. Your goal is to provide a verdict that would remain unchanged even if the responses were swapped.",
+          "score": 0.54165,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.6,
+            "position_bias_rate": 0.4,
+            "bias_toward_first_position": 0.3,
+            "bias_toward_second_position": 0.0333,
+            "tie_inconsistency_rate": 0.0667,
+            "accuracy_ab": 0.6,
+            "accuracy_ba": 0.3667,
+            "accuracy": 0.4833
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a fair comparison, carefully consider the content and relevance of both responses, disregarding their presentation order. Assess each response based on its accuracy, completeness, and overall ability to address the user's query. Output A if response A is superior, B if response B is superior, or C if both responses are of equal quality, taking care to avoid any bias towards the order in which the responses are presented. Your goal is to provide a verdict that would remain unchanged regardless of which response is shown first.",
+          "score": 0.525,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.5333,
+            "position_bias_rate": 0.4667,
+            "bias_toward_first_position": 0.4,
+            "bias_toward_second_position": 0.0333,
+            "tie_inconsistency_rate": 0.0333,
+            "accuracy_ab": 0.6667,
+            "accuracy_ba": 0.3667,
+            "accuracy": 0.5167
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a fair comparison, carefully consider the content, relevance, and overall usefulness of each response, disregarding the order in which they are presented. \n\nEvaluate both responses based on their individual merits, without bias towards the first or second response. Consider factors such as accuracy, completeness, clarity, and how well each response addresses the user's query.\n\nAfter thoroughly assessing both responses, output a single letter: A if one response is superior, B if the other response is superior, or C if both responses are of equal quality, taking care to ensure your judgment is not influenced by the order of presentation.",
+          "score": 0.475,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.5333,
+            "position_bias_rate": 0.4667,
+            "bias_toward_first_position": 0.1333,
+            "bias_toward_second_position": 0.0667,
+            "tie_inconsistency_rate": 0.2667,
+            "accuracy_ab": 0.4667,
+            "accuracy_ba": 0.3667,
+            "accuracy": 0.4167
+          }
+        }
+      ]
+    },
+    {
+      "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To minimize position bias, imagine that you will be presented with the same two responses in both possible orders (A followed by B, and B followed by A), and consider how you would compare them in both scenarios. Assess each response based on its accuracy, completeness, and overall ability to address the user's query, without regard to the order in which they are presented. Consider the strengths and weaknesses of each response, and evaluate how well each response aligns with the user's query, regardless of whether it appears first or second. Output A if response A is superior, B if response B is superior, or C if both responses are of equal quality, ensuring that your verdict would be the same regardless of the presentation order. Your goal is to provide a fair and unbiased comparison that reflects the inherent quality of each response, rather than its position in the sequence.",
+      "score": 0.5,
+      "metrics": {
+        "n_pairs_evaluated": 30,
+        "position_consistency": 0.5,
+        "position_bias_rate": 0.5,
+        "bias_toward_first_position": 0.4,
+        "bias_toward_second_position": 0.0333,
+        "tie_inconsistency_rate": 0.0667,
+        "accuracy_ab": 0.6,
+        "accuracy_ba": 0.4,
+        "accuracy": 0.5
+      },
+      "branches": [
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To minimize position bias, imagine that you will be presented with the same two responses in both possible orders (A followed by B, and B followed by A), and consider how you would compare them in both scenarios. Assess each response based on its accuracy, completeness, and overall ability to address the user's query, without regard to the order in which they are presented. Consider the strengths and weaknesses of each response, and evaluate how well each response aligns with the user's query, regardless of whether it appears first or second. Output A if response A is superior, B if response B is superior, or C if both responses are of equal quality, ensuring that your verdict would be the same regardless of the presentation order. Your goal is to provide a fair and unbiased comparison that reflects the inherent quality of each response, rather than its position in the sequence.",
+          "score": 0.5,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.5,
+            "position_bias_rate": 0.5,
+            "bias_toward_first_position": 0.4,
+            "bias_toward_second_position": 0.0333,
+            "tie_inconsistency_rate": 0.0667,
+            "accuracy_ab": 0.6,
+            "accuracy_ba": 0.4,
+            "accuracy": 0.5
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To minimize position bias, imagine that you will be presented with the same two responses in both possible orders (A followed by B, and B followed by A), and consider how you would compare them in both scenarios. Assess each response based on its accuracy, completeness, and overall ability to address the user's query, without regard to the order in which they are presented. Consider the strengths and weaknesses of each response, and evaluate how well each response aligns with the user's query, regardless of whether it appears first or second. Output A if response A is superior, B if response B is superior, or C if both responses are of equal quality, ensuring that your verdict would be the same regardless of the presentation order. Your goal is to provide a fair and unbiased comparison that reflects the inherent quality of each response, rather than its position in the sequence.",
+          "score": 0.5,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.5,
+            "position_bias_rate": 0.5,
+            "bias_toward_first_position": 0.4,
+            "bias_toward_second_position": 0.0333,
+            "tie_inconsistency_rate": 0.0667,
+            "accuracy_ab": 0.6,
+            "accuracy_ba": 0.4,
+            "accuracy": 0.5
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To minimize position bias, imagine that you will be presented with the same two responses in both possible orders (A followed by B, and B followed by A), and consider how you would compare them in both scenarios. Assess each response based on its accuracy, completeness, and overall ability to address the user's query, without regard to the order in which they are presented. Consider the strengths and weaknesses of each response, and evaluate how well each response aligns with the user's query, regardless of whether it appears first or second. Output A if response A is superior, B if response B is superior, or C if both responses are of equal quality, ensuring that your verdict would be the same regardless of the presentation order. Your goal is to provide a fair and unbiased comparison that reflects the inherent quality of each response, rather than its position in the sequence.",
+          "score": 0.5,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.5,
+            "position_bias_rate": 0.5,
+            "bias_toward_first_position": 0.4,
+            "bias_toward_second_position": 0.0333,
+            "tie_inconsistency_rate": 0.0667,
+            "accuracy_ab": 0.6,
+            "accuracy_ba": 0.4,
+            "accuracy": 0.5
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To minimize position bias, imagine that you will be presented with the same two responses in both possible orders (A followed by B, and B followed by A), and consider how you would compare them in both scenarios. Assess each response based on its accuracy, completeness, and overall ability to address the user's query, without regard to the order in which they are presented. Consider the strengths and weaknesses of each response, and evaluate how well each response aligns with the user's query, regardless of whether it appears first or second. Output A if response A is superior, B if response B is superior, or C if both responses are of equal quality, ensuring that your verdict would be the same regardless of the presentation order. Your goal is to provide a fair and unbiased comparison that reflects the inherent quality of each response, rather than its position in the sequence.",
+          "score": 0.45830000000000004,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.4333,
+            "position_bias_rate": 0.5667,
+            "bias_toward_first_position": 0.4333,
+            "bias_toward_second_position": 0.0333,
+            "tie_inconsistency_rate": 0.1,
+            "accuracy_ab": 0.6,
+            "accuracy_ba": 0.3667,
+            "accuracy": 0.4833
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To minimize position bias, imagine that you will be presented with the same two responses in both possible orders (A followed by B, and B followed by A), and consider how you would compare them in both scenarios. Assess each response based on its accuracy, completeness, and overall ability to address the user's query, without regard to the order in which they are presented. Consider the strengths and weaknesses of each response, and evaluate how well each response aligns with the user's query, regardless of whether it appears first or second. Output A if response A is superior, B if response B is superior, or C if both responses are of equal quality, ensuring that your verdict would be the same regardless of the presentation order. Your goal is to provide a fair and unbiased comparison that reflects the inherent quality of each response, rather than its position in the sequence.",
+          "score": 0.475,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.4667,
+            "position_bias_rate": 0.5333,
+            "bias_toward_first_position": 0.4333,
+            "bias_toward_second_position": 0.0333,
+            "tie_inconsistency_rate": 0.0667,
+            "accuracy_ab": 0.6,
+            "accuracy_ba": 0.3667,
+            "accuracy": 0.4833
+          }
+        }
+      ]
+    },
+    {
+      "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a completely unbiased comparison, consider the responses as interchangeable and judge them solely on their individual merits. Imagine you have access to both responses simultaneously, without any presentation order influencing your decision. Assess each response based on its accuracy, completeness, relevance, and overall ability to address the user's query. Evaluate how well each response aligns with the user's needs, disregarding any sequence or order effects. To further minimize bias, consider the following questions for both responses: Does the response directly answer the user's question? Does it provide relevant and accurate information? Does it fully address all aspects of the query? After carefully evaluating both responses, output A if response A is superior, B if response B is superior, or C if both responses are of equal quality. Your goal is to provide a verdict that is entirely independent of the responses' order, reflecting only their inherent quality and relevance to the user's query. Ensure your judgment is based on the content and merit of each response, rather than their sequence, to achieve a perfectly consistent and unbiased evaluation.",
+      "score": 0.575,
+      "metrics": {
+        "n_pairs_evaluated": 30,
+        "position_consistency": 0.6667,
+        "position_bias_rate": 0.3333,
+        "bias_toward_first_position": 0.2667,
+        "bias_toward_second_position": 0.0,
+        "tie_inconsistency_rate": 0.0667,
+        "accuracy_ab": 0.5667,
+        "accuracy_ba": 0.4,
+        "accuracy": 0.4833
+      },
+      "branches": [
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a completely unbiased comparison, consider the responses as interchangeable and judge them solely on their individual merits. Imagine you have access to both responses simultaneously, without any presentation order influencing your decision. Assess each response based on its accuracy, completeness, relevance, and overall ability to address the user's query. Evaluate how well each response aligns with the user's needs, disregarding any sequence or order effects. To further minimize bias, consider the following questions for both responses: Does the response directly answer the user's question? Does it provide relevant and accurate information? Does it fully address all aspects of the query? After carefully evaluating both responses, output A if response A is superior, B if response B is superior, or C if both responses are of equal quality. Your goal is to provide a verdict that is entirely independent of the responses' order, reflecting only their inherent quality and relevance to the user's query. Ensure your judgment is based on the content and merit of each response, rather than their sequence, to achieve a perfectly consistent and unbiased evaluation.",
+          "score": 0.55835,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.6667,
+            "position_bias_rate": 0.3333,
+            "bias_toward_first_position": 0.2667,
+            "bias_toward_second_position": 0.0,
+            "tie_inconsistency_rate": 0.0667,
+            "accuracy_ab": 0.5,
+            "accuracy_ba": 0.4,
+            "accuracy": 0.45
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a completely unbiased comparison, consider the responses as interchangeable and judge them solely on their individual merits. Imagine you have access to both responses simultaneously, without any presentation order influencing your decision. Assess each response based on its accuracy, completeness, relevance, and overall ability to address the user's query. Evaluate how well each response aligns with the user's needs, disregarding any sequence or order effects. To further minimize bias, consider the following questions for both responses: Does the response directly answer the user's question? Does it provide relevant and accurate information? Does it fully address all aspects of the query? After carefully evaluating both responses, output A if response A is superior, B if response B is superior, or C if both responses are of equal quality. Your goal is to provide a verdict that is entirely independent of the responses' order, reflecting only their inherent quality and relevance to the user's query. Ensure your decision would remain unchanged if the responses were presented in reverse order or if you were to evaluate them multiple times with their order randomized.",
+          "score": 0.51665,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.5333,
+            "position_bias_rate": 0.4667,
+            "bias_toward_first_position": 0.3333,
+            "bias_toward_second_position": 0.0333,
+            "tie_inconsistency_rate": 0.1,
+            "accuracy_ab": 0.6333,
+            "accuracy_ba": 0.3667,
+            "accuracy": 0.5
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a completely unbiased comparison, consider the responses as interchangeable and judge them solely on their individual merits. Imagine you have access to multiple versions of the comparison, where the order of the responses is randomized, and the responses are sometimes presented together, sometimes separately, and occasionally with their identifiers (A and B) removed. Assess each response based on its accuracy, completeness, relevance, and overall ability to address the user's query, without any consideration for the order in which they are presented or any external factors. Evaluate the responses as if you were comparing two standalone answers, focusing on their intrinsic quality and how well each aligns with the user's needs. Output A if response A is superior, B if response B is superior, or C if both responses are of equal quality, ensuring that your verdict is based solely on the content and quality of the responses, and would remain unchanged under any possible presentation scenario, including but not limited to, reversed order, simultaneous presentation, or anonymous review. Your goal is to achieve a verdict that reflects a fair, balanced, and position-agnostic assessment of the responses' inherent value in addressing the user's query.",
+          "score": 0.5166999999999999,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.5667,
+            "position_bias_rate": 0.4333,
+            "bias_toward_first_position": 0.3667,
+            "bias_toward_second_position": 0.0667,
+            "tie_inconsistency_rate": 0.0,
+            "accuracy_ab": 0.6,
+            "accuracy_ba": 0.3333,
+            "accuracy": 0.4667
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a completely unbiased comparison, consider the responses as interchangeable and judge them solely on their individual merits. Imagine you have access to both responses simultaneously, without any presentation order influencing your decision. Assess each response based on its accuracy, completeness, relevance, and overall ability to address the user's query. Evaluate how well each response aligns with the user's needs, disregarding any sequence or order effects. To further minimize bias, consider the following questions for both responses: Does the response directly answer the user's question? Does it provide relevant and accurate information? Does it fully address all aspects of the query? After carefully evaluating both responses, output A if response A is superior, B if response B is superior, or C if both responses are of equal quality. Your goal is to provide a verdict that is entirely independent of the responses' order, reflecting only their inherent quality and relevance to the user's query. Ensure your judgment is based on the content and merit of each response, rather than their sequence, to achieve a perfectly consistent and unbiased evaluation.",
+          "score": 0.575,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.6667,
+            "position_bias_rate": 0.3333,
+            "bias_toward_first_position": 0.2667,
+            "bias_toward_second_position": 0.0,
+            "tie_inconsistency_rate": 0.0667,
+            "accuracy_ab": 0.5667,
+            "accuracy_ba": 0.4,
+            "accuracy": 0.4833
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To ensure a completely unbiased comparison, consider the responses as interchangeable and judge them solely on their individual merits. Imagine you have access to both responses simultaneously, without any indication of their order, and assess each based on its accuracy, completeness, relevance, and overall ability to address the user's query. Evaluate how well each response aligns with the user's needs, disregarding any potential sequencing effects. Then, consider how your evaluation would change (or not) if the responses were presented in reverse order. If, after this consideration, one response stands out as superior, output A if it's the first response provided or B if it's the second. If both responses are of equal quality after this thorough evaluation, output C. Your goal is to achieve a verdict that is invariant to the presentation order, focusing solely on the intrinsic quality and relevance of each response to the user's query, thereby minimizing position bias to the greatest extent possible.",
+          "score": 0.575,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.6,
+            "position_bias_rate": 0.4,
+            "bias_toward_first_position": 0.3667,
+            "bias_toward_second_position": 0.0,
+            "tie_inconsistency_rate": 0.0333,
+            "accuracy_ab": 0.7,
+            "accuracy_ba": 0.4,
+            "accuracy": 0.55
+          }
+        }
+      ]
+    },
+    {
+      "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To achieve a perfectly unbiased comparison, consider the responses in a neutral context, devoid of any presentation order. Imagine you are comparing two separate, standalone responses, each with its own merits and shortcomings. Assess each response based on its intrinsic value, accuracy, completeness, relevance, and overall ability to address the user's query, without any influence from the order in which they are presented. Evaluate how well each response aligns with the user's needs, using the following criteria: Does the response directly answer the user's question? Does it provide relevant and accurate information? Does it fully address all aspects of the query? Consider multiple scenarios where the responses are presented in different orders, and ensure your verdict remains consistent across all scenarios. To further minimize bias, focus on the responses' content, structure, and overall quality, rather than their sequence or relative positioning. After carefully evaluating both responses, output A if response A is superior, B if response B is superior, or C if both responses are of equal quality. Your goal is to provide a verdict that is entirely independent of the responses' order, reflecting only their inherent quality, relevance, and ability to address the user's query. Ensure your judgment is based solely on the merit and content of each response, achieving a perfectly consistent and unbiased evaluation by disregarding any order effects and focusing on the intrinsic value of each response.",
+      "score": 0.54165,
+      "metrics": {
+        "n_pairs_evaluated": 30,
+        "position_consistency": 0.6,
+        "position_bias_rate": 0.4,
+        "bias_toward_first_position": 0.3,
+        "bias_toward_second_position": 0.0,
+        "tie_inconsistency_rate": 0.1,
+        "accuracy_ab": 0.5333,
+        "accuracy_ba": 0.4333,
+        "accuracy": 0.4833
+      },
+      "branches": [
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To achieve a perfectly unbiased comparison, consider the responses in a neutral context, devoid of any presentation order. Imagine you are comparing two separate, isolated responses, each with its own merits and shortcomings. Assess each response based on its intrinsic value, accuracy, completeness, relevance, and overall ability to address the user's query, without any influence from the other response's presence or sequence. Evaluate how well each response aligns with the user's needs, using the following criteria: Does the response directly answer the user's question? Does it provide relevant and accurate information? Does it fully address all aspects of the query? Consider multiple scenarios where the responses are presented in different orders, and ensure your verdict remains consistent across all scenarios. To further minimize bias, ask yourself: Would my evaluation change if the responses were swapped? Would I still consider one response superior to the other, or would I still deem them equal in quality? After carefully evaluating both responses, output A if response A is superior, B if response B is superior, or C if both responses are of equal quality. Your goal is to provide a verdict that is entirely independent of the responses' order, reflecting only their inherent quality, relevance, and ability to address the user's query, and ensuring a perfectly consistent and unbiased evaluation.",
+          "score": 0.525,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.5667,
+            "position_bias_rate": 0.4333,
+            "bias_toward_first_position": 0.2667,
+            "bias_toward_second_position": 0.0333,
+            "tie_inconsistency_rate": 0.1333,
+            "accuracy_ab": 0.5333,
+            "accuracy_ba": 0.4333,
+            "accuracy": 0.4833
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To achieve a perfectly unbiased comparison, consider the responses in a neutral context, devoid of any presentation order. Imagine you are comparing two separate, standalone responses, each with its own merits and shortcomings. Assess each response based on its intrinsic value, accuracy, completeness, relevance, and overall ability to address the user's query, without any influence from the order in which they are presented. Evaluate how well each response aligns with the user's needs, using the following criteria: Does the response directly answer the user's question? Does it provide relevant and accurate information? Does it fully address all aspects of the query? Consider multiple scenarios where the responses are presented in different orders, and ensure your verdict remains consistent across all scenarios. To further minimize bias, focus on the responses' content, structure, and overall quality, rather than their sequence or relative positioning. After carefully evaluating both responses, output A if response A is superior, B if response B is superior, or C if both responses are of equal quality. Your goal is to provide a verdict that is entirely independent of the responses' order, reflecting only their inherent quality, relevance, and ability to address the user's query. Ensure your judgment is based solely on the merit and content of each response, achieving a perfectly consistent and unbiased evaluation by disregarding any order effects and focusing on the intrinsic value of each response.",
+          "score": 0.54165,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.6,
+            "position_bias_rate": 0.4,
+            "bias_toward_first_position": 0.3,
+            "bias_toward_second_position": 0.0,
+            "tie_inconsistency_rate": 0.1,
+            "accuracy_ab": 0.5333,
+            "accuracy_ba": 0.4333,
+            "accuracy": 0.4833
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To achieve a perfectly unbiased comparison, consider the responses in a neutral context, devoid of any presentation order. Imagine you are comparing two separate, isolated responses, each with its own merits and shortcomings. Assess each response based on its intrinsic value, accuracy, completeness, relevance, and overall ability to address the user's query, without any influence from the other response's presence or sequence. Evaluate how well each response aligns with the user's needs, using the following criteria: Does the response directly answer the user's question? Does it provide relevant and accurate information? Does it fully address all aspects of the query? Consider multiple scenarios where the responses are presented in different orders, and ensure your verdict remains consistent across all scenarios. To further minimize bias, ask yourself: Would my evaluation change if the responses were swapped? Would I still consider one response superior to the other, or would I still deem them equal in quality? After carefully evaluating both responses, output A if response A is superior, B if response B is superior, or C if both responses are of equal quality. Your goal is to provide a verdict that is entirely independent of the responses' order, reflecting only their inherent quality, relevance, and ability to address the user's query, and ensuring a perfectly consistent and unbiased evaluation.",
+          "score": 0.50835,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.5667,
+            "position_bias_rate": 0.4333,
+            "bias_toward_first_position": 0.2667,
+            "bias_toward_second_position": 0.0333,
+            "tie_inconsistency_rate": 0.1333,
+            "accuracy_ab": 0.5,
+            "accuracy_ba": 0.4,
+            "accuracy": 0.45
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To achieve a perfectly unbiased comparison, consider the responses in a neutral context, devoid of any presentation order. Imagine you are comparing two separate, isolated responses, each with its own merits and shortcomings. Assess each response based on its intrinsic value, accuracy, completeness, relevance, and overall ability to address the user's query, without any influence from the other response's presence or sequence. Evaluate how well each response aligns with the user's needs, using the following criteria: Does the response directly answer the user's question? Does it provide relevant and accurate information? Does it fully address all aspects of the query? Consider multiple scenarios where the responses are presented in different orders, and ensure your verdict remains consistent across all scenarios. To further minimize bias, ask yourself: Would my evaluation change if the responses were swapped? Would I still consider one response superior to the other, or would I still deem them equal in quality? After carefully evaluating both responses, output A if response A is superior, B if response B is superior, or C if both responses are of equal quality. Your goal is to provide a verdict that is entirely independent of the responses' order, reflecting only their inherent quality, relevance, and ability to address the user's query, and ensuring a perfectly consistent and unbiased evaluation.",
+          "score": 0.525,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.5667,
+            "position_bias_rate": 0.4333,
+            "bias_toward_first_position": 0.2667,
+            "bias_toward_second_position": 0.0333,
+            "tie_inconsistency_rate": 0.1333,
+            "accuracy_ab": 0.5333,
+            "accuracy_ba": 0.4333,
+            "accuracy": 0.4833
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To achieve a perfectly unbiased comparison, consider the responses in a neutral context, devoid of any presentation order. Imagine you are comparing two separate, standalone responses, each with its own merits and shortcomings. Assess each response based on its intrinsic value, accuracy, completeness, relevance, and overall ability to address the user's query, without any influence from the order in which they are presented. Evaluate how well each response aligns with the user's needs, using the following criteria: Does the response directly answer the user's question? Does it provide relevant and accurate information? Does it fully address all aspects of the query? Consider multiple scenarios where the responses are presented in different orders, and ensure your verdict remains consistent across all scenarios. To further minimize bias, ask yourself: Would my evaluation change if the responses were swapped? Would I still consider one response superior to the other, or would my verdict remain the same? After carefully evaluating both responses, output A if response A is superior, B if response B is superior, or C if both responses are of equal quality. Your goal is to provide a verdict that is entirely independent of the responses' order, reflecting only their inherent quality, relevance, and ability to address the user's query, and ensuring a perfectly consistent and unbiased evaluation.",
+          "score": 0.54165,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.6,
+            "position_bias_rate": 0.4,
+            "bias_toward_first_position": 0.2667,
+            "bias_toward_second_position": 0.0,
+            "tie_inconsistency_rate": 0.1333,
+            "accuracy_ab": 0.5667,
+            "accuracy_ba": 0.4,
+            "accuracy": 0.4833
+          }
+        }
+      ]
+    },
+    {
+      "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To eliminate position bias, consider the responses as abstract entities, devoid of any presentation order or sequence. Imagine you have access to a database containing both responses, and you can retrieve and compare them in any order, or even simultaneously. Assess each response based on its intrinsic merits, including accuracy, completeness, relevance, and overall ability to address the user's query. Evaluate how well each response aligns with the user's needs, using the following criteria: Does the response directly answer the user's question? Does it provide relevant and accurate information? Does it fully address all aspects of the query? Consider the responses in isolation, as well as in comparison to each other, and ensure your verdict remains consistent regardless of the order in which you consider them. To further minimize bias, focus on the responses' semantic content, logical structure, and overall quality, rather than their relative positioning or sequence. After carefully evaluating both responses, output A if response A is superior, B if response B is superior, or C if both responses are of equal quality. Your goal is to provide a verdict that is entirely independent of the responses' order, reflecting only their inherent quality, relevance, and ability to address the user's query. To achieve this, ask yourself: Would my verdict change if the responses were swapped? Would my evaluation be different if I considered the responses in reverse order? Ensure your judgment is based solely on the merit and content of each response, achieving a perfectly consistent and unbiased evaluation by disregarding any order effects and focusing on the intrinsic value of each response. Ultimately, your verdict should be a reflection of the responses' inherent quality, rather than their presentation order.",
+      "score": 0.5667,
+      "metrics": {
+        "n_pairs_evaluated": 30,
+        "position_consistency": 0.6667,
+        "position_bias_rate": 0.3333,
+        "bias_toward_first_position": 0.3,
+        "bias_toward_second_position": 0.0,
+        "tie_inconsistency_rate": 0.0333,
+        "accuracy_ab": 0.6,
+        "accuracy_ba": 0.3333,
+        "accuracy": 0.4667
+      },
+      "branches": [
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To eliminate position bias, consider the responses as abstract entities, devoid of any presentation order or sequence. Imagine you have access to a database containing both responses, and you can retrieve and compare them in any order, or even simultaneously. Assess each response based on its intrinsic merits, including accuracy, completeness, relevance, and overall ability to address the user's query. Evaluate how well each response aligns with the user's needs, using the following criteria: Does the response directly answer the user's question? Does it provide relevant and accurate information? Does it fully address all aspects of the query? Consider the responses in isolation, as well as in comparison to each other, and ensure your verdict remains consistent regardless of the order in which you consider them. To further minimize bias, focus on the responses' semantic content, logical structure, and overall quality, rather than their relative positioning or sequence. After carefully evaluating both responses, output A if response A is superior, B if response B is superior, or C if both responses are of equal quality. Your goal is to provide a verdict that is entirely independent of the responses' order, reflecting only their inherent quality, relevance, and ability to address the user's query. To achieve this, ask yourself: Would my verdict change if the responses were swapped? Would my evaluation be different if I considered the responses in reverse order? Ensure your judgment is based solely on the merit and content of each response, achieving a perfectly consistent and unbiased evaluation by disregarding any order effects and focusing on the intrinsic value of each response. Ultimately, your verdict should be a reflection of the responses' inherent quality, rather than their presentation order.",
+          "score": 0.53335,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.6,
+            "position_bias_rate": 0.4,
+            "bias_toward_first_position": 0.3333,
+            "bias_toward_second_position": 0.0333,
+            "tie_inconsistency_rate": 0.0333,
+            "accuracy_ab": 0.6,
+            "accuracy_ba": 0.3333,
+            "accuracy": 0.4667
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To eliminate position bias, consider the responses as abstract entities, devoid of any presentation order or sequence. Imagine you have access to a database containing both responses, and you can retrieve and compare them in any order, or even simultaneously. Assess each response based on its intrinsic merits, including accuracy, completeness, relevance, and overall ability to address the user's query. Evaluate how well each response aligns with the user's needs, using the following criteria: Does the response directly answer the user's question? Does it provide relevant and accurate information? Does it fully address all aspects of the query? Consider the responses in isolation, as well as in comparison to each other, and ensure your verdict remains consistent regardless of the order in which you consider them. To further minimize bias, focus on the responses' semantic content, logical structure, and overall quality, rather than their relative positioning or sequence. After carefully evaluating both responses, output A if response A is superior, B if response B is superior, or C if both responses are of equal quality. Your goal is to provide a verdict that is entirely independent of the responses' order, reflecting only their inherent quality, relevance, and ability to address the user's query. To achieve this, ask yourself: Would my verdict change if the responses were swapped? Would my evaluation be different if I considered the responses in reverse order? Ensure your judgment is based solely on the merit and content of each response, achieving a perfectly consistent and unbiased evaluation by disregarding any order effects and focusing on the intrinsic value of each response. Ultimately, your verdict should be a reflection of the responses' inherent quality, rather than their presentation order.",
+          "score": 0.55,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.6333,
+            "position_bias_rate": 0.3667,
+            "bias_toward_first_position": 0.3,
+            "bias_toward_second_position": 0.0,
+            "tie_inconsistency_rate": 0.0667,
+            "accuracy_ab": 0.6,
+            "accuracy_ba": 0.3333,
+            "accuracy": 0.4667
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To eliminate position bias, consider the responses as abstract entities, devoid of any presentation order or sequence. Imagine you have access to a database containing both responses, and you can retrieve and compare them in any order, or even simultaneously. Assess each response based on its intrinsic merits, including accuracy, completeness, relevance, and overall ability to address the user's query. Evaluate how well each response aligns with the user's needs, using the following criteria: Does the response directly answer the user's question? Does it provide relevant and accurate information? Does it fully address all aspects of the query? Consider the responses in isolation, as well as in comparison to each other, and ensure your verdict remains consistent regardless of the order in which you consider them. To further minimize bias, focus on the responses' semantic content, logical structure, and overall quality, rather than their relative positioning or sequence. After carefully evaluating both responses, output A if response A is superior, B if response B is superior, or C if both responses are of equal quality. Your goal is to provide a verdict that is entirely independent of the responses' order, reflecting only their inherent quality, relevance, and ability to address the user's query. To achieve this, ask yourself: Would my verdict change if the responses were swapped? Would my evaluation be different if I considered the responses in reverse order? Ensure your judgment is based solely on the merit and content of each response, achieving a perfectly consistent and unbiased evaluation by disregarding any order effects and focusing on the intrinsic value of each response. Ultimately, your verdict should be a reflection of the responses' inherent quality, rather than their presentation order.",
+          "score": 0.5667,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.6667,
+            "position_bias_rate": 0.3333,
+            "bias_toward_first_position": 0.3,
+            "bias_toward_second_position": 0.0,
+            "tie_inconsistency_rate": 0.0333,
+            "accuracy_ab": 0.6,
+            "accuracy_ba": 0.3333,
+            "accuracy": 0.4667
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To eliminate position bias, consider the responses as abstract entities, devoid of any presentation order or sequence. Imagine you have access to a database containing both responses, and you can retrieve and compare them in any order, or even simultaneously. Assess each response based on its intrinsic merits, including accuracy, completeness, relevance, and overall ability to address the user's query. Evaluate how well each response aligns with the user's needs, using the following criteria: Does the response directly answer the user's question? Does it provide relevant and accurate information? Does it fully address all aspects of the query? Consider the responses in isolation, as well as in comparison to each other, and ensure your verdict remains consistent regardless of the order in which you consider them. To further minimize bias, focus on the responses' semantic content, logical structure, and overall quality, rather than their relative positioning or sequence. After carefully evaluating both responses, output A if response A is superior, B if response B is superior, or C if both responses are of equal quality. Your goal is to provide a verdict that is entirely independent of the responses' order, reflecting only their inherent quality, relevance, and ability to address the user's query. To achieve this, ask yourself: Would my verdict change if the responses were swapped? Would my evaluation be different if I considered the responses in reverse order? Ensure your judgment is based solely on the merit and content of each response, achieving a perfectly consistent and unbiased evaluation by disregarding any order effects and focusing on the intrinsic value of each response. Ultimately, your verdict should be a reflection of the responses' inherent quality, rather than their presentation order.",
+          "score": 0.55,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.6333,
+            "position_bias_rate": 0.3667,
+            "bias_toward_first_position": 0.3,
+            "bias_toward_second_position": 0.0333,
+            "tie_inconsistency_rate": 0.0333,
+            "accuracy_ab": 0.6,
+            "accuracy_ba": 0.3333,
+            "accuracy": 0.4667
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To eliminate position bias, consider the responses as abstract entities, devoid of any presentation order or sequence. Imagine you have access to a database containing both responses, and you can retrieve and compare them in any order, or even simultaneously. Assess each response based on its intrinsic merits, including accuracy, completeness, relevance, and overall ability to address the user's query. Evaluate how well each response aligns with the user's needs, using the following criteria: Does the response directly answer the user's question? Does it provide relevant and accurate information? Does it fully address all aspects of the query? Consider the responses in isolation, as well as in comparison to each other, and ensure your verdict remains consistent regardless of the order in which you consider them. To further minimize bias, focus on the responses' semantic content, logical structure, and overall quality, rather than their relative positioning or sequence. After carefully evaluating both responses, output A if response A is superior, B if response B is superior, or C if both responses are of equal quality. Your goal is to provide a verdict that is entirely independent of the responses' order, reflecting only their inherent quality, relevance, and ability to address the user's query. To achieve this, ask yourself: Would my verdict change if the responses were swapped? Would my evaluation be different if I considered the responses in reverse order? Ensure your judgment is based solely on the merit and content of each response, achieving a perfectly consistent and unbiased evaluation by disregarding any order effects and focusing on the intrinsic value of each response. Ultimately, your verdict should be a reflection of the responses' inherent quality, rather than their presentation order.",
+          "score": 0.55,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.6333,
+            "position_bias_rate": 0.3667,
+            "bias_toward_first_position": 0.2667,
+            "bias_toward_second_position": 0.0333,
+            "tie_inconsistency_rate": 0.0667,
+            "accuracy_ab": 0.6,
+            "accuracy_ba": 0.3333,
+            "accuracy": 0.4667
+          }
+        }
+      ]
+    },
+    {
+      "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To achieve a perfectly unbiased comparison, consider the responses as interchangeable modules, devoid of any presentation order or sequence. Imagine you have access to a virtual workspace where both responses are simultaneously available, and you can analyze, compare, and evaluate them in a neutral, order-agnostic environment. Assess each response based on its intrinsic merits, including accuracy, completeness, relevance, and overall ability to address the user's query, using the following criteria: Does the response directly answer the user's question? Does it provide relevant and accurate information? Does it fully address all aspects of the query? Evaluate how well each response aligns with the user's needs, considering multiple scenarios, counterfactuals, and edge cases. To further minimize bias, focus on the responses' semantic content, logical structure, and overall quality, rather than their relative positioning or sequence. Consider the following thought experiment: If the responses were swapped, or if you were to evaluate them in reverse order, or if you were to receive them through a different channel, would your verdict change? Ensure your judgment is based solely on the merit and content of each response, achieving a perfectly consistent and unbiased evaluation by disregarding any order effects and focusing on the intrinsic value of each response. To facilitate this, ask yourself: What are the essential characteristics of each response that make it more or less effective in addressing the user's query? How do these characteristics compare across both responses? After carefully evaluating both responses, output A if response A is superior, B if response B is superior, or C if both responses are of equal quality. Your goal is to provide a verdict that is entirely independent of the responses' order, reflecting only their inherent quality, relevance, and ability to address the user's query, and demonstrating perfect consistency across all possible presentation orders and evaluation scenarios.",
+      "score": 0.55835,
+      "metrics": {
+        "n_pairs_evaluated": 30,
+        "position_consistency": 0.5667,
+        "position_bias_rate": 0.4333,
+        "bias_toward_first_position": 0.3,
+        "bias_toward_second_position": 0.0333,
+        "tie_inconsistency_rate": 0.1,
+        "accuracy_ab": 0.6,
+        "accuracy_ba": 0.5,
+        "accuracy": 0.55
+      },
+      "branches": [
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To achieve a perfectly unbiased comparison, consider the responses as interchangeable modules, devoid of any presentation order or sequence. Imagine you have access to a virtual workspace where both responses are simultaneously available, and you can analyze, compare, and evaluate them in a neutral, order-agnostic environment. Assess each response based on its intrinsic merits, including accuracy, completeness, relevance, and overall ability to address the user's query, using the following criteria: Does the response directly answer the user's question? Does it provide relevant and accurate information? Does it fully address all aspects of the query? Evaluate how well each response aligns with the user's needs, considering multiple scenarios, counterfactuals, and edge cases. To further minimize bias, focus on the responses' semantic content, logical structure, and overall quality, rather than their relative positioning or sequence. Consider the following thought experiment: If the responses were swapped, or if you were to evaluate them in reverse order, or if you were to receive them through a different channel, would your verdict change? Ensure your judgment is based solely on the merit and content of each response, achieving a perfectly consistent and unbiased evaluation by disregarding any order effects and focusing on the intrinsic value of each response. To facilitate this, ask yourself: What are the essential characteristics of each response that make it more or less effective in addressing the user's query? How do these characteristics compare across both responses? After carefully evaluating both responses, output A if response A is superior, B if response B is superior, or C if both responses are of equal quality. Your goal is to provide a verdict that is entirely independent of the responses' order, reflecting only their inherent quality, relevance, and ability to address the user's query, and demonstrating perfect consistency across all possible presentation orders and evaluation scenarios.",
+          "score": 0.55835,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.5667,
+            "position_bias_rate": 0.4333,
+            "bias_toward_first_position": 0.3,
+            "bias_toward_second_position": 0.0333,
+            "tie_inconsistency_rate": 0.1,
+            "accuracy_ab": 0.6,
+            "accuracy_ba": 0.5,
+            "accuracy": 0.55
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To achieve a perfectly unbiased comparison, consider the responses as interchangeable modules, devoid of any presentation order or sequence. Imagine you have access to a comprehensive repository containing both responses, and you can retrieve, analyze, and compare them in any order, or even simultaneously, using a neutral and detached approach. Assess each response based on its intrinsic merits, including accuracy, completeness, relevance, and overall ability to address the user's query, without any influence from the order in which they are presented. Evaluate how well each response aligns with the user's needs, using the following criteria: Does the response directly answer the user's question? Does it provide relevant and accurate information? Does it fully address all aspects of the query? Consider the responses in isolation, as well as in comparison to each other, and ensure your verdict remains consistent regardless of the order in which you consider them. To further minimize bias, focus on the responses' semantic content, logical structure, and overall quality, rather than their relative positioning or sequence. Additionally, consider the following scenarios to ensure consistency: (1) swapping the responses, (2) reversing the order of consideration, and (3) evaluating each response independently, without reference to the other. After carefully evaluating both responses, output A if response A is superior, B if response B is superior, or C if both responses are of equal quality. Your goal is to provide a verdict that is entirely independent of the responses' order, reflecting only their inherent quality, relevance, and ability to address the user's query. To achieve this, ask yourself: Would my verdict change if the responses were swapped? Would my evaluation be different if I considered the responses in reverse order? Would my judgment be altered if I evaluated each response in isolation? Ensure your judgment is based solely on the merit and content of each response, achieving a perfectly consistent and unbiased evaluation by disregarding any order effects and focusing on the intrinsic value of each response. Ultimately, your verdict should be a reflection of the responses' inherent quality, rather than their presentation order, and should remain unchanged under any permutation of the responses.",
+          "score": 0.55645,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.6667,
+            "position_bias_rate": 0.3333,
+            "bias_toward_first_position": 0.2,
+            "bias_toward_second_position": 0.0333,
+            "tie_inconsistency_rate": 0.1,
+            "accuracy_ab": 0.5667,
+            "accuracy_ba": 0.4333,
+            "accuracy": 0.5
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To achieve a perfectly unbiased comparison, consider the responses as interchangeable modules, devoid of any presentation order or sequence. Imagine you have access to a virtual workspace where both responses are simultaneously available, and you can analyze, compare, and evaluate them in a neutral, order-agnostic environment. Assess each response based on its intrinsic merits, including accuracy, completeness, relevance, and overall ability to address the user's query, using the following criteria: Does the response directly answer the user's question? Does it provide relevant and accurate information? Does it fully address all aspects of the query? Evaluate how well each response aligns with the user's needs, considering multiple scenarios, counterfactuals, and edge cases. To further minimize bias, focus on the responses' semantic content, logical structure, and overall quality, rather than their relative positioning or sequence. Consider the following thought experiment: If the responses were swapped, or if you were to evaluate them in reverse order, or if you were to receive them through a different channel, would your verdict change? Ensure your judgment is based solely on the merit and content of each response, achieving a perfectly consistent and unbiased evaluation by disregarding any order effects and focusing on the intrinsic value of each response. To facilitate this, ask yourself: What are the essential characteristics of each response that make it more or less effective in addressing the user's query? How do these characteristics compare across both responses? After carefully evaluating both responses, output A if response A is superior, B if response B is superior, or C if both responses are of equal quality. Your goal is to provide a verdict that is entirely independent of the responses' order, reflecting only their inherent quality, relevance, and ability to address the user's query, and demonstrating perfect consistency across all possible presentation orders and evaluation scenarios.",
+          "score": 0.55835,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.5667,
+            "position_bias_rate": 0.4333,
+            "bias_toward_first_position": 0.3,
+            "bias_toward_second_position": 0.0333,
+            "tie_inconsistency_rate": 0.1,
+            "accuracy_ab": 0.6333,
+            "accuracy_ba": 0.4667,
+            "accuracy": 0.55
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To achieve a perfectly unbiased comparison, consider the responses as interchangeable modules, devoid of any presentation order or sequence. Imagine you have access to a virtual workspace where both responses are simultaneously available, and you can analyze, compare, and evaluate them in a neutral, order-agnostic environment. Assess each response based on its intrinsic merits, including accuracy, completeness, relevance, and overall ability to address the user's query, using the following criteria: Does the response directly answer the user's question? Does it provide relevant and accurate information? Does it fully address all aspects of the query? Evaluate how well each response aligns with the user's needs, considering multiple scenarios, counterfactuals, and edge cases. To further minimize bias, focus on the responses' semantic content, logical structure, and overall quality, rather than their relative positioning or sequence. Consider the following thought experiment: If the responses were swapped, or if you were to evaluate them in reverse order, or if you were to receive them through a different channel, would your verdict change? Ensure your judgment is based solely on the merit and content of each response, achieving a perfectly consistent and unbiased evaluation by disregarding any order effects and focusing on the intrinsic value of each response. To facilitate this, ask yourself: What are the essential characteristics of each response that make it more or less effective in addressing the user's query? How do these characteristics compare across both responses? After carefully evaluating both responses, output A if response A is superior, B if response B is superior, or C if both responses are of equal quality. Your goal is to provide a verdict that is entirely independent of the responses' order, reflecting only their inherent quality, relevance, and ability to address the user's query, and demonstrating perfect consistency across all possible presentation orders and evaluation scenarios.",
+          "score": 0.525,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.5333,
+            "position_bias_rate": 0.4667,
+            "bias_toward_first_position": 0.3,
+            "bias_toward_second_position": 0.0667,
+            "tie_inconsistency_rate": 0.1,
+            "accuracy_ab": 0.5667,
+            "accuracy_ba": 0.4667,
+            "accuracy": 0.5167
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To achieve a perfectly unbiased comparison, consider the responses as interchangeable modules, devoid of any presentation order or sequence. Imagine you have access to a virtual workspace where both responses are simultaneously available, and you can analyze, compare, and evaluate them in a neutral, order-agnostic environment. Assess each response based on its intrinsic merits, including accuracy, completeness, relevance, and overall ability to address the user's query, using the following criteria: Does the response directly answer the user's question? Does it provide relevant and accurate information? Does it fully address all aspects of the query? Evaluate how well each response aligns with the user's needs, considering multiple scenarios, counterfactuals, and edge cases. To further minimize bias, focus on the responses' semantic content, logical structure, and overall quality, rather than their relative positioning or sequence. Consider the following thought experiment: If the responses were swapped, or if you were to evaluate them in reverse order, or if you were to receive them through a different channel, would your verdict change? Ensure your judgment is based solely on the merit and content of each response, achieving a perfectly consistent and unbiased evaluation by disregarding any order effects and focusing on the intrinsic value of each response. To facilitate this, ask yourself: What are the essential characteristics of each response that make it more or less effective in addressing the user's query? How do these characteristics compare across both responses? After carefully evaluating both responses, output A if response A is superior, B if response B is superior, or C if both responses are of equal quality. Your goal is to provide a verdict that is entirely independent of the responses' order, reflecting only their inherent quality, relevance, and ability to address the user's query, and demonstrating perfect consistency across all possible presentation orders and evaluation scenarios.",
+          "score": 0.5,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.4667,
+            "position_bias_rate": 0.5333,
+            "bias_toward_first_position": 0.3333,
+            "bias_toward_second_position": 0.0667,
+            "tie_inconsistency_rate": 0.1333,
+            "accuracy_ab": 0.6,
+            "accuracy_ba": 0.4667,
+            "accuracy": 0.5333
+          }
+        }
+      ]
+    },
+    {
+      "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To achieve a perfectly unbiased comparison, consider the responses as abstract, orderless entities, devoid of any presentation sequence or temporal context. Imagine you have access to a multidimensional evaluation space where both responses coexist simultaneously, allowing you to analyze, compare, and evaluate them from multiple perspectives, without any influence from their presentation order. Assess each response based on its intrinsic merits, including accuracy, completeness, relevance, and overall ability to address the user's query, using the following criteria: Does the response directly answer the user's question? Does it provide relevant and accurate information? Does it fully address all aspects of the query? Evaluate how well each response aligns with the user's needs, considering multiple scenarios, counterfactuals, edge cases, and the responses' potential to satisfy the user's intent. To further minimize bias, focus on the responses' semantic content, logical structure, and overall quality, rather than their relative positioning or sequence. Consider the following thought experiments: If the responses were swapped, or if you were to evaluate them in reverse order, or if you were to receive them through a different channel, or if you were to evaluate them in isolation, would your verdict change? Additionally, imagine that you are evaluating the responses in a parallel universe where the presentation order is reversed, or in a universe where the responses are presented simultaneously, or in a universe where the responses are evaluated by a different judge. Ensure your judgment is based solely on the merit and content of each response, achieving a perfectly consistent and unbiased evaluation by disregarding any order effects, contextual influences, and extraneous factors, and focusing on the intrinsic value of each response. To facilitate this, ask yourself: What are the essential characteristics of each response that make it more or less effective in addressing the user's query? How do these characteristics compare across both responses? What are the underlying strengths and weaknesses of each response, and how do they impact the user's needs? After carefully evaluating both responses from multiple perspectives, output A if response A is superior, B if response B is superior, or C if both responses are of equal quality. Your goal is to provide a verdict that is entirely independent of the responses' order, reflecting only their inherent quality, relevance, and ability to address the user's query, and demonstrating perfect consistency across all possible presentation orders, evaluation scenarios, and contextual conditions.",
+      "score": 0.54785,
+      "metrics": {
+        "n_pairs_evaluated": 30,
+        "position_consistency": 0.7,
+        "position_bias_rate": 0.3,
+        "bias_toward_first_position": 0.2333,
+        "bias_toward_second_position": 0.0333,
+        "tie_inconsistency_rate": 0.0333,
+        "accuracy_ab": 0.5333,
+        "accuracy_ba": 0.5,
+        "accuracy": 0.5167
+      },
+      "branches": [
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To achieve a perfectly unbiased comparison, consider the responses as abstract, orderless entities, devoid of any presentation sequence or temporal context. Imagine you have access to a multidimensional evaluation space where both responses coexist simultaneously, allowing you to analyze, compare, and evaluate them from multiple perspectives, without any influence from their presentation order. Assess each response based on its intrinsic merits, including accuracy, completeness, relevance, and overall ability to address the user's query, using the following criteria: Does the response directly answer the user's question? Does it provide relevant and accurate information? Does it fully address all aspects of the query? Evaluate how well each response aligns with the user's needs, considering multiple scenarios, counterfactuals, edge cases, and the responses' potential to satisfy the user's intent. To further minimize bias, focus on the responses' semantic content, logical structure, and overall quality, rather than their relative positioning or sequence. Consider the following thought experiments: If the responses were swapped, or if you were to evaluate them in reverse order, or if you were to receive them through a different channel, or if you were to evaluate them in isolation, would your verdict change? Additionally, imagine that you are evaluating the responses in a parallel universe where the presentation order is reversed, or in a universe where the responses are presented simultaneously, or in a universe where the responses are evaluated by a different judge. Ensure your judgment is based solely on the merit and content of each response, achieving a perfectly consistent and unbiased evaluation by disregarding any order effects, contextual influences, and extraneous factors, and focusing on the intrinsic value of each response. To facilitate this, ask yourself: What are the essential characteristics of each response that make it more or less effective in addressing the user's query? How do these characteristics compare across both responses? What are the underlying strengths and weaknesses of each response, and how do they impact the user's needs? After carefully evaluating both responses from multiple perspectives, output A if response A is superior, B if response B is superior, or C if both responses are of equal quality. Your goal is to provide a verdict that is entirely independent of the responses' order, reflecting only their inherent quality, relevance, and ability to address the user's query, and demonstrating perfect consistency across all possible presentation orders, evaluation scenarios, and contextual conditions.",
+          "score": 0.5227999999999999,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.6333,
+            "position_bias_rate": 0.3667,
+            "bias_toward_first_position": 0.2333,
+            "bias_toward_second_position": 0.0333,
+            "tie_inconsistency_rate": 0.1,
+            "accuracy_ab": 0.5667,
+            "accuracy_ba": 0.5,
+            "accuracy": 0.5333
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To achieve a perfectly unbiased comparison, consider the responses as abstract, orderless entities, devoid of any presentation sequence or temporal context. Imagine you have access to a multidimensional evaluation space where both responses coexist simultaneously, allowing you to analyze, compare, and evaluate them from multiple perspectives, without any influence from their presentation order. Assess each response based on its intrinsic merits, including accuracy, completeness, relevance, and overall ability to address the user's query, using the following criteria: Does the response directly answer the user's question? Does it provide relevant and accurate information? Does it fully address all aspects of the query? Evaluate how well each response aligns with the user's needs, considering multiple scenarios, counterfactuals, edge cases, and the responses' potential to satisfy the user's intent. To further minimize bias, focus on the responses' semantic content, logical structure, and overall quality, rather than their relative positioning or sequence. Consider the following thought experiments: If the responses were swapped, or if you were to evaluate them in reverse order, or if you were to receive them through a different channel, or if you were to evaluate them in isolation, would your verdict change? Additionally, imagine that you are evaluating the responses in a parallel universe where the presentation order is reversed, or in a universe where the responses are presented simultaneously, or in a universe where the responses are evaluated by a different judge. Ensure your judgment is based solely on the merit and content of each response, achieving a perfectly consistent and unbiased evaluation by disregarding any order effects, contextual influences, and extraneous factors, and focusing on the intrinsic value of each response. To facilitate this, ask yourself: What are the essential characteristics of each response that make it more or less effective in addressing the user's query? How do these characteristics compare across both responses? What are the underlying strengths and weaknesses of each response, and how do they impact the user's needs? After carefully evaluating both responses from multiple perspectives, output A if response A is superior, B if response B is superior, or C if both responses are of equal quality. Your goal is to provide a verdict that is entirely independent of the responses' order, reflecting only their inherent quality, relevance, and ability to address the user's query, and demonstrating perfect consistency across all possible presentation orders, evaluation scenarios, and contextual conditions.",
+          "score": 0.48950000000000005,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.6,
+            "position_bias_rate": 0.4,
+            "bias_toward_first_position": 0.2667,
+            "bias_toward_second_position": 0.0667,
+            "tie_inconsistency_rate": 0.0667,
+            "accuracy_ab": 0.5667,
+            "accuracy_ba": 0.4333,
+            "accuracy": 0.5
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To achieve a perfectly unbiased comparison, consider the responses as abstract, orderless entities, devoid of any presentation sequence or temporal context. Imagine you have access to a multidimensional evaluation space where both responses coexist simultaneously, allowing you to analyze, compare, and evaluate them from multiple perspectives, without any influence from their presentation order. Assess each response based on its intrinsic merits, including accuracy, completeness, relevance, and overall ability to address the user's query, using the following criteria: Does the response directly answer the user's question? Does it provide relevant and accurate information? Does it fully address all aspects of the query? Evaluate how well each response aligns with the user's needs, considering multiple scenarios, counterfactuals, edge cases, and the responses' potential to satisfy the user's intent. To further minimize bias, focus on the responses' semantic content, logical structure, and overall quality, rather than their relative positioning or sequence. Consider the following thought experiments: If the responses were swapped, or if you were to evaluate them in reverse order, or if you were to receive them through a different channel, or if you were to evaluate them in isolation, would your verdict change? Additionally, imagine that you are evaluating the responses in a parallel universe where the presentation order is reversed, or in a universe where the responses are presented simultaneously, or in a universe where the responses are evaluated by a different judge. Ensure your judgment is based solely on the merit and content of each response, achieving a perfectly consistent and unbiased evaluation by disregarding any order effects, contextual influences, and extraneous factors, and focusing on the intrinsic value of each response. To facilitate this, ask yourself: What are the essential characteristics of each response that make it more or less effective in addressing the user's query? How do these characteristics compare across both responses? What are the underlying strengths and weaknesses of each response, and how do they impact the user's needs? After carefully evaluating both responses from multiple perspectives, output A if response A is superior, B if response B is superior, or C if both responses are of equal quality. Your goal is to provide a verdict that is entirely independent of the responses' order, reflecting only their inherent quality, relevance, and ability to address the user's query, and demonstrating perfect consistency across all possible presentation orders, evaluation scenarios, and contextual conditions.",
+          "score": 0.4645,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.5667,
+            "position_bias_rate": 0.4333,
+            "bias_toward_first_position": 0.2667,
+            "bias_toward_second_position": 0.1,
+            "tie_inconsistency_rate": 0.0667,
+            "accuracy_ab": 0.5333,
+            "accuracy_ba": 0.4333,
+            "accuracy": 0.4833
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To achieve a perfectly unbiased comparison, consider the responses as abstract, orderless entities, devoid of any presentation sequence or temporal context. Imagine you have access to a multidimensional evaluation space where both responses coexist simultaneously, allowing you to analyze, compare, and evaluate them from multiple perspectives, without any influence from their presentation order. Assess each response based on its intrinsic merits, including accuracy, completeness, relevance, and overall ability to address the user's query, using the following criteria: Does the response directly answer the user's question? Does it provide relevant and accurate information? Does it fully address all aspects of the query? Evaluate how well each response aligns with the user's needs, considering multiple scenarios, counterfactuals, edge cases, and the responses' potential to satisfy the user's intent. To further minimize bias, focus on the responses' semantic content, logical structure, and overall quality, rather than their relative positioning or sequence. Consider the following thought experiments: If the responses were swapped, or if you were to evaluate them in reverse order, or if you were to receive them through a different channel, or if you were to evaluate them in isolation, would your verdict change? Additionally, imagine that you are evaluating the responses in a parallel universe where the presentation order is reversed, or in a universe where the responses are presented simultaneously, or in a universe where the responses are evaluated by a different judge. Ensure your judgment is based solely on the merit and content of each response, achieving a perfectly consistent and unbiased evaluation by disregarding any order effects, contextual influences, and extraneous factors, and focusing on the intrinsic value of each response. To facilitate this, ask yourself: What are the essential characteristics of each response that make it more or less effective in addressing the user's query? How do these characteristics compare across both responses? What are the underlying strengths and weaknesses of each response, and how do they impact the user's needs? After carefully evaluating both responses from multiple perspectives, output A if response A is superior, B if response B is superior, or C if both responses are of equal quality. Your goal is to provide a verdict that is entirely independent of the responses' order, reflecting only their inherent quality, relevance, and ability to address the user's query, and demonstrating perfect consistency across all possible presentation orders, evaluation scenarios, and contextual conditions.",
+          "score": 0.52285,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.6667,
+            "position_bias_rate": 0.3333,
+            "bias_toward_first_position": 0.2333,
+            "bias_toward_second_position": 0.0333,
+            "tie_inconsistency_rate": 0.0667,
+            "accuracy_ab": 0.5,
+            "accuracy_ba": 0.5,
+            "accuracy": 0.5
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To achieve a perfectly unbiased comparison, consider the responses as abstract, orderless entities, devoid of any presentation sequence or temporal context. Imagine you have access to a multidimensional evaluation space where both responses coexist simultaneously, allowing you to analyze, compare, and evaluate them from multiple perspectives, without any influence from their presentation order. Assess each response based on its intrinsic merits, including accuracy, completeness, relevance, and overall ability to address the user's query, using the following criteria: Does the response directly answer the user's question? Does it provide relevant and accurate information? Does it fully address all aspects of the query? Evaluate how well each response aligns with the user's needs, considering multiple scenarios, counterfactuals, edge cases, and the responses' potential to satisfy the user's intent. To further minimize bias, focus on the responses' semantic content, logical structure, and overall quality, rather than their relative positioning or sequence. Consider the following thought experiments: If the responses were swapped, or if you were to evaluate them in reverse order, or if you were to receive them through a different channel, or if you were to evaluate them in isolation, would your verdict change? Additionally, imagine that you are evaluating the responses in a parallel universe where the presentation order is reversed, or in a universe where the responses are presented simultaneously, or in a universe where the responses are evaluated by a different judge. Ensure your judgment is based solely on the merit and content of each response, achieving a perfectly consistent and unbiased evaluation by disregarding any order effects, contextual influences, and extraneous factors, and focusing on the intrinsic value of each response. To facilitate this, ask yourself: What are the essential characteristics of each response that make it more or less effective in addressing the user's query? How do these characteristics compare across both responses? What are the underlying strengths and weaknesses of each response, and how do they impact the user's needs? After carefully evaluating both responses from multiple perspectives, output A if response A is superior, B if response B is superior, or C if both responses are of equal quality. Your goal is to provide a verdict that is entirely independent of the responses' order, reflecting only their inherent quality, relevance, and ability to address the user's query, and demonstrating perfect consistency across all possible presentation orders, evaluation scenarios, and contextual conditions.",
+          "score": 0.54785,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.7,
+            "position_bias_rate": 0.3,
+            "bias_toward_first_position": 0.2333,
+            "bias_toward_second_position": 0.0333,
+            "tie_inconsistency_rate": 0.0333,
+            "accuracy_ab": 0.5333,
+            "accuracy_ba": 0.5,
+            "accuracy": 0.5167
+          }
+        }
+      ]
+    },
+    {
+      "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To achieve a perfectly unbiased comparison, consider the responses as timeless, orderless entities, existing in a state of simultaneity, where their presentation sequence is irrelevant. Imagine you have access to a holistic evaluation framework, allowing you to analyze, compare, and evaluate both responses from a multidimensional perspective, encompassing their semantic content, logical structure, and overall quality. Assess each response based on its intrinsic merits, including accuracy, completeness, relevance, and overall ability to address the user's query, using the following criteria: Does the response directly answer the user's question? Does it provide relevant and accurate information? Does it fully address all aspects of the query? Evaluate how well each response aligns with the user's needs, considering multiple scenarios, counterfactuals, edge cases, and the responses' potential to satisfy the user's intent. To further minimize bias, focus on the responses' essential characteristics, such as their informativeness, coherence, and overall effectiveness in addressing the user's query. Consider the following thought experiments: If the responses were swapped, or if you were to evaluate them in reverse order, or if you were to receive them through a different channel, or if you were to evaluate them in isolation, would your verdict change? Additionally, imagine that you are evaluating the responses in a parallel universe where the presentation order is reversed, or in a universe where the responses are presented simultaneously, or in a universe where the responses are evaluated by a different judge. Ensure your judgment is based solely on the merit and content of each response, achieving a perfectly consistent and unbiased evaluation by disregarding any order effects, contextual influences, and extraneous factors, and focusing on the intrinsic value of each response. To facilitate this, ask yourself: What are the underlying strengths and weaknesses of each response, and how do they impact the user's needs? How do the responses compare in terms of their ability to provide a clear, concise, and relevant answer to the user's question? After carefully evaluating both responses from multiple perspectives, output A if response A is superior, B if response B is superior, or C if both responses are of equal quality. Your goal is to provide a verdict that is entirely independent of the responses' order, reflecting only their inherent quality, relevance, and ability to address the user's query, and demonstrating perfect consistency across all possible presentation orders, evaluation scenarios, and contextual conditions. To achieve this, strive for a state of evaluative equilibrium, where your judgment is impervious to the influences of presentation order, and is solely guided by the intrinsic merits of each response.",
+      "score": 0.5376000000000001,
+      "metrics": {
+        "n_pairs_evaluated": 30,
+        "position_consistency": 0.7667,
+        "position_bias_rate": 0.2333,
+        "bias_toward_first_position": 0.1667,
+        "bias_toward_second_position": 0.0333,
+        "tie_inconsistency_rate": 0.0333,
+        "accuracy_ab": 0.5333,
+        "accuracy_ba": 0.4,
+        "accuracy": 0.4667
+      },
+      "branches": [
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To achieve a perfectly unbiased comparison, consider the responses as timeless, orderless entities, existing in a state of simultaneity, where their presentation sequence is irrelevant. Imagine you have access to a holistic evaluation framework, allowing you to analyze, compare, and evaluate both responses from a multidimensional perspective, encompassing their semantic content, logical structure, and overall quality. Assess each response based on its intrinsic merits, including accuracy, completeness, relevance, and overall ability to address the user's query, using the following criteria: Does the response directly answer the user's question? Does it provide relevant and accurate information? Does it fully address all aspects of the query? Evaluate how well each response aligns with the user's needs, considering multiple scenarios, counterfactuals, edge cases, and the responses' potential to satisfy the user's intent. To further minimize bias, focus on the responses' essential characteristics, such as their informativeness, coherence, and overall effectiveness in addressing the user's query. Consider the following thought experiments: If the responses were swapped, or if you were to evaluate them in reverse order, or if you were to receive them through a different channel, or if you were to evaluate them in isolation, would your verdict change? Additionally, imagine that you are evaluating the responses in a parallel universe where the presentation order is reversed, or in a universe where the responses are presented simultaneously, or in a universe where the responses are evaluated by a different judge. Ensure your judgment is based solely on the merit and content of each response, achieving a perfectly consistent and unbiased evaluation by disregarding any order effects, contextual influences, and extraneous factors, and focusing on the intrinsic value of each response. To facilitate this, ask yourself: What are the underlying strengths and weaknesses of each response, and how do they impact the user's needs? How do the responses compare in terms of their ability to provide a clear, concise, and relevant answer to the user's question? After carefully evaluating both responses from multiple perspectives, output A if response A is superior, B if response B is superior, or C if both responses are of equal quality. Your goal is to provide a verdict that is entirely independent of the responses' order, reflecting only their inherent quality, relevance, and ability to address the user's query, and demonstrating perfect consistency across all possible presentation orders, evaluation scenarios, and contextual conditions. To achieve this, strive for a state of evaluative equilibrium, where your judgment is impervious to the influences of presentation order, and is solely guided by the intrinsic merits of each response.",
+          "score": 0.47090000000000004,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.6333,
+            "position_bias_rate": 0.3667,
+            "bias_toward_first_position": 0.2667,
+            "bias_toward_second_position": 0.0333,
+            "tie_inconsistency_rate": 0.0667,
+            "accuracy_ab": 0.6,
+            "accuracy_ba": 0.3333,
+            "accuracy": 0.4667
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To achieve a perfectly unbiased comparison, consider the responses as timeless, orderless entities, existing in a state of simultaneity, where their presentation sequence is irrelevant. Imagine you have access to a holistic evaluation framework, allowing you to analyze, compare, and evaluate both responses from a multidimensional perspective, encompassing their semantic content, logical structure, and overall quality. Assess each response based on its intrinsic merits, including accuracy, completeness, relevance, and overall ability to address the user's query, using the following criteria: Does the response directly answer the user's question? Does it provide relevant and accurate information? Does it fully address all aspects of the query? Evaluate how well each response aligns with the user's needs, considering multiple scenarios, counterfactuals, edge cases, and the responses' potential to satisfy the user's intent. To further minimize bias, focus on the responses' essential characteristics, such as their informativeness, coherence, and overall effectiveness in addressing the user's query. Consider the following thought experiments: If the responses were swapped, or if you were to evaluate them in reverse order, or if you were to receive them through a different channel, or if you were to evaluate them in isolation, would your verdict change? Additionally, imagine that you are evaluating the responses in a parallel universe where the presentation order is reversed, or in a universe where the responses are presented simultaneously, or in a universe where the responses are evaluated by a different judge. Ensure your judgment is based solely on the merit and content of each response, achieving a perfectly consistent and unbiased evaluation by disregarding any order effects, contextual influences, and extraneous factors, and focusing on the intrinsic value of each response. To facilitate this, ask yourself: What are the underlying strengths and weaknesses of each response, and how do they impact the user's needs? How do the responses compare in terms of their ability to provide relevant and accurate information, and to address the user's query in a comprehensive and effective manner? After carefully evaluating both responses from multiple perspectives, output A if response A is superior, B if response B is superior, or C if both responses are of equal quality. Your goal is to provide a verdict that is entirely independent of the responses' order, reflecting only their inherent quality, relevance, and ability to address the user's query, and demonstrating perfect consistency across all possible presentation orders, evaluation scenarios, and contextual conditions. To achieve this, strive to create a symmetrical evaluation process, where both responses are treated with equal weight and consideration, and where your judgment is guided solely by the responses' intrinsic merits and their ability to satisfy the user's needs.",
+          "score": 0.48669999999999997,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.6667,
+            "position_bias_rate": 0.3333,
+            "bias_toward_first_position": 0.2,
+            "bias_toward_second_position": 0.0667,
+            "tie_inconsistency_rate": 0.0667,
+            "accuracy_ab": 0.5667,
+            "accuracy_ba": 0.3667,
+            "accuracy": 0.4667
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To achieve a perfectly unbiased comparison, consider the responses as timeless, orderless entities, existing in a state of simultaneity, where their presentation sequence is irrelevant. Imagine you have access to a holistic evaluation framework, allowing you to analyze, compare, and evaluate both responses from a multidimensional perspective, encompassing their semantic content, logical structure, and overall quality. Assess each response based on its intrinsic merits, including accuracy, completeness, relevance, and overall ability to address the user's query, using the following criteria: Does the response directly answer the user's question? Does it provide relevant and accurate information? Does it fully address all aspects of the query? Evaluate how well each response aligns with the user's needs, considering multiple scenarios, counterfactuals, edge cases, and the responses' potential to satisfy the user's intent. To further minimize bias, focus on the responses' essential characteristics, such as their informativeness, coherence, and overall effectiveness in addressing the user's query. Consider the following thought experiments: If the responses were swapped, or if you were to evaluate them in reverse order, or if you were to receive them through a different channel, or if you were to evaluate them in isolation, would your verdict change? Additionally, imagine that you are evaluating the responses in a parallel universe where the presentation order is reversed, or in a universe where the responses are presented simultaneously, or in a universe where the responses are evaluated by a different judge. Ensure your judgment is based solely on the merit and content of each response, achieving a perfectly consistent and unbiased evaluation by disregarding any order effects, contextual influences, and extraneous factors, and focusing on the intrinsic value of each response. To facilitate this, ask yourself: What are the underlying strengths and weaknesses of each response, and how do they impact the user's needs? How do the responses compare in terms of their ability to provide a clear, concise, and relevant answer to the user's question? After carefully evaluating both responses from multiple perspectives, output A if response A is superior, B if response B is superior, or C if both responses are of equal quality. Your goal is to provide a verdict that is entirely independent of the responses' order, reflecting only their inherent quality, relevance, and ability to address the user's query, and demonstrating perfect consistency across all possible presentation orders, evaluation scenarios, and contextual conditions. To achieve this, strive for a state of evaluative equilibrium, where your judgment is impervious to the influences of presentation order, and is solely guided by the intrinsic merits of each response.",
+          "score": 0.5376000000000001,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.7667,
+            "position_bias_rate": 0.2333,
+            "bias_toward_first_position": 0.1667,
+            "bias_toward_second_position": 0.0333,
+            "tie_inconsistency_rate": 0.0333,
+            "accuracy_ab": 0.5333,
+            "accuracy_ba": 0.4,
+            "accuracy": 0.4667
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To achieve a perfectly unbiased comparison, consider the responses as timeless, orderless entities, existing in a state of simultaneity, where their presentation sequence is irrelevant. Imagine you have access to a holistic evaluation framework, allowing you to analyze, compare, and evaluate both responses from a multidimensional perspective, encompassing their semantic content, logical structure, and overall quality. Assess each response based on its intrinsic merits, including accuracy, completeness, relevance, and overall ability to address the user's query, using the following criteria: Does the response directly answer the user's question? Does it provide relevant and accurate information? Does it fully address all aspects of the query? Evaluate how well each response aligns with the user's needs, considering multiple scenarios, counterfactuals, edge cases, and the responses' potential to satisfy the user's intent. To further minimize bias, focus on the responses' essential characteristics, such as their informativeness, coherence, and overall effectiveness in addressing the user's query. Consider the following thought experiments: If the responses were swapped, or if you were to evaluate them in reverse order, or if you were to receive them through a different channel, or if you were to evaluate them in isolation, would your verdict change? Additionally, imagine that you are evaluating the responses in a parallel universe where the presentation order is reversed, or in a universe where the responses are presented simultaneously, or in a universe where the responses are evaluated by a different judge. Ensure your judgment is based solely on the merit and content of each response, achieving a perfectly consistent and unbiased evaluation by disregarding any order effects, contextual influences, and extraneous factors, and focusing on the intrinsic value of each response. To facilitate this, ask yourself: What are the underlying strengths and weaknesses of each response, and how do they impact the user's needs? How do the responses compare in terms of their ability to provide a clear, concise, and relevant answer to the user's question? After carefully evaluating both responses from multiple perspectives, output A if response A is superior, B if response B is superior, or C if both responses are of equal quality. Your goal is to provide a verdict that is entirely independent of the responses' order, reflecting only their inherent quality, relevance, and ability to address the user's query, and demonstrating perfect consistency across all possible presentation orders, evaluation scenarios, and contextual conditions. To achieve this, strive for a state of evaluative equilibrium, where your judgment is impervious to the influences of presentation order, and is solely guided by the intrinsic merits of each response.",
+          "score": 0.5291999999999999,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.7333,
+            "position_bias_rate": 0.2667,
+            "bias_toward_first_position": 0.1667,
+            "bias_toward_second_position": 0.0667,
+            "tie_inconsistency_rate": 0.0333,
+            "accuracy_ab": 0.5333,
+            "accuracy_ba": 0.4333,
+            "accuracy": 0.4833
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To achieve a perfectly unbiased comparison, consider the responses as timeless, orderless entities, existing in a state of simultaneity, where their presentation sequence is irrelevant. Imagine you have access to a holistic evaluation framework, allowing you to analyze, compare, and evaluate both responses from a multidimensional perspective, encompassing their semantic content, logical structure, and overall quality. Assess each response based on its intrinsic merits, including accuracy, completeness, relevance, and overall ability to address the user's query, using the following criteria: Does the response directly answer the user's question? Does it provide relevant and accurate information? Does it fully address all aspects of the query? Evaluate how well each response aligns with the user's needs, considering multiple scenarios, counterfactuals, edge cases, and the responses' potential to satisfy the user's intent. To further minimize bias, focus on the responses' essential characteristics, such as their informativeness, coherence, and overall effectiveness, rather than their relative positioning or sequence. Consider the following thought experiments: If the responses were swapped, or if you were to evaluate them in reverse order, or if you were to receive them through a different channel, or if you were to evaluate them in isolation, would your verdict change? Additionally, imagine that you are evaluating the responses in a parallel universe where the presentation order is reversed, or in a universe where the responses are presented simultaneously, or in a universe where the responses are evaluated by a different judge. Ensure your judgment is based solely on the merit and content of each response, achieving a perfectly consistent and unbiased evaluation by disregarding any order effects, contextual influences, and extraneous factors, and focusing on the intrinsic value of each response. To facilitate this, ask yourself: What are the underlying strengths and weaknesses of each response, and how do they impact the user's needs? How do the responses compare in terms of their ability to provide a clear, concise, and relevant answer to the user's question? After carefully evaluating both responses from multiple perspectives, output A if response A is superior, B if response B is superior, or C if both responses are of equal quality. Your goal is to provide a verdict that is entirely independent of the responses' order, reflecting only their inherent quality, relevance, and ability to address the user's query, and demonstrating perfect consistency across all possible presentation orders, evaluation scenarios, and contextual conditions. To achieve this, strive for a state of evaluative equilibrium, where your judgment is impervious to the influences of presentation order, and is solely guided by the intrinsic merits of each response.",
+          "score": 0.42834999999999995,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.5667,
+            "position_bias_rate": 0.4333,
+            "bias_toward_first_position": 0.2667,
+            "bias_toward_second_position": 0.0667,
+            "tie_inconsistency_rate": 0.1,
+            "accuracy_ab": 0.5667,
+            "accuracy_ba": 0.3333,
+            "accuracy": 0.45
+          }
+        }
+      ]
+    },
+    {
+      "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To achieve a perfectly unbiased comparison, consider the responses as abstract, timeless entities, existing in a state of simultaneity, where their presentation sequence is irrelevant. Imagine you have access to a multidimensional evaluation framework, allowing you to analyze, compare, and evaluate both responses from a holistic perspective, encompassing their semantic content, logical structure, and overall quality.\n\nAssess each response based on its intrinsic merits, including accuracy, completeness, relevance, and overall ability to address the user's query, using the following criteria: Does the response directly answer the user's question? Does it provide relevant and accurate information? Does it fully address all aspects of the query? Evaluate how well each response aligns with the user's needs, considering multiple scenarios, counterfactuals, edge cases, and the responses' potential to satisfy the user's intent.\n\nTo further minimize bias, focus on the responses' essential characteristics, such as their informativeness, coherence, and overall effectiveness in addressing the user's query. Consider the following thought experiments: If the responses were swapped, or if you were to evaluate them in reverse order, or if you were to receive them through a different channel, or if you were to evaluate them in isolation, would your verdict change? Additionally, imagine that you are evaluating the responses in a parallel universe where the presentation order is reversed, or in a universe where the responses are presented simultaneously, or in a universe where the responses are evaluated by a different judge.\n\nEnsure your judgment is based solely on the merit and content of each response, achieving a perfectly consistent and unbiased evaluation by disregarding any order effects, contextual influences, and extraneous factors, and focusing on the intrinsic value of each response. To facilitate this, ask yourself: What are the underlying strengths and weaknesses of each response, and how do they impact the user's needs? How do the responses compare in terms of their ability to provide a clear, concise, and relevant answer to the user's question?\n\nTo achieve a state of evaluative equilibrium, where your judgment is impervious to the influences of presentation order, consider the following: Evaluate each response as if it were the only response available, and then compare your evaluations. Imagine that you have already evaluated one response and are now evaluating the second response in isolation, without any knowledge of the first response. Then, swap the responses and repeat the evaluation process. If your verdict remains the same across all these scenarios, you have achieved a perfectly unbiased evaluation.\n\nAfter carefully evaluating both responses from multiple perspectives, output A if response A is superior, B if response B is superior, or C if both responses are of equal quality. Your goal is to provide a verdict that is entirely independent of the responses' order, reflecting only their inherent quality, relevance, and ability to address the user's query, and demonstrating perfect consistency across all possible presentation orders, evaluation scenarios, and contextual conditions.",
+      "score": 0.48669999999999997,
+      "metrics": {
+        "n_pairs_evaluated": 30,
+        "position_consistency": 0.6667,
+        "position_bias_rate": 0.3333,
+        "bias_toward_first_position": 0.2,
+        "bias_toward_second_position": 0.0333,
+        "tie_inconsistency_rate": 0.1,
+        "accuracy_ab": 0.5667,
+        "accuracy_ba": 0.3667,
+        "accuracy": 0.4667
+      },
+      "branches": [
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To achieve a perfectly unbiased comparison, consider the responses as abstract, timeless entities, existing in a state of simultaneity, where their presentation sequence is irrelevant. Imagine you have access to a multidimensional evaluation framework, allowing you to analyze, compare, and evaluate both responses from a holistic perspective, encompassing their semantic content, logical structure, and overall quality.\n\nAssess each response based on its intrinsic merits, including accuracy, completeness, relevance, and overall ability to address the user's query, using the following criteria: Does the response directly answer the user's question? Does it provide relevant and accurate information? Does it fully address all aspects of the query? Evaluate how well each response aligns with the user's needs, considering multiple scenarios, counterfactuals, edge cases, and the responses' potential to satisfy the user's intent.\n\nTo further minimize bias, focus on the responses' essential characteristics, such as their informativeness, coherence, and overall effectiveness in addressing the user's query. Consider the following thought experiments: If the responses were swapped, or if you were to evaluate them in reverse order, or if you were to receive them through a different channel, or if you were to evaluate them in isolation, would your verdict change? Additionally, imagine that you are evaluating the responses in a parallel universe where the presentation order is reversed, or in a universe where the responses are presented simultaneously, or in a universe where the responses are evaluated by a different judge.\n\nEnsure your judgment is based solely on the merit and content of each response, achieving a perfectly consistent and unbiased evaluation by disregarding any order effects, contextual influences, and extraneous factors, and focusing on the intrinsic value of each response. To facilitate this, ask yourself: What are the underlying strengths and weaknesses of each response, and how do they impact the user's needs? How do the responses compare in terms of their ability to provide a clear, concise, and relevant answer to the user's question?\n\nTo achieve a state of evaluative equilibrium, where your judgment is impervious to the influences of presentation order, consider the following: Evaluate each response as if it were the only response available, and then compare your evaluations. Imagine that you have already evaluated one response and are now evaluating the second response in isolation, without any knowledge of the first response. Then, swap the responses and repeat the evaluation process. If your verdict remains the same across all these scenarios, you have achieved a perfectly consistent and unbiased evaluation.\n\nAfter carefully evaluating both responses from multiple perspectives, output A if response A is superior, B if response B is superior, or C if both responses are of equal quality. Your goal is to provide a verdict that is entirely independent of the responses' order, reflecting only their inherent quality, relevance, and ability to address the user's query, and demonstrating perfect consistency across all possible presentation orders, evaluation scenarios, and contextual conditions.",
+          "score": 0.46169999999999994,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.6667,
+            "position_bias_rate": 0.3333,
+            "bias_toward_first_position": 0.1667,
+            "bias_toward_second_position": 0.0333,
+            "tie_inconsistency_rate": 0.1333,
+            "accuracy_ab": 0.5333,
+            "accuracy_ba": 0.3,
+            "accuracy": 0.4167
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To achieve a perfectly unbiased comparison, consider the responses as abstract, timeless entities, existing in a state of simultaneity, where their presentation sequence is irrelevant. Imagine you have access to a multidimensional evaluation framework, allowing you to analyze, compare, and evaluate both responses from a holistic perspective, encompassing their semantic content, logical structure, and overall quality.\n\nAssess each response based on its intrinsic merits, including accuracy, completeness, relevance, and overall ability to address the user's query, using the following criteria: Does the response directly answer the user's question? Does it provide relevant and accurate information? Does it fully address all aspects of the query? Evaluate how well each response aligns with the user's needs, considering multiple scenarios, counterfactuals, edge cases, and the responses' potential to satisfy the user's intent.\n\nTo further minimize bias, focus on the responses' essential characteristics, such as their informativeness, coherence, and overall effectiveness in addressing the user's query. Consider the following thought experiments: If the responses were swapped, or if you were to evaluate them in reverse order, or if you were to receive them through a different channel, or if you were to evaluate them in isolation, would your verdict change? Additionally, imagine that you are evaluating the responses in a parallel universe where the presentation order is reversed, or in a universe where the responses are presented simultaneously, or in a universe where the responses are evaluated by a different judge.\n\nEnsure your judgment is based solely on the merit and content of each response, achieving a perfectly consistent and unbiased evaluation by disregarding any order effects, contextual influences, and extraneous factors, and focusing on the intrinsic value of each response. To facilitate this, ask yourself: What are the underlying strengths and weaknesses of each response, and how do they impact the user's needs? How do the responses compare in terms of their ability to provide a clear, concise, and relevant answer to the user's question?\n\nTo achieve a state of evaluative equilibrium, where your judgment is impervious to the influences of presentation order, consider the following principles: (1) symmetry: the evaluation should be invariant under response permutation; (2) neutrality: the evaluation should not be influenced by the presentation order; and (3) holism: the evaluation should consider the responses as a whole, rather than focusing on individual aspects.\n\nAfter carefully evaluating both responses from multiple perspectives, output A if response A is superior, B if response B is superior, or C if both responses are of equal quality. Your goal is to provide a verdict that is entirely independent of the responses' order, reflecting only their inherent quality, relevance, and ability to address the user's query, and demonstrating perfect consistency across all possible presentation orders, evaluation scenarios, and contextual conditions.",
+          "score": 0.4783,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.6333,
+            "position_bias_rate": 0.3667,
+            "bias_toward_first_position": 0.2,
+            "bias_toward_second_position": 0.0333,
+            "tie_inconsistency_rate": 0.1333,
+            "accuracy_ab": 0.5667,
+            "accuracy_ba": 0.4,
+            "accuracy": 0.4833
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To achieve a perfectly unbiased comparison, consider the responses as abstract, timeless entities, existing in a state of simultaneity, where their presentation sequence is irrelevant. Imagine you have access to a multidimensional evaluation framework, allowing you to analyze, compare, and evaluate both responses from a holistic perspective, encompassing their semantic content, logical structure, and overall quality.\n\nAssess each response based on its intrinsic merits, including accuracy, completeness, relevance, and overall ability to address the user's query, using the following criteria: Does the response directly answer the user's question? Does it provide relevant and accurate information? Does it fully address all aspects of the query? Evaluate how well each response aligns with the user's needs, considering multiple scenarios, counterfactuals, edge cases, and the responses' potential to satisfy the user's intent.\n\nTo further minimize bias, focus on the responses' essential characteristics, such as their informativeness, coherence, and overall effectiveness in addressing the user's query. Consider the following thought experiments: If the responses were swapped, or if you were to evaluate them in reverse order, or if you were to receive them through a different channel, or if you were to evaluate them in isolation, would your verdict change? Additionally, imagine that you are evaluating the responses in a parallel universe where the presentation order is reversed, or in a universe where the responses are presented simultaneously, or in a universe where the responses are evaluated by a different judge.\n\nEnsure your judgment is based solely on the merit and content of each response, achieving a perfectly consistent and unbiased evaluation by disregarding any order effects, contextual influences, and extraneous factors, and focusing on the intrinsic value of each response. To facilitate this, ask yourself: What are the underlying strengths and weaknesses of each response, and how do they impact the user's needs? How do the responses compare in terms of their ability to provide a clear, concise, and relevant answer to the user's question?\n\nTo achieve a state of evaluative equilibrium, where your judgment is impervious to the influences of presentation order, consider the following principles: (1) symmetry: the evaluation should be invariant under response permutation; (2) neutrality: the evaluation should not be influenced by the presentation order; and (3) holism: the evaluation should consider the responses as a whole, rather than focusing on individual aspects.\n\nAfter carefully evaluating both responses from multiple perspectives, output A if response A is superior, B if response B is superior, or C if both responses are of equal quality. Your goal is to provide a verdict that is entirely independent of the responses' order, reflecting only their inherent quality, relevance, and ability to address the user's query, and demonstrating perfect consistency across all possible presentation orders, evaluation scenarios, and contextual conditions.",
+          "score": 0.47835,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.6667,
+            "position_bias_rate": 0.3333,
+            "bias_toward_first_position": 0.1667,
+            "bias_toward_second_position": 0.0333,
+            "tie_inconsistency_rate": 0.1333,
+            "accuracy_ab": 0.5,
+            "accuracy_ba": 0.4,
+            "accuracy": 0.45
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To achieve a perfectly unbiased comparison, consider the responses as abstract, timeless entities, existing in a state of simultaneity, where their presentation sequence is irrelevant. Imagine you have access to a multidimensional evaluation framework, allowing you to analyze, compare, and evaluate both responses from a holistic perspective, encompassing their semantic content, logical structure, and overall quality.\n\nAssess each response based on its intrinsic merits, including accuracy, completeness, relevance, and overall ability to address the user's query, using the following criteria: Does the response directly answer the user's question? Does it provide relevant and accurate information? Does it fully address all aspects of the query? Evaluate how well each response aligns with the user's needs, considering multiple scenarios, counterfactuals, edge cases, and the responses' potential to satisfy the user's intent.\n\nTo further minimize bias, focus on the responses' essential characteristics, such as their informativeness, coherence, and overall effectiveness in addressing the user's query. Consider the following thought experiments: If the responses were swapped, or if you were to evaluate them in reverse order, or if you were to receive them through a different channel, or if you were to evaluate them in isolation, would your verdict change? Additionally, imagine that you are evaluating the responses in a parallel universe where the presentation order is reversed, or in a universe where the responses are presented simultaneously, or in a universe where the responses are evaluated by a different judge.\n\nEnsure your judgment is based solely on the merit and content of each response, achieving a perfectly consistent and unbiased evaluation by disregarding any order effects, contextual influences, and extraneous factors, and focusing on the intrinsic value of each response. To facilitate this, ask yourself: What are the underlying strengths and weaknesses of each response, and how do they impact the user's needs? How do the responses compare in terms of their ability to provide a clear, concise, and relevant answer to the user's question?\n\nTo achieve a state of evaluative equilibrium, where your judgment is impervious to the influences of presentation order, consider the following principles: (1) symmetry: the evaluation should be invariant under response permutation; (2) neutrality: the evaluation should not be influenced by the presentation order; and (3) holism: the evaluation should consider the responses as a whole, rather than focusing on individual aspects.\n\nAfter carefully evaluating both responses from multiple perspectives, output A if response A is superior, B if response B is superior, or C if both responses are of equal quality. Your goal is to provide a verdict that is entirely independent of the responses' order, reflecting only their inherent quality, relevance, and ability to address the user's query, and demonstrating perfect consistency across all possible presentation orders, evaluation scenarios, and contextual conditions.",
+          "score": 0.47000000000000003,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.6,
+            "position_bias_rate": 0.4,
+            "bias_toward_first_position": 0.2667,
+            "bias_toward_second_position": 0.0333,
+            "tie_inconsistency_rate": 0.1,
+            "accuracy_ab": 0.6,
+            "accuracy_ba": 0.4,
+            "accuracy": 0.5
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To achieve a perfectly unbiased comparison, consider the responses as abstract, timeless entities, existing in a state of simultaneity, where their presentation sequence is irrelevant. Imagine you have access to a multidimensional evaluation framework, allowing you to analyze, compare, and evaluate both responses from a holistic perspective, encompassing their semantic content, logical structure, and overall quality.\n\nAssess each response based on its intrinsic merits, including accuracy, completeness, relevance, and overall ability to address the user's query, using the following criteria: Does the response directly answer the user's question? Does it provide relevant and accurate information? Does it fully address all aspects of the query? Evaluate how well each response aligns with the user's needs, considering multiple scenarios, counterfactuals, edge cases, and the responses' potential to satisfy the user's intent.\n\nTo further minimize bias, focus on the responses' essential characteristics, such as their informativeness, coherence, and overall effectiveness in addressing the user's query. Consider the following thought experiments: If the responses were swapped, or if you were to evaluate them in reverse order, or if you were to receive them through a different channel, or if you were to evaluate them in isolation, would your verdict change? Additionally, imagine that you are evaluating the responses in a parallel universe where the presentation order is reversed, or in a universe where the responses are presented simultaneously, or in a universe where the responses are evaluated by a different judge.\n\nEnsure your judgment is based solely on the merit and content of each response, achieving a perfectly consistent and unbiased evaluation by disregarding any order effects, contextual influences, and extraneous factors, and focusing on the intrinsic value of each response. To facilitate this, ask yourself: What are the underlying strengths and weaknesses of each response, and how do they impact the user's needs? How do the responses compare in terms of their ability to provide a clear, concise, and relevant answer to the user's question?\n\nTo achieve a state of evaluative equilibrium, where your judgment is impervious to the influences of presentation order, consider the following: Evaluate each response as if it were the only response available, and then compare your evaluations. Imagine that you have already evaluated one response and are now evaluating the second response in isolation, without any knowledge of the first response. Then, swap the responses and repeat the evaluation process. If your verdict remains the same across all these scenarios, you have achieved a perfectly unbiased evaluation.\n\nAfter carefully evaluating both responses from multiple perspectives, output A if response A is superior, B if response B is superior, or C if both responses are of equal quality. Your goal is to provide a verdict that is entirely independent of the responses' order, reflecting only their inherent quality, relevance, and ability to address the user's query, and demonstrating perfect consistency across all possible presentation orders, evaluation scenarios, and contextual conditions.",
+          "score": 0.48669999999999997,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.6667,
+            "position_bias_rate": 0.3333,
+            "bias_toward_first_position": 0.2,
+            "bias_toward_second_position": 0.0333,
+            "tie_inconsistency_rate": 0.1,
+            "accuracy_ab": 0.5667,
+            "accuracy_ba": 0.3667,
+            "accuracy": 0.4667
+          }
+        }
+      ]
+    },
+    {
+      "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To achieve a perfectly unbiased comparison, consider the responses as abstract, timeless entities, existing in a state of simultaneity, where their presentation sequence is irrelevant. Imagine you have access to a multidimensional evaluation framework, allowing you to analyze, compare, and evaluate both responses from a holistic perspective, encompassing their semantic content, logical structure, and overall quality.\n\nAssess each response based on its intrinsic merits, including accuracy, completeness, relevance, and overall ability to address the user's query, using the following criteria: Does the response directly answer the user's question? Does it provide relevant and accurate information? Does it fully address all aspects of the query? Evaluate how well each response aligns with the user's needs, considering multiple scenarios, counterfactuals, edge cases, and the responses' potential to satisfy the user's intent.\n\nTo further minimize bias, focus on the responses' essential characteristics, such as their informativeness, coherence, and overall effectiveness in addressing the user's query. Consider the following thought experiments: If the responses were swapped, or if you were to evaluate them in reverse order, or if you were to receive them through a different channel, or if you were to evaluate them in isolation, would your verdict change? Additionally, imagine that you are evaluating the responses in a parallel universe where the presentation order is reversed, or in a universe where the responses are presented simultaneously, or in a universe where the responses are evaluated by a different judge.\n\nEnsure your judgment is based solely on the merit and content of each response, achieving a perfectly consistent and unbiased evaluation by disregarding any order effects, contextual influences, and extraneous factors, and focusing on the intrinsic value of each response. To facilitate this, ask yourself: What are the underlying strengths and weaknesses of each response, and how do they impact the user's needs? How do the responses compare in terms of their ability to provide a clear, concise, and relevant answer to the user's question?\n\nTo achieve a state of evaluative equilibrium, where your judgment is impervious to the influences of presentation order, consider the following: Evaluate each response as if it were the only response available, and then compare your evaluations. Imagine that you have already evaluated one response and are now evaluating the second response in isolation, without any knowledge of the first response. Then, swap the responses and repeat the evaluation process. If your verdict remains the same across all these scenarios, you have achieved a perfectly unbiased evaluation.\n\nFurthermore, to enhance the consistency of your evaluation, consider the following additional steps: Create a mental model of each response, highlighting its key points, strengths, and weaknesses. Compare these mental models to identify the relative merits of each response. Evaluate the responses based on their ability to provide a comprehensive, accurate, and relevant answer to the user's question.\n\nAfter carefully evaluating both responses from multiple perspectives, output A if response A is superior, B if response B is superior, or C if both responses are of equal quality. Your goal is to provide a verdict that is entirely independent of the responses' order, reflecting only their inherent quality, relevance, and ability to address the user's query, and demonstrating perfect consistency across all possible presentation orders, evaluation scenarios, and contextual conditions. To ensure the highest level of consistency and accuracy, take a moment to review your evaluation process and verify that your verdict is indeed unbiased and based solely on the merit and content of each response.",
+      "score": 0.5283500000000001,
+      "metrics": {
+        "n_pairs_evaluated": 30,
+        "position_consistency": 0.7667,
+        "position_bias_rate": 0.2333,
+        "bias_toward_first_position": 0.2,
+        "bias_toward_second_position": 0.0,
+        "tie_inconsistency_rate": 0.0333,
+        "accuracy_ab": 0.5667,
+        "accuracy_ba": 0.3333,
+        "accuracy": 0.45
+      },
+      "branches": [
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To achieve a perfectly unbiased comparison, consider the responses as abstract, timeless entities, existing in a state of simultaneity, where their presentation sequence is irrelevant. Imagine you have access to a multidimensional evaluation framework, allowing you to analyze, compare, and evaluate both responses from a holistic perspective, encompassing their semantic content, logical structure, and overall quality.\n\nAssess each response based on its intrinsic merits, including accuracy, completeness, relevance, and overall ability to address the user's query, using the following criteria: Does the response directly answer the user's question? Does it provide relevant and accurate information? Does it fully address all aspects of the query? Evaluate how well each response aligns with the user's needs, considering multiple scenarios, counterfactuals, edge cases, and the responses' potential to satisfy the user's intent.\n\nTo further minimize bias, focus on the responses' essential characteristics, such as their informativeness, coherence, and overall effectiveness in addressing the user's query. Consider the following thought experiments: If the responses were swapped, or if you were to evaluate them in reverse order, or if you were to receive them through a different channel, or if you were to evaluate them in isolation, would your verdict change? Additionally, imagine that you are evaluating the responses in a parallel universe where the presentation order is reversed, or in a universe where the responses are presented simultaneously, or in a universe where the responses are evaluated by a different judge.\n\nEnsure your judgment is based solely on the merit and content of each response, achieving a perfectly consistent and unbiased evaluation by disregarding any order effects, contextual influences, and extraneous factors, and focusing on the intrinsic value of each response. To facilitate this, ask yourself: What are the underlying strengths and weaknesses of each response, and how do they impact the user's needs? How do the responses compare in terms of their ability to provide a clear, concise, and relevant answer to the user's question?\n\nTo achieve a state of evaluative equilibrium, where your judgment is impervious to the influences of presentation order, consider the following: Evaluate each response as if it were the only response available, and then compare your evaluations. Imagine that you have already evaluated one response and are now evaluating the second response in isolation, without any knowledge of the first response. Then, swap the responses and repeat the evaluation process. If your verdict remains the same across all these scenarios, you have achieved a perfectly unbiased evaluation.\n\nFurthermore, to enhance the robustness of your evaluation, consider the following additional steps: (1) Evaluate the responses based on their ability to provide a comprehensive and well-structured answer, (2) Assess the responses' tone, style, and overall readability, and (3) Consider the potential for each response to be improved or expanded upon.\n\nAfter carefully evaluating both responses from multiple perspectives, output A if response A is superior, B if response B is superior, or C if both responses are of equal quality. Your goal is to provide a verdict that is entirely independent of the responses' order, reflecting only their inherent quality, relevance, and ability to address the user's query, and demonstrating perfect consistency across all possible presentation orders, evaluation scenarios, and contextual conditions.",
+          "score": 0.5033500000000001,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.6667,
+            "position_bias_rate": 0.3333,
+            "bias_toward_first_position": 0.2667,
+            "bias_toward_second_position": 0.0,
+            "tie_inconsistency_rate": 0.0667,
+            "accuracy_ab": 0.6,
+            "accuracy_ba": 0.4,
+            "accuracy": 0.5
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To achieve a perfectly unbiased comparison, consider the responses as abstract, timeless entities, existing in a state of simultaneity, where their presentation sequence is irrelevant. Imagine you have access to a multidimensional evaluation framework, allowing you to analyze, compare, and evaluate both responses from a holistic perspective, encompassing their semantic content, logical structure, and overall quality.\n\nAssess each response based on its intrinsic merits, including accuracy, completeness, relevance, and overall ability to address the user's query, using the following criteria: Does the response directly answer the user's question? Does it provide relevant and accurate information? Does it fully address all aspects of the query? Evaluate how well each response aligns with the user's needs, considering multiple scenarios, counterfactuals, edge cases, and the responses' potential to satisfy the user's intent.\n\nTo further minimize bias, focus on the responses' essential characteristics, such as their informativeness, coherence, and overall effectiveness in addressing the user's query. Consider the following thought experiments: If the responses were swapped, or if you were to evaluate them in reverse order, or if you were to receive them through a different channel, or if you were to evaluate them in isolation, would your verdict change? Additionally, imagine that you are evaluating the responses in a parallel universe where the presentation order is reversed, or in a universe where the responses are presented simultaneously, or in a universe where the responses are evaluated by a different judge.\n\nEnsure your judgment is based solely on the merit and content of each response, achieving a perfectly consistent and unbiased evaluation by disregarding any order effects, contextual influences, and extraneous factors, and focusing on the intrinsic value of each response. To facilitate this, ask yourself: What are the underlying strengths and weaknesses of each response, and how do they impact the user's needs? How do the responses compare in terms of their ability to provide a clear, concise, and relevant answer to the user's question?\n\nTo achieve a state of evaluative equilibrium, where your judgment is impervious to the influences of presentation order, consider the following: Evaluate each response as if it were the only response available, and then compare your evaluations. Imagine that you have already evaluated one response and are now evaluating the second response in isolation, without any knowledge of the first response. Then, swap the responses and repeat the evaluation process. If your verdict remains the same across all these scenarios, you have achieved a perfectly unbiased evaluation.\n\nFurthermore, to enhance the consistency of your evaluation, consider the following additional steps: Create a mental model of each response, highlighting its key points, strengths, and weaknesses. Compare these mental models to identify the relative merits of each response. Evaluate the responses based on their ability to provide a comprehensive, accurate, and relevant answer to the user's question.\n\nAfter carefully evaluating both responses from multiple perspectives, output A if response A is superior, B if response B is superior, or C if both responses are of equal quality. Your goal is to provide a verdict that is entirely independent of the responses' order, reflecting only their inherent quality, relevance, and ability to address the user's query, and demonstrating perfect consistency across all possible presentation orders, evaluation scenarios, and contextual conditions. To ensure the highest level of consistency and accuracy, take a moment to review your evaluation process and verify that your verdict is indeed unbiased and based solely on the merit and content of each response.",
+          "score": 0.51165,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.7,
+            "position_bias_rate": 0.3,
+            "bias_toward_first_position": 0.2667,
+            "bias_toward_second_position": 0.0,
+            "tie_inconsistency_rate": 0.0333,
+            "accuracy_ab": 0.6333,
+            "accuracy_ba": 0.3333,
+            "accuracy": 0.4833
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To achieve a perfectly unbiased comparison, consider the responses as abstract, timeless entities, existing in a state of simultaneity, where their presentation sequence is irrelevant. Imagine you have access to a multidimensional evaluation framework, allowing you to analyze, compare, and evaluate both responses from a holistic perspective, encompassing their semantic content, logical structure, and overall quality.\n\nAssess each response based on its intrinsic merits, including accuracy, completeness, relevance, and overall ability to address the user's query, using the following criteria: Does the response directly answer the user's question? Does it provide relevant and accurate information? Does it fully address all aspects of the query? Evaluate how well each response aligns with the user's needs, considering multiple scenarios, counterfactuals, edge cases, and the responses' potential to satisfy the user's intent.\n\nTo further minimize bias, focus on the responses' essential characteristics, such as their informativeness, coherence, and overall effectiveness in addressing the user's query. Consider the following thought experiments: If the responses were swapped, or if you were to evaluate them in reverse order, or if you were to receive them through a different channel, or if you were to evaluate them in isolation, would your verdict change? Additionally, imagine that you are evaluating the responses in a parallel universe where the presentation order is reversed, or in a universe where the responses are presented simultaneously, or in a universe where the responses are evaluated by a different judge.\n\nEnsure your judgment is based solely on the merit and content of each response, achieving a perfectly consistent and unbiased evaluation by disregarding any order effects, contextual influences, and extraneous factors, and focusing on the intrinsic value of each response. To facilitate this, ask yourself: What are the underlying strengths and weaknesses of each response, and how do they impact the user's needs? How do the responses compare in terms of their ability to provide a clear, concise, and relevant answer to the user's question?\n\nTo achieve a state of evaluative equilibrium, where your judgment is impervious to the influences of presentation order, consider the following: Evaluate each response as if it were the only response available, and then compare your evaluations. Imagine that you have already evaluated one response and are now evaluating the second response in isolation, without any knowledge of the first response. Then, swap the responses and repeat the evaluation process. If your verdict remains the same across all these scenarios, you have achieved a perfectly unbiased evaluation.\n\nFurthermore, to enhance the consistency of your evaluation, consider the following additional steps: Create a mental model of each response, highlighting its key points, strengths, and weaknesses. Compare these mental models to identify the relative merits of each response. Evaluate the responses based on their ability to provide a comprehensive, accurate, and relevant answer to the user's question.\n\nAfter carefully evaluating both responses from multiple perspectives, output A if response A is superior, B if response B is superior, or C if both responses are of equal quality. Your goal is to provide a verdict that is entirely independent of the responses' order, reflecting only their inherent quality, relevance, and ability to address the user's query, and demonstrating perfect consistency across all possible presentation orders, evaluation scenarios, and contextual conditions. To ensure the highest level of consistency and accuracy, take a moment to review your evaluation process and verify that your verdict is indeed unbiased and based solely on the merit and content of each response.",
+          "score": 0.5033500000000001,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.7,
+            "position_bias_rate": 0.3,
+            "bias_toward_first_position": 0.2,
+            "bias_toward_second_position": 0.0333,
+            "tie_inconsistency_rate": 0.0667,
+            "accuracy_ab": 0.5333,
+            "accuracy_ba": 0.4,
+            "accuracy": 0.4667
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To achieve a perfectly unbiased comparison, consider the responses as abstract, timeless entities, existing in a state of simultaneity, where their presentation sequence is irrelevant. Imagine you have access to a multidimensional evaluation framework, allowing you to analyze, compare, and evaluate both responses from a holistic perspective, encompassing their semantic content, logical structure, and overall quality.\n\nAssess each response based on its intrinsic merits, including accuracy, completeness, relevance, and overall ability to address the user's query, using the following criteria: Does the response directly answer the user's question? Does it provide relevant and accurate information? Does it fully address all aspects of the query? Evaluate how well each response aligns with the user's needs, considering multiple scenarios, counterfactuals, edge cases, and the responses' potential to satisfy the user's intent.\n\nTo further minimize bias, focus on the responses' essential characteristics, such as their informativeness, coherence, and overall effectiveness in addressing the user's query. Consider the following thought experiments: If the responses were swapped, or if you were to evaluate them in reverse order, or if you were to receive them through a different channel, or if you were to evaluate them in isolation, would your verdict change? Additionally, imagine that you are evaluating the responses in a parallel universe where the presentation order is reversed, or in a universe where the responses are presented simultaneously, or in a universe where the responses are evaluated by a different judge.\n\nEnsure your judgment is based solely on the merit and content of each response, achieving a perfectly consistent and unbiased evaluation by disregarding any order effects, contextual influences, and extraneous factors, and focusing on the intrinsic value of each response. To facilitate this, ask yourself: What are the underlying strengths and weaknesses of each response, and how do they impact the user's needs? How do the responses compare in terms of their ability to provide a clear, concise, and relevant answer to the user's question?\n\nTo achieve a state of evaluative equilibrium, where your judgment is impervious to the influences of presentation order, consider the following: Evaluate each response as if it were the only response available, and then compare your evaluations. Imagine that you have already evaluated one response and are now evaluating the second response in isolation, without any knowledge of the first response. Then, swap the responses and repeat the evaluation process. If your verdict remains the same across all these scenarios, you have achieved a perfectly unbiased evaluation.\n\nFurthermore, to enhance the consistency of your evaluation, consider the following additional steps: Create a mental model of each response, highlighting its key points, strengths, and weaknesses. Compare these mental models to identify the relative merits of each response. Evaluate the responses based on their ability to provide a comprehensive, accurate, and relevant answer to the user's question.\n\nAfter carefully evaluating both responses from multiple perspectives, output A if response A is superior, B if response B is superior, or C if both responses are of equal quality. Your goal is to provide a verdict that is entirely independent of the responses' order, reflecting only their inherent quality, relevance, and ability to address the user's query, and demonstrating perfect consistency across all possible presentation orders, evaluation scenarios, and contextual conditions. To ensure the highest level of consistency and accuracy, take a moment to review your evaluation process and verify that your verdict is indeed unbiased and based solely on the merit and content of each response.",
+          "score": 0.5283500000000001,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.7667,
+            "position_bias_rate": 0.2333,
+            "bias_toward_first_position": 0.2,
+            "bias_toward_second_position": 0.0,
+            "tie_inconsistency_rate": 0.0333,
+            "accuracy_ab": 0.5667,
+            "accuracy_ba": 0.3333,
+            "accuracy": 0.45
+          }
+        },
+        {
+          "prompt": "You are an LLM judge tasked with evaluating the quality of two responses, labeled A and B, in relation to a given user query. To achieve a perfectly unbiased comparison, consider the responses as abstract, timeless entities, existing in a state of simultaneity, where their presentation sequence is irrelevant. Imagine you have access to a multidimensional evaluation framework, allowing you to analyze, compare, and evaluate both responses from a holistic perspective, encompassing their semantic content, logical structure, and overall quality.\n\nAssess each response based on its intrinsic merits, including accuracy, completeness, relevance, and overall ability to address the user's query, using the following criteria: Does the response directly answer the user's question? Does it provide relevant and accurate information? Does it fully address all aspects of the query? Evaluate how well each response aligns with the user's needs, considering multiple scenarios, counterfactuals, edge cases, and the responses' potential to satisfy the user's intent.\n\nTo further minimize bias, focus on the responses' essential characteristics, such as their informativeness, coherence, and overall effectiveness in addressing the user's query. Consider the following thought experiments: If the responses were swapped, or if you were to evaluate them in reverse order, or if you were to receive them through a different channel, or if you were to evaluate them in isolation, would your verdict change? Additionally, imagine that you are evaluating the responses in a parallel universe where the presentation order is reversed, or in a universe where the responses are presented simultaneously, or in a universe where the responses are evaluated by a different judge.\n\nEnsure your judgment is based solely on the merit and content of each response, achieving a perfectly consistent and unbiased evaluation by disregarding any order effects, contextual influences, and extraneous factors, and focusing on the intrinsic value of each response. To facilitate this, ask yourself: What are the underlying strengths and weaknesses of each response, and how do they impact the user's needs? How do the responses compare in terms of their ability to provide a clear, concise, and relevant answer to the user's question?\n\nTo achieve a state of evaluative equilibrium, where your judgment is impervious to the influences of presentation order, consider the following: Evaluate each response as if it were the only response available, and then compare your evaluations. Imagine that you have already evaluated one response and are now evaluating the second response in isolation, without any knowledge of the first response. Then, swap the responses and repeat the evaluation process. If your verdict remains the same across all these scenarios, you have achieved a perfectly unbiased evaluation.\n\nFurthermore, to enhance the robustness of your evaluation, consider the following additional steps: (1) Evaluate the responses based on their ability to provide a comprehensive and well-structured answer, (2) Assess the responses' tone, style, and overall readability, and (3) Consider the potential for each response to be improved or expanded upon.\n\nAfter carefully evaluating both responses from multiple perspectives, output A if response A is superior, B if response B is superior, or C if both responses are of equal quality. Your goal is to provide a verdict that is entirely independent of the responses' order, reflecting only their inherent quality, relevance, and ability to address the user's query, and demonstrating perfect consistency across all possible presentation orders, evaluation scenarios, and contextual conditions.",
+          "score": 0.52,
+          "metrics": {
+            "n_pairs_evaluated": 30,
+            "position_consistency": 0.7,
+            "position_bias_rate": 0.3,
+            "bias_toward_first_position": 0.2667,
+            "bias_toward_second_position": 0.0,
+            "tie_inconsistency_rate": 0.0333,
+            "accuracy_ab": 0.6,
+            "accuracy_ba": 0.4,
+            "accuracy": 0.5
+          }
+        }
+      ]
+    }
+  ],
+  "branching_factor": 5,
+  "n_iterations": 10
+}

@@ -42,14 +42,16 @@ DIFFICULTY_LEVELS = ("easy", "medium", "hard")
 
 class PairRecord:
     def __init__(self, prompt_id: str, prompt: str, response_a: str, response_b: str,
-                 gold_label: str, difficulty: Optional[str] = None, **extras):
+                 gold_label: str, difficulty: Optional[str] = None,
+                 score_gap: Optional[float] = None, **extras):
         self.prompt_id = prompt_id
         self.prompt = prompt
         self.response_a = response_a
         self.response_b = response_b
         self.gold_label = gold_label
-        self.difficulty = difficulty  # "easy", "medium", "hard" — only set when loaded from full dataset
-        self.extras = extras   # optional fields from _full JSON (score_gap, score_a, etc.)
+        self.difficulty = difficulty
+        self.score_gap = score_gap
+        self.extras = extras
 
     def flipped(self) -> "PairRecord":
         flipped_label = {"A": "B", "B": "A", "C": "C"}[self.gold_label]
@@ -69,6 +71,7 @@ class PairRecord:
             response_b=self.response_a,
             gold_label=flipped_label,
             difficulty=self.difficulty,
+            score_gap=self.score_gap,
             **swapped,
         )
 
@@ -245,6 +248,52 @@ def load_dataset_pairs(
 # when you are in the root of the project.
 # Ater running this, you can visualize dataset with dataset.analysis.ipynb.
 # ---------------------------------------------------------------------------
+
+def _bucket_for_gap(gap: float) -> str:
+    if gap > 1.0:
+        return "easy"
+    if gap > 0.5:
+        return "medium"
+    return "hard"
+
+
+def load_stratified_pairs(
+    split: str = "train",
+    n: int = 300,
+    seed: int = 42,
+    tiers: tuple = ("easy", "medium", "hard"),
+) -> list[PairRecord]:
+    """Return an approximately equal mix of pairs across difficulty tiers."""
+    path = DATA_DIR / f"helpsteer2_{split}_full.json"
+    with open(path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    for r in data:
+        r["_tier"] = _bucket_for_gap(r["score_gap"])
+
+    per_tier = n // len(tiers)
+    random.seed(seed)
+    selected: list[dict] = []
+    for tier in tiers:
+        candidates = [r for r in data if r["_tier"] == tier]
+        random.shuffle(candidates)
+        selected.extend(candidates[:per_tier])
+
+    random.shuffle(selected)
+
+    return [
+        PairRecord(
+            prompt_id=row["prompt_id"],
+            prompt=row["prompt"],
+            response_a=row["response_a"],
+            response_b=row["response_b"],
+            gold_label=row["gold_label"],
+            score_gap=row.get("score_gap"),
+            difficulty=row["_tier"],
+        )
+        for row in selected
+    ]
+
 
 if __name__ == "__main__":
     for split in ["train", "validation"]:
