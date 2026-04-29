@@ -45,15 +45,15 @@ import os
 import time
 from dotenv import load_dotenv
 from pathlib import Path
-from src.inference_client import InferenceConfig, SwissAIClient
-from src.dataset import load_dataset_pairs, DIFFICULTY_LEVELS
-from src.experiments import (
+from src.core.inference_client import InferenceConfig, SwissAIClient
+from src.datasets.dataset import load_dataset_pairs, DIFFICULTY_LEVELS
+from src.eval.experiments import (
     run_position_bias,
     run_template_sensitivity,
     run_reasoning_depth,
     run_input_sensitivity,
 )
-from src.metrics import (
+from src.eval.metrics import (
     compute_position_bias,
     compute_pairwise_agreement,
     compute_thinking_accuracy,

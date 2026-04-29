@@ -25,9 +25,9 @@ import json
 import logging
 from pathlib import Path
 from typing import Optional
-from src.inference_client import SwissAIClient, InferenceConfig, JudgeResponse
-from src.templates import build_prompt, TEMPLATES, CRITERIA
-from src.dataset import PairRecord
+from src.core.inference_client import SwissAIClient, InferenceConfig, JudgeResponse
+from src.core.templates import build_prompt, TEMPLATES, CRITERIA
+from src.datasets.dataset import PairRecord
 logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 # Helper: function to save results to JSONL 

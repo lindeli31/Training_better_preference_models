@@ -26,7 +26,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 
-from src.metrics import compute_accuracy_breakdown
+from src.eval.metrics import compute_accuracy_breakdown
 
 
 def parse_args():
