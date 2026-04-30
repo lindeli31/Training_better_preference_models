@@ -366,7 +366,7 @@ def compute_repetition_stability(
 # thresholds live in one place (src/dataset.py).
 # ---------------------------------------------------------------------------
 
-BUCKET_ORDER = ("easy", "medium", "hard", "impossible")
+BUCKET_ORDER = ("easy", "medium", "hard", "tie")
 
 
 def compute_accuracy_breakdown(results: list[dict], exclude_ties: bool = False) -> dict:

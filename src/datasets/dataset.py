@@ -37,19 +37,21 @@ DATA_DIR = Path("data")
 # - gold_label: "A", "B", or "C" (if A is better, B is better, or tie)
 # ---------------------------------------------------------------------------
 
-DIFFICULTY_LEVELS = ("easy", "medium", "hard", "impossible")
+DIFFICULTY_LEVELS = ("tie", "hard", "medium", "easy")
 
 
 class PairRecord:
     def __init__(self, prompt_id: str, prompt: str, response_a: str, response_b: str,
-                 gold_label: str, difficulty: Optional[str] = None, **extras):
+                 gold_label: str, difficulty: Optional[str] = None,
+                 score_gap: Optional[float] = None, **extras):
         self.prompt_id = prompt_id
         self.prompt = prompt
         self.response_a = response_a
         self.response_b = response_b
         self.gold_label = gold_label
-        self.difficulty = difficulty  # "easy", "medium", "hard" — only set when loaded from full dataset
-        self.extras = extras   # optional fields from _full JSON (score_gap, score_a, etc.)
+        self.difficulty = difficulty  # "tie", "hard", "medium", "easy" — only set when loaded from full dataset
+        self.score_gap = score_gap   # |score_a - score_b|, only set when loaded from full dataset
+        self.extras = extras   # other optional fields from _full JSON (score_a, score_b, len_a, ...)
 
     def flipped(self) -> "PairRecord":
         flipped_label = {"A": "B", "B": "A", "C": "C"}[self.gold_label]
@@ -69,6 +71,7 @@ class PairRecord:
             response_b=self.response_a,
             gold_label=flipped_label,
             difficulty=self.difficulty,
+            score_gap=self.score_gap,
             **swapped,
         )
 
@@ -181,14 +184,19 @@ def download_dataset(split: str = "validation", full: bool = False, seed: int = 
                 record["len_a"] = len(best["response"])
                 record["len_b"] = len(worst["response"])
                 gap = abs(s_a - s_b)
-                if gap > 1.3:  #five points of difference 
-                    record["difficulty"] = "easy"
-                elif gap >0.6:  
-                    record["difficulty"] = "medium"
-                elif gap >0.3:
+                # 4-bucket aggregation derived from granular accuracy analysis:
+                #   tie:    gap = 0           → judge can't output C (~1% accuracy)
+                #   hard:   0 < gap < 1       → low accuracy (~58%, includes gap=1/3 and 2/3)
+                #   medium: 1 ≤ gap < 5/3     → mid accuracy (~68%, includes gap=1 and 4/3)
+                #   easy:   gap ≥ 5/3         → high accuracy (~78%, includes gap=5/3 and ≥2)
+                if gap < 0.05:                   # gap ≈ 0 (tie)
+                    record["difficulty"] = "tie"
+                elif gap < 1.0 - 0.05:           # gap ∈ {1/3, 2/3}
                     record["difficulty"] = "hard"
-                else: 
-                    record["difficulty"] = "impossible"
+                elif gap < 5/3 - 0.05:           # gap ∈ {1, 4/3}
+                    record["difficulty"] = "medium"
+                else:                            # gap ∈ {5/3, ≥2}
+                    record["difficulty"] = "easy"
 
             records.append(record)
 

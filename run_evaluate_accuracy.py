@@ -98,9 +98,11 @@ def _rerandomize_gold(pairs: list[PairRecord], seed: int) -> list[PairRecord]:
     Using PairRecord.flipped() keeps gold_label, response_a/b and extras
     mutually consistent. This re-randomises which physical response sits
     in position A without changing which one is 'better'.
+
+    NOTE: Does NOT flip C (tied) pairs, as those should remain tied.
     """
     rng = random.Random(seed)
-    return [p.flipped() if rng.random() < 0.5 else p for p in pairs]
+    return [p.flipped() if (rng.random() < 0.5 and p.gold_label != "C") else p for p in pairs]
 
 
 async def main(args):
