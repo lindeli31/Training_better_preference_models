@@ -11,12 +11,14 @@ Generate figures from a run_evaluate_accuracy JSONL file:
 
 Usage
 -----
-    python -m src.plot_accuracy results/evaluate_accuracy/<file>.jsonl
-    python -m src.plot_accuracy results/evaluate_accuracy/<file>.jsonl --out some/other/dir
+    python -m src.analysis.plot_accuracy results/evaluate_accuracy/<file>.jsonl
+    python -m src.analysis.plot_accuracy results/evaluate_accuracy/<file>.jsonl --out some/other/dir
 
-By default, figures are saved next to the run at
-  <jsonl_parent>/figures/<jsonl_stem>/
-so each run has its own figures folder.
+By default, figures are saved at
+  src/figures/accuracy/accuracy_<bucket>/
+where <bucket> is read from the .meta.json sidecar (or falls back to the
+JSONL stem if no meta is present). This keeps figures in a git-tracked
+location separated from the (un-tracked) results directory.
 """
 
 import argparse
@@ -33,7 +35,7 @@ def parse_args():
     p = argparse.ArgumentParser()
     p.add_argument("jsonl", type=Path, help="Enriched JSONL from run_evaluate_accuracy")
     p.add_argument("--out", type=Path, default=None,
-                   help="Directory to save PNGs (default: <jsonl_parent>/figures/<jsonl_stem>/)")
+                   help="Directory to save PNGs (default: src/figures/accuracy/accuracy_<bucket>/)")
     return p.parse_args()
 
 
@@ -183,11 +185,16 @@ def plot_label_distribution(metrics: dict, out: Path, meta: dict) -> None:
 
 def main():
     args = parse_args()
-    out = args.out or (args.jsonl.parent / "figures" / args.jsonl.stem)
-    out.mkdir(parents=True, exist_ok=True)
     records = load_jsonl(args.jsonl)
     meta = load_meta(args.jsonl)
     metrics = compute_accuracy_breakdown(records)
+
+    if args.out is None:
+        bucket = meta.get("difficulty") or args.jsonl.stem
+        out = Path("src/figures/accuracy") / f"accuracy_{bucket}"
+    else:
+        out = args.out
+    out.mkdir(parents=True, exist_ok=True)
 
     n_figs = 0
     # The per-bucket bar chart is meaningless for single-bucket runs.
