@@ -29,7 +29,7 @@ from src.core.inference_client import InferenceConfig, SwissAIClient
 from src.runall_prompt_optimization.gepa_position_bias import run_gepa
 from src.runall_prompt_optimization.opro_position_bias import run_opro, evaluate_full_metrics
 from src.runall_prompt_optimization.opro_tree_position_bias import run_opro_tree
-from src.runall_prompt_optimization.scoring import SEED_PROMPTS
+from src.runall_prompt_optimization.scoring import SEED_PROMPTS, compute_score
 
 logging.basicConfig(
     level=logging.INFO,
@@ -396,22 +396,27 @@ async def run_all_methods_for_model(
     tag = _safe_model_tag(model)
     results: dict = {}
 
-    # Compute a single shared baseline for this model so all methods report
-    # the same baseline numbers (same prompt format, same API calls, same data).
-    logger.info("[%s] Computing shared baseline (SEED_PROMPTS[0])", model)
+    # Compute shared baseline: evaluate both seed prompts on full train+val,
+    # then pick the one with the higher val score as the common baseline.
+    logger.info("[%s] Computing shared baseline (evaluating both seed prompts)", model)
     bl_cfg = InferenceConfig(
         base_url=api_base, api_key=api_key, model=model,
         concurrent_requests=concurrency,
     )
     async with SwissAIClient(bl_cfg) as bl_client:
-        shared_baseline_train = await evaluate_full_metrics(
-            bl_client, train_pairs, SEED_PROMPTS[0],
-            experiment_id="shared_baseline_train",
-        )
-        shared_baseline_val = await evaluate_full_metrics(
-            bl_client, val_pairs, SEED_PROMPTS[0],
-            experiment_id="shared_baseline_val",
-        )
+        bt0 = await evaluate_full_metrics(bl_client, train_pairs, SEED_PROMPTS[0], experiment_id="shared_baseline_train_s0")
+        bv0 = await evaluate_full_metrics(bl_client, val_pairs,   SEED_PROMPTS[0], experiment_id="shared_baseline_val_s0")
+        bt1 = await evaluate_full_metrics(bl_client, train_pairs, SEED_PROMPTS[1], experiment_id="shared_baseline_train_s1")
+        bv1 = await evaluate_full_metrics(bl_client, val_pairs,   SEED_PROMPTS[1], experiment_id="shared_baseline_val_s1")
+
+    score0 = compute_score(SEED_PROMPTS[0], bv0)
+    score1 = compute_score(SEED_PROMPTS[1], bv1)
+    if score1 > score0:
+        shared_baseline_train, shared_baseline_val = bt1, bv1
+        logger.info("[%s] Baseline = seed 1 (val score=%.3f > seed 0 score=%.3f)", model, score1, score0)
+    else:
+        shared_baseline_train, shared_baseline_val = bt0, bv0
+        logger.info("[%s] Baseline = seed 0 (val score=%.3f >= seed 1 score=%.3f)", model, score0, score1)
     logger.info(
         "[%s] Shared baseline — train cons=%.3f acc=%.3f | val cons=%.3f acc=%.3f",
         model,
