@@ -33,7 +33,7 @@ import numpy as np
 
 # ── sweep dimensions ──────────────────────────────────────────────────────────
 MODELS_ORDER    = ["apertus", "llama33", "glm47"]
-TEMPLATES_ORDER = ["expert_rater", "llm_judge", "opro"]
+TEMPLATES_ORDER = ["expert_rater", "llm_judge", "opro", "gepa", "opro_tree"]
 DIFFICULTIES    = ["easy", "medium", "hard"]
 ACC_TYPES       = ["ab", "ba", "c"]
 
@@ -46,12 +46,16 @@ TEMPLATE_LABELS = {
     "expert_rater": "Expert Rater",
     "llm_judge":    "LLM Judge",
     "opro":         "OPRO",
+    "gepa":         "GEPA",
+    "opro_tree":    "OPRO Tree",
 }
 # Hatch patterns encode template across all plot types
 TEMPLATE_HATCHES = {
     "expert_rater": "",
     "llm_judge":    "///",
     "opro":         "xxx",
+    "gepa":         "...",
+    "opro_tree":    "\\\\",
 }
 # Hatch patterns encode model in per-template plots
 MODEL_HATCHES = {
@@ -96,6 +100,17 @@ def load_metrics(root: Path) -> dict:
         model, template, difficulty = p[-4], p[-3], p[-2]
         with open(path) as f:
             out.setdefault(model, {}).setdefault(template, {})[difficulty] = json.load(f)
+    return out
+
+
+def _build_resolved_map(metrics: dict) -> dict:
+    """Return {(model, template): resolved_template} from _meta in each record."""
+    out = {}
+    for model, tmpl_dict in metrics.items():
+        for tmpl, diff_dict in tmpl_dict.items():
+            for rec in diff_dict.values():
+                meta = rec.get("_meta", {})
+                out[(model, tmpl)] = meta.get("resolved_template", tmpl)
     return out
 
 
@@ -186,12 +201,20 @@ def _style_row(ax, acc_type: str, tick_pos: list, tick_labels: list) -> None:
               handlelength=1.2, borderpad=0.5)
 
 
-def _template_legend_handles() -> list:
-    return [
-        mpatches.Patch(fc="white", hatch=TEMPLATE_HATCHES[t], ec="black",
-                       label=TEMPLATE_LABELS[t])
-        for t in TEMPLATES_ORDER
-    ]
+def _template_legend_handles(resolved_map: dict | None = None,
+                              model: str | None = None) -> list:
+    """Legend patches for templates.  When model + resolved_map are given,
+    appends '→<resolved>' to the label for templates that differ per model."""
+    handles = []
+    for t in TEMPLATES_ORDER:
+        label = TEMPLATE_LABELS.get(t, t)
+        if resolved_map is not None and model is not None:
+            resolved = resolved_map.get((model, t), t)
+            if resolved != t:
+                label += f" →{resolved}"
+        handles.append(mpatches.Patch(fc="white", hatch=TEMPLATE_HATCHES[t],
+                                      ec="black", label=label))
+    return handles
 
 
 def _model_legend_handles() -> list:
@@ -242,7 +265,8 @@ def plot_per_difficulty(metrics: dict, out: Path) -> None:
 
 
 # ── per-model ─────────────────────────────────────────────────────────────────
-def plot_per_model(metrics: dict, out: Path) -> None:
+def plot_per_model(metrics: dict, out: Path,
+                   resolved_map: dict | None = None) -> None:
     """
     One figure per model.
     Rows = accuracy type.
@@ -266,7 +290,8 @@ def plot_per_model(metrics: dict, out: Path) -> None:
                                  hatch=TEMPLATE_HATCHES[template])
             _style_row(ax, acc_type, centers, group_labels)
 
-        fig.legend(handles=_template_legend_handles(), loc="lower center", ncol=3,
+        fig.legend(handles=_template_legend_handles(resolved_map, model),
+                   loc="lower center", ncol=len(TEMPLATES_ORDER),
                    fontsize=8, bbox_to_anchor=(0.5, -0.01), frameon=True,
                    title="Template (hatch)")
         fig.tight_layout()
@@ -274,7 +299,8 @@ def plot_per_model(metrics: dict, out: Path) -> None:
 
 
 # ── per-template ──────────────────────────────────────────────────────────────
-def plot_per_template(metrics: dict, out: Path) -> None:
+def plot_per_template(metrics: dict, out: Path,
+                      resolved_map: dict | None = None) -> None:
     """
     One figure per template.
     Rows = accuracy type.
@@ -284,8 +310,24 @@ def plot_per_template(metrics: dict, out: Path) -> None:
     group_labels = [d.capitalize() for d in DIFFICULTIES]
 
     for template in TEMPLATES_ORDER:
+        # Build a subtitle note when models use different resolved prompts
+        if resolved_map is not None:
+            resolutions = {m: resolved_map.get((m, template), template)
+                           for m in MODELS_ORDER}
+            unique = set(resolutions.values())
+            if len(unique) > 1:
+                parts = [f"{MODEL_LABELS[m]}→{resolutions[m]}"
+                         for m in MODELS_ORDER if resolutions[m] != template]
+                resolve_note = f"\n({', '.join(parts)})"
+            elif len(unique) == 1 and list(unique)[0] != template:
+                resolve_note = f"\n(→{list(unique)[0]})"
+            else:
+                resolve_note = ""
+        else:
+            resolve_note = ""
+
         fig, axes = plt.subplots(3, 1, figsize=(9, 9), sharex=True)
-        fig.suptitle(f"B1 Accuracy — {TEMPLATE_LABELS[template]}",
+        fig.suptitle(f"B1 Accuracy — {TEMPLATE_LABELS.get(template, template)}{resolve_note}",
                      fontsize=13, fontweight="bold")
 
         for row, acc_type in enumerate(ACC_TYPES):
@@ -393,9 +435,11 @@ def main():
     )
     print(f"Loaded {total} experiment results.")
 
+    resolved_map = _build_resolved_map(metrics)
+
     plot_per_difficulty(metrics, out)
-    plot_per_model(metrics, out)
-    plot_per_template(metrics, out)
+    plot_per_model(metrics, out, resolved_map=resolved_map)
+    plot_per_template(metrics, out, resolved_map=resolved_map)
     plot_combined(metrics, out)
     print(f"\nAll accuracy figures saved to {out}/")
 

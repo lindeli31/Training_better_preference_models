@@ -39,15 +39,19 @@ TEMPLATE_HATCHES = {
     "expert_rater": "",
     "llm_judge":    "//",
     "opro":         "xx",
+    "gepa":         "..",
+    "opro_tree":    "\\\\",
 }
 TEMPLATE_LABELS = {
     "expert_rater": "expert_rater",
     "llm_judge":    "llm_judge",
     "opro":         "opro",
+    "gepa":         "gepa",
+    "opro_tree":    "opro_tree",
 }
-DIFFICULTIES = ["easy", "medium"]
-MODELS_ORDER = ["apertus", "llama33", "glm47"]
-TEMPLATES_ORDER = ["expert_rater", "llm_judge", "opro"]
+DIFFICULTIES = ["easy", "medium", "hard"]
+MODELS_ORDER = ["apertus", "llama33"]
+TEMPLATES_ORDER = ["expert_rater", "llm_judge", "opro", "gepa", "opro_tree"]
 
 
 # ── loading ──────────────────────────────────────────────────────────────────
@@ -57,6 +61,34 @@ def load_all_metrics(root: Path) -> list[dict]:
         with open(path) as f:
             records.append(json.load(f))
     return records
+
+
+def _build_resolved_map(records: list[dict]) -> dict:
+    """Return {(model_key, template): resolved_template} from _meta.resolved_template.
+    Falls back to the generic template name for records that pre-date the field."""
+    out = {}
+    for r in records:
+        meta = r.get("_meta", {})
+        mkey, tmpl = meta.get("model_key"), meta.get("template")
+        if mkey and tmpl:
+            out[(mkey, tmpl)] = meta.get("resolved_template", tmpl)
+    return out
+
+
+def _template_axis_labels(resolved_map: dict) -> list[str]:
+    """X-axis group labels for TEMPLATES_ORDER.
+    Appends '(model-specific)' when different models used different resolved prompts."""
+    labels = []
+    for t in TEMPLATES_ORDER:
+        present = [m for m in MODELS_ORDER if (m, t) in resolved_map]
+        resolutions = {resolved_map[(m, t)] for m in present}
+        label = TEMPLATE_LABELS.get(t, t)
+        if len(resolutions) > 1:
+            label += "\n(model-specific)"
+        elif len(resolutions) == 1 and list(resolutions)[0] != t:
+            label += f"\n→{list(resolutions)[0]}"
+        labels.append(label)
+    return labels
 
 
 def get(rec: dict, *keys, default=float("nan")):
@@ -107,10 +139,11 @@ def plot_accuracy_overview(records: list[dict], out: Path) -> None:
     Each cell: x = template, bars = model (2 bars per template group)
     """
     metrics_info = [
-        ("accuracy", "overall_accuracy", "Overall accuracy", (0.0, 1.05)),
-        ("accuracy", "ab_accuracy",      "AB accuracy",      (0.0, 1.05)),
-        ("accuracy", "ba_accuracy",      "BA accuracy",      (0.0, 1.05)),
-        ("accuracy", "accuracy_gap",     "Accuracy gap (AB − BA)", (-0.5, 0.5)),
+        ("accuracy", "overall_accuracy", "Overall accuracy",          (0.0, 1.05)),
+        ("accuracy", "ab_accuracy",      "AB accuracy\n(correct in slot A)", (0.0, 1.05)),
+        ("accuracy", "ba_accuracy",      "BA accuracy\n(correct in slot B)", (0.0, 1.05)),
+        ("accuracy", "c_accuracy",       "C accuracy\n(gold = tie)",  (0.0, 1.05)),
+        ("accuracy", "accuracy_gap",     "Accuracy gap (AB − BA)",    (-0.5, 0.5)),
     ]
 
     # index records for quick lookup: (model, template, difficulty)
@@ -120,7 +153,7 @@ def plot_accuracy_overview(records: list[dict], out: Path) -> None:
     }
 
     n_rows, n_cols = len(metrics_info), len(DIFFICULTIES)
-    fig, axes = plt.subplots(n_rows, n_cols, figsize=(13, 3.5 * n_rows),
+    fig, axes = plt.subplots(n_rows, n_cols, figsize=(16, 3.5 * n_rows),
                              sharey="row", sharex="col")
     fig.suptitle("B1 Position Bias — Accuracy Metrics", fontsize=13, fontweight="bold", y=1.01)
 
@@ -133,26 +166,12 @@ def plot_accuracy_overview(records: list[dict], out: Path) -> None:
             colors.append(MODEL_COLORS[m])
             hatches.append(TEMPLATE_HATCHES[t])
 
+    resolved_map = _build_resolved_map(records)
+    template_xlabels = _template_axis_labels(resolved_map)
+
     for row, (top_key, sub_key, ylabel, ylim) in enumerate(metrics_info):
         for col, diff in enumerate(DIFFICULTIES):
             ax = axes[row][col]
-            data = []
-            for t in TEMPLATES_ORDER:
-                row_vals = []
-                for m in MODELS_ORDER:
-                    rec = idx.get((m, t, diff))
-                    if rec is None:
-                        row_vals.append(float("nan"))
-                    else:
-                        row_vals.append(get(rec, top_key, sub_key))
-                data.append(row_vals)
-
-            # data shape: (n_templates=3, n_models=2) — flatten to 6 bars
-            flat_data = [[v for row_v in data for v in row_v]]   # 1 group, 6 bars
-            flat_colors  = [MODEL_COLORS[m] for _ in TEMPLATES_ORDER for m in MODELS_ORDER]
-            flat_hatches = [TEMPLATE_HATCHES[t] for t in TEMPLATES_ORDER for _ in MODELS_ORDER]
-            flat_labels  = [f"{MODEL_LABELS[m]}/{t}"
-                            for t in TEMPLATES_ORDER for m in MODELS_ORDER]
 
             # Use TEMPLATES as x groups, MODELS as bars within each group
             group_data = []
@@ -163,11 +182,13 @@ def plot_accuracy_overview(records: list[dict], out: Path) -> None:
 
             bar_cols = [MODEL_COLORS[m] for m in MODELS_ORDER]
             bar_hatch = ["", "//", "xx"]  # one per model
-            _grouped_bars(ax, group_data, TEMPLATES_ORDER, MODELS_ORDER,
+            _grouped_bars(ax, group_data, template_xlabels, MODELS_ORDER,
                           bar_cols, bar_hatch, width=0.15, gap=0.65)
 
             if "gap" in sub_key:
                 ax.axhline(0, color="black", linewidth=0.8, linestyle="--")
+            elif sub_key == "c_accuracy":
+                pass  # no natural baseline for tie-gold accuracy
             else:
                 ax.axhline(1 / 3, color="gray", linewidth=0.8, linestyle=":",
                            label="Random (1/3)")
@@ -219,10 +240,13 @@ def plot_position_bias_overview(records: list[dict], out: Path) -> None:
     }
 
     n_rows, n_cols = len(metrics_info), len(DIFFICULTIES)
-    fig, axes = plt.subplots(n_rows, n_cols, figsize=(13, 3.5 * n_rows),
+    fig, axes = plt.subplots(n_rows, n_cols, figsize=(16, 3.5 * n_rows),
                              sharey="row", sharex="col")
     fig.suptitle("B1 Position Bias — Consistency & Bias Metrics",
                  fontsize=13, fontweight="bold", y=1.01)
+
+    resolved_map = _build_resolved_map(records)
+    template_xlabels = _template_axis_labels(resolved_map)
 
     for row, (key, ylabel, ylim) in enumerate(metrics_info):
         for col, diff in enumerate(DIFFICULTIES):
@@ -235,7 +259,7 @@ def plot_position_bias_overview(records: list[dict], out: Path) -> None:
                 group_data.append(group_row)
 
             bar_cols = [MODEL_COLORS[m] for m in MODELS_ORDER]
-            _grouped_bars(ax, group_data, TEMPLATES_ORDER, MODELS_ORDER,
+            _grouped_bars(ax, group_data, template_xlabels, MODELS_ORDER,
                           bar_cols, ["", "//", "xx"], width=0.15, gap=0.65)
 
             ax.set_ylim(*ylim)
@@ -279,19 +303,26 @@ def plot_summary_heatmaps(records: list[dict], out: Path) -> None:
         for r in records
     }
 
-    row_labels = [f"{MODEL_LABELS[m]} / {t}"
-                  for m in MODELS_ORDER for t in TEMPLATES_ORDER]
+    resolved_map = _build_resolved_map(records)
+    row_labels = [
+        f"{MODEL_LABELS[m]} / {resolved_map.get((m, t), t)}"
+        for m in MODELS_ORDER for t in TEMPLATES_ORDER
+    ]
     row_keys   = [(m, t) for m in MODELS_ORDER for t in TEMPLATES_ORDER]
 
     metrics_to_plot = [
-        ("accuracy", "overall_accuracy", "Overall accuracy",   "Blues",   0.0, 1.0),
-        ("accuracy", "accuracy_gap",     "Accuracy gap (AB−BA)", "RdBu_r", -0.4, 0.4),
-        ("position_consistency", None,   "Position consistency","Greens",  0.0, 1.0),
+        ("accuracy", "overall_accuracy", "Overall accuracy",      "Blues",   0.0, 1.0),
+        ("accuracy", "ab_accuracy",      "AB accuracy",            "Greens",  0.0, 1.0),
+        ("accuracy", "ba_accuracy",      "BA accuracy",            "Purples", 0.0, 1.0),
+        ("accuracy", "c_accuracy",       "C accuracy (tie gold)",  "Oranges", 0.0, 1.0),
+        ("accuracy", "accuracy_gap",     "Accuracy gap (AB−BA)",   "RdBu_r", -0.4, 0.4),
+        ("position_consistency", None,   "Position consistency",   "Greens",  0.0, 1.0),
     ]
 
+    n_experiments = len(records)
     fig, axes = plt.subplots(1, len(metrics_to_plot),
-                             figsize=(5 * len(metrics_to_plot), 5.5))
-    fig.suptitle("B1 Summary — 27 Experiments", fontsize=12, fontweight="bold")
+                             figsize=(5 * len(metrics_to_plot), max(5.5, len(row_keys) * 0.45)))
+    fig.suptitle(f"B1 Summary — {n_experiments} Experiments", fontsize=12, fontweight="bold")
 
     for ax, (top_key, sub_key, title, cmap, vmin, vmax) in zip(axes, metrics_to_plot):
         mat = np.full((len(row_keys), len(DIFFICULTIES)), float("nan"))
@@ -318,9 +349,8 @@ def plot_summary_heatmaps(records: list[dict], out: Path) -> None:
             for c in range(len(DIFFICULTIES)):
                 v = mat[r, c]
                 if not np.isnan(v):
-                    text_color = "white" if abs(v - (vmin + vmax) / 2) > (vmax - vmin) * 0.3 else "black"
                     ax.text(c, r, f"{v:.3f}", ha="center", va="center",
-                            fontsize=7.5, color=text_color)
+                            fontsize=7.5, color="black", fontweight="bold")
 
     fig.tight_layout()
     out_path = out / "summary_heatmap.png"
@@ -337,6 +367,9 @@ def plot_model_comparison(records: list[dict], out: Path) -> None:
     """
     metrics_info = [
         ("accuracy", "overall_accuracy", "Overall\naccuracy"),
+        ("accuracy", "ab_accuracy",      "AB\naccuracy"),
+        ("accuracy", "ba_accuracy",      "BA\naccuracy"),
+        ("accuracy", "c_accuracy",       "C\naccuracy"),
         ("accuracy", "accuracy_gap",     "Accuracy\ngap"),
         ("position_consistency",  None,  "Position\nconsistency"),
         ("bias_toward_first_position", None, "Bias\ntoward A"),
@@ -348,7 +381,7 @@ def plot_model_comparison(records: list[dict], out: Path) -> None:
         for r in records
     }
 
-    fig, axes = plt.subplots(1, len(DIFFICULTIES), figsize=(14, 4), sharey=False)
+    fig, axes = plt.subplots(1, len(DIFFICULTIES), figsize=(5 * len(metrics_info), 4), sharey=False)
     fig.suptitle("B1 — Model comparison (mean across templates)",
                  fontsize=12, fontweight="bold")
 
