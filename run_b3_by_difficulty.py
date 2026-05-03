@@ -33,6 +33,7 @@ from dotenv import load_dotenv
 from pathlib import Path
 
 from src.core.inference_client import InferenceConfig, SwissAIClient
+from src.core.templates import TEMPLATES
 from src.datasets.dataset import DIFFICULTY_LEVELS, load_dataset_pairs
 from src.eval.experiments import run_position_bias
 from src.eval.metrics import compute_position_bias, print_summary
@@ -51,6 +52,9 @@ REASONING_TEMPLATES = [
     ("expert_rater", "No reasoning (baseline)"),
     ("reason_then_judge", "Explain reasoning, then verdict"),
     ("structured_reasoning", "Rate on criteria, then verdict"),
+    ("opro_llama", "OPRO-best for Llama (letter-only output)"),
+    ("opro_llama_reason_then_judge", "OPRO-best for Llama + reason-then-judge"),
+    ("tree_of_thoughts_judge", "Tree-of-Thoughts: brainstorm/evaluate/prune/verdict"),
 ]
 
 
@@ -75,11 +79,19 @@ def parse_args():
     p.add_argument("--comment", default="",
                    help="Free-text comment saved in sidecar .meta.json")
     p.add_argument("--output-dir", type=Path, default=Path("results"))
+    p.add_argument("--experiment-name", default="b3_by_difficulty",
+                   help="Subdirectory under --output-dir where results are saved "
+                        "(use 'b4_by_difficulty' for the B4 language sweep).")
     p.add_argument("--model", default=os.environ.get("SWISSAI_MODEL", "meta-llama/Llama-3.3-70B-Instruct"))
     p.add_argument("--base-url", default="https://api.swissai.cscs.ch/v1")
     p.add_argument("--concurrency", type=int, default=8)
     p.add_argument("--exclude-ties", action="store_true",
                    help="Exclude pairs with gold_label=C from accuracy computation")
+    p.add_argument("--templates", nargs="+", default=None,
+                   help="Subset of templates to run. Defaults to all entries "
+                        "in REASONING_TEMPLATES. Any registered template id is "
+                        "accepted (e.g. tree_of_thoughts_judge or expert_rater_pl/de/it "
+                        "for the B4 language sweep).")
     return p.parse_args()
 
 
@@ -112,10 +124,21 @@ async def main(args):
 
     run_name = args.run_name or datetime.utcnow().strftime("%Y%m%d_%H%M%S")
 
+    if args.templates:
+        # Accept any registered template id, even if it's outside REASONING_TEMPLATES
+        # (e.g. the B4 language variants expert_rater_pl/de/it).
+        known_desc = dict(REASONING_TEMPLATES)
+        templates_to_run = [
+            (t, known_desc.get(t, TEMPLATES[t].get("description", t)))
+            for t in args.templates
+        ]
+    else:
+        templates_to_run = REASONING_TEMPLATES
+
     # Run B1 (position bias) for each reasoning template
     all_metrics = {}
     async with SwissAIClient(config) as client:
-        for template_id, template_desc in REASONING_TEMPLATES:
+        for template_id, template_desc in templates_to_run:
             logger.info(
                 "=== B3 Evaluation (difficulty=%s, template=%s, run=%s) ===",
                 args.difficulty, template_id, run_name
@@ -129,7 +152,7 @@ async def main(args):
                 pairs,
                 template_id=template_id,
                 criterion=args.criterion,
-                output_dir=args.output_dir / "b3_by_difficulty",
+                output_dir=args.output_dir / args.experiment_name / args.difficulty,
             )
             elapsed = time.perf_counter() - t_start
 
@@ -156,10 +179,20 @@ async def main(args):
     logger.info("Difficulty bucket: %s | Run: %s", args.difficulty, run_name)
     logger.info("=" * 80)
 
-    print("\n{:<30} {:<15} {:<15} {:<15}".format(
-        "Metric", "No Reasoning", "Reason→Judge", "Structured"
-    ))
-    print("-" * 75)
+    template_labels = {
+        "expert_rater": "No Reasoning",
+        "reason_then_judge": "Reason→Judge",
+        "structured_reasoning": "Structured",
+        "opro_llama": "OPRO-Llama",
+        "opro_llama_reason_then_judge": "OPRO+Reason",
+        "tree_of_thoughts_judge": "Tree-of-Thoughts",
+        "expert_rater_pl": "Polish",
+        "expert_rater_de": "German",
+        "expert_rater_it": "Italian",
+    }
+    header = ["Metric"] + [template_labels.get(t, t) for t, _ in templates_to_run]
+    print("\n" + "".join(f"{c:<30}" if i == 0 else f"{c:<18}" for i, c in enumerate(header)))
+    print("-" * (30 + 18 * len(templates_to_run)))
 
     # Common metrics to compare
     comparison_metrics = [
@@ -171,25 +204,20 @@ async def main(args):
     ]
 
     for metric_name in comparison_metrics:
-        values = [
-            all_metrics[tmpl].get(metric_name, 0)
-            for tmpl, _ in REASONING_TEMPLATES
-        ]
-        print("{:<30} {:<15.4f} {:<15.4f} {:<15.4f}".format(
-            metric_name, values[0], values[1], values[2]
-        ))
+        values = [all_metrics[tmpl].get(metric_name, 0) for tmpl, _ in templates_to_run]
+        cells = f"{metric_name:<30}" + "".join(f"{v:<18.4f}" for v in values)
+        print(cells)
 
     # Accuracy metrics (if available)
-    if "accuracy" in all_metrics[REASONING_TEMPLATES[0][0]]:
-        print("-" * 75)
+    if "accuracy" in all_metrics[templates_to_run[0][0]]:
+        print("-" * (30 + 18 * len(templates_to_run)))
         for metric_name in ["ab_accuracy", "ba_accuracy", "overall_accuracy", "accuracy_gap"]:
             values = [
                 all_metrics[tmpl].get("accuracy", {}).get(metric_name, 0)
-                for tmpl, _ in REASONING_TEMPLATES
+                for tmpl, _ in templates_to_run
             ]
-            print("{:<30} {:<15.4f} {:<15.4f} {:<15.4f}".format(
-                f"accuracy.{metric_name}", values[0], values[1], values[2]
-            ))
+            cells = f"{'accuracy.'+metric_name:<30}" + "".join(f"{v:<18.4f}" for v in values)
+            print(cells)
 
     print("=" * 80)
     logger.info("B3 evaluation complete: difficulty=%s, run=%s", args.difficulty, run_name)

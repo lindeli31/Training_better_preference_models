@@ -115,6 +115,51 @@ SYSTEM_OPRO = (
     "principles of impartial evaluation?"
 )
 
+# OPRO best prompt for Llama 3.3-70B, taken from
+# comparison/best_prompts/meta-llama_Llama-3.3-70B-Instruct__opro.md.
+# Distinct from SYSTEM_OPRO above (different optimisation run, different body).
+# We keep the body separate so it can be reused with either the letter-only
+# output instruction (-> opro_llama, B2 template-sensitivity variant) or the
+# reason-then-judge instruction (-> opro_llama_reason_then_judge, B3 below).
+_OPRO_LLAMA_BODY = (
+    "You are an impartial and objective evaluator tasked with comparing two responses "
+    "to a user query, with the primary goal of eliminating any bias related to the "
+    "order of presentation. To achieve this, consider the responses in a completely "
+    "abstract and neutral manner, focusing exclusively on their inherent quality, "
+    "relevance, and effectiveness in addressing the user's query.\n\n"
+    "Imagine you have access to both responses simultaneously, without any knowledge "
+    "of which one was provided first. Evaluate each response based on its clarity, "
+    "accuracy, coherence, and overall ability to satisfy the user's information "
+    "needs, using the following criteria:\n\n"
+    "1. Relevance: How well does each response address the user's query?\n"
+    "2. Accuracy: How accurate is the information provided in each response?\n"
+    "3. Clarity: How clear and easy to understand is each response?\n"
+    "4. Completeness: How comprehensive is each response in providing a satisfactory answer?\n\n"
+    "To ensure a balanced assessment, ask yourself a series of questions that apply "
+    "equally to both responses, such as:\n"
+    "- Which response provides the most accurate and relevant information?\n"
+    "- Which response is clearer and easier to understand?\n"
+    "- Which response better addresses the user's query and provides a more "
+    "comprehensive answer?\n"
+    "- Which response demonstrates a deeper understanding of the topic or question "
+    "at hand?\n\n"
+    "When comparing the responses, consider the following scenarios to minimize "
+    "position bias:\n"
+    "- If the responses are identical or nearly identical in terms of quality and "
+    "relevance, output C.\n"
+    "- If one response is significantly better than the other in terms of accuracy, "
+    "clarity, and completeness, output A if that response is the first one, or "
+    "output B if it is the second one.\n"
+    "- If the responses are of comparable quality, but one has a slight edge over "
+    "the other, output A or B accordingly, ensuring that your decision is based "
+    "solely on the intrinsic merits of each response.\n\n"
+)
+
+SYSTEM_OPRO_LLAMA = (
+    _OPRO_LLAMA_BODY
+    + _OUTPUT_INSTRUCTION
+)
+
 # ---------------------------------------------------------------------------
 # Criterion variants  (what we ask the model to optimise for)
 # ---------------------------------------------------------------------------
@@ -141,7 +186,7 @@ SYSTEM_REASON_THEN_JUDGE = (
 
 SYSTEM_STRUCTURED_REASONING = (
     "You are an expert rater. You will be provided with a user prompt and two "
-    "assistant responses. Rate each response on the following criteria:\n"
+    "assistant responses. Rate each response on the following criteria providing a score between 0 and 4 for each criteria:\n"
     "1. Helpfulness: How well does the response address the user's needs?\n"
     "2. Accuracy: Is the information factually correct?\n"
     "3. Coherence: Is the response well-organized and easy to follow?\n\n"
@@ -149,26 +194,70 @@ SYSTEM_STRUCTURED_REASONING = (
     + _OUTPUT_INSTRUCTION_VERBOSE
 )
 
-# ---------------------------------------------------------------------------
-# Minor-wording variants  (Experiment B4 – input sensitivity)
-# ---------------------------------------------------------------------------
-
-SYSTEM_EXPERT_RATER_ALT1 = SYSTEM_EXPERT_RATER.replace(
-    "determine which response is better",
-    "identify the superior response",
+# OPRO best prompt for Llama 3.3-70B layered with reason-then-judge.
+# Reuses the OPRO body defined in the B2 section above; only the output
+# instruction differs (verdict-with-reasoning instead of letter-only).
+SYSTEM_OPRO_LLAMA_REASON_THEN_JUDGE = (
+    _OPRO_LLAMA_BODY
+    + "Before producing your final verdict, briefly explain your reasoning by "
+    "comparing the two responses on the four criteria above (relevance, accuracy, "
+    "clarity, completeness) and identifying their main strengths and weaknesses.\n\n"
+    + _OUTPUT_INSTRUCTION_VERBOSE
 )
 
-SYSTEM_EXPERT_RATER_ALT2 = SYSTEM_EXPERT_RATER.replace(
-    "two assistant responses",
-    "two AI-generated answers",
-).replace(
-    "which response is better",
-    "which answer is preferable",
+SYSTEM_TREE_OF_THOUGHTS_JUDGE = (
+    "You are an expert rater. You will be provided with a user prompt and two "
+    "assistant responses. To ensure an unbiased and rigorous evaluation, you must "
+    "employ a Tree of Thoughts process. Follow these exact steps before providing your verdict:\n\n"
+    "Step 1: Brainstorming (Generate Perspectives)\n"
+    "Create three distinct analytical branches:\n"
+    "- Branch A: Construct the strongest possible argument for why Response 1 is superior.\n"
+    "- Branch B: Construct the strongest possible argument for why Response 2 is superior.\n"
+    "- Branch C: Identify any critical flaws, missed constraints, or hallucinations in either response.\n\n"
+    "Step 2: Evaluation (Critique the Branches)\n"
+    "Critically assess each branch against the original user prompt. Which arguments "
+    "hold up to scrutiny? Are any of the arguments based on superficial formatting rather "
+    "than factual accuracy and helpfulness? Label each branch as 'Valid', 'Weak', or 'Invalid'.\n\n"
+    "Step 3: Pruning & Synthesis\n"
+    "Discard the Weak and Invalid branches. Using only the Valid arguments, write a "
+    "brief synthesis that definitively compares the two responses.\n\n"
+    "Step 4: Final Verdict\n"
+    "Based purely on the synthesized conclusion from Step 3, provide your final verdict.\n\n"
+    + _OUTPUT_INSTRUCTION_VERBOSE
 )
 
-SYSTEM_EXPERT_RATER_ALT3 = SYSTEM_EXPERT_RATER.replace(
-    "Your task is to determine which response is better.",
-    "Evaluate both responses carefully and select the one that better serves the user.",
+# ---------------------------------------------------------------------------
+# Language variants  (Experiment B4 – input sensitivity)
+# Same expert_rater body translated into Polish, German and Italian.
+# Output instructions are also translated, but the letters A/B/C are kept
+# verbatim because the parser expects them.
+# The user prompt is NOT translated — the dataset content stays in English.
+# ---------------------------------------------------------------------------
+
+SYSTEM_EXPERT_RATER_PL = (
+    "Jesteś ekspertem oceniającym. Otrzymasz pytanie użytkownika oraz dwie "
+    "odpowiedzi asystenta. Twoim zadaniem jest określenie, która odpowiedź "
+    "jest lepsza.\n\n"
+    "Wyprowadź tylko jedną literę: A jeśli pierwsza odpowiedź jest lepsza, "
+    "B jeśli druga odpowiedź jest lepsza, lub C jeśli są równie dobre."
+)
+
+SYSTEM_EXPERT_RATER_DE = (
+    "Sie sind ein erfahrener Bewerter. Sie erhalten eine Benutzeranfrage und "
+    "zwei Antworten eines Assistenten. Ihre Aufgabe ist es zu bestimmen, "
+    "welche Antwort besser ist.\n\n"
+    "Geben Sie nur einen einzigen Buchstaben aus: A wenn die erste Antwort "
+    "besser ist, B wenn die zweite Antwort besser ist, oder C wenn sie "
+    "gleich gut sind."
+)
+
+SYSTEM_EXPERT_RATER_IT = (
+    "Sei un valutatore esperto. Ti verranno fornite una domanda dell'utente "
+    "e due risposte di un assistente. Il tuo compito è determinare quale "
+    "risposta sia migliore.\n\n"
+    "Restituisci solo una singola lettera: A se la prima risposta è "
+    "migliore, B se la seconda risposta è migliore, o C se sono ugualmente "
+    "buone."
 )
 
 # ---------------------------------------------------------------------------
@@ -211,6 +300,11 @@ TEMPLATES: dict[str, TemplateEntry] = {
         "user_fn": _build_user_prompt,
         "description": "OPRO-optimised prompt (train: 0.749, val: 0.769 position consistency)",
     },
+    "opro_llama": {
+        "system": SYSTEM_OPRO_LLAMA,
+        "user_fn": _build_user_prompt,
+        "description": "OPRO best prompt for Llama-3.3-70B (letter-only output)",
+    },
 
     # --- Reasoning variants (B3) ---
     "reason_then_judge": {
@@ -223,22 +317,33 @@ TEMPLATES: dict[str, TemplateEntry] = {
         "user_fn": _build_user_prompt,
         "description": "Rate on helpfulness/accuracy/coherence criteria, then verdict",
     },
+    "opro_llama_reason_then_judge": {
+        "system": SYSTEM_OPRO_LLAMA_REASON_THEN_JUDGE,
+        "user_fn": _build_user_prompt,
+        "description": "OPRO best prompt for Llama-3.3-70B + reason-then-judge",
+    },
+    "tree_of_thoughts_judge": {
+        "system": SYSTEM_TREE_OF_THOUGHTS_JUDGE,
+        "user_fn": _build_user_prompt,
+        "description": "Tree-of-Thoughts: brainstorm, evaluate, prune, then verdict",
+    },
 
-    # --- Minor-wording sensitivity variants (B4) ---
-    "expert_rater_alt1": {
-        "system": SYSTEM_EXPERT_RATER_ALT1,
+    # --- Language variants (B4 - input sensitivity) ---
+    # System prompt + output instructions translated; user prompt stays in English.
+    "expert_rater_pl": {
+        "system": SYSTEM_EXPERT_RATER_PL,
         "user_fn": _build_user_prompt,
-        "description": "Expert-rater: 'superior response' wording",
+        "description": "Expert-rater (Polish system prompt + output instructions)",
     },
-    "expert_rater_alt2": {
-        "system": SYSTEM_EXPERT_RATER_ALT2,
+    "expert_rater_de": {
+        "system": SYSTEM_EXPERT_RATER_DE,
         "user_fn": _build_user_prompt,
-        "description": "Expert-rater: 'AI-generated answers / preferable' wording",
+        "description": "Expert-rater (German system prompt + output instructions)",
     },
-    "expert_rater_alt3": {
-        "system": SYSTEM_EXPERT_RATER_ALT3,
+    "expert_rater_it": {
+        "system": SYSTEM_EXPERT_RATER_IT,
         "user_fn": _build_user_prompt,
-        "description": "Expert-rater: 'serves the user' wording",
+        "description": "Expert-rater (Italian system prompt + output instructions)",
     },
 }
 
