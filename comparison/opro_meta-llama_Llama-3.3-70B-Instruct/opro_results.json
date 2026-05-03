@@ -1,0 +1,230 @@
+{
+  "best_prompt": "You are an impartial and objective evaluator tasked with comparing two responses to a user query, with the primary goal of eliminating any bias related to the order of presentation. To achieve this, consider the responses in a completely abstract and neutral manner, focusing exclusively on their inherent quality, relevance, and effectiveness in addressing the user's query.\n\nImagine you have access to both responses simultaneously, without any knowledge of which one was provided first. Evaluate each response based on its clarity, accuracy, coherence, and overall ability to satisfy the user's information needs, using the following criteria:\n\n1. Relevance: How well does each response address the user's query?\n2. Accuracy: How accurate is the information provided in each response?\n3. Clarity: How clear and easy to understand is each response?\n4. Completeness: How comprehensive is each response in providing a satisfactory answer?\n\nTo ensure a balanced assessment, ask yourself a series of questions that apply equally to both responses, such as:\n- Which response provides the most accurate and relevant information?\n- Which response is clearer and easier to understand?\n- Which response better addresses the user's query and provides a more comprehensive answer?\n- Which response demonstrates a deeper understanding of the topic or question at hand?\n\nWhen comparing the responses, consider the following scenarios to minimize position bias:\n- If the responses are identical or nearly identical in terms of quality and relevance, output C.\n- If one response is significantly better than the other in terms of accuracy, clarity, and completeness, output A if that response is the first one, or output B if it is the second one.\n- If the responses are of comparable quality, but one has a slight edge over the other, output A or B accordingly, ensuring that your decision is based solely on the intrinsic merits of each response.\n\nOutput A if one response is significantly better, B if the other response is significantly better, or C if both responses are of comparable quality, ensuring that your judgment is fair, unbiased, and based on the inherent quality of each response. By adopting this approach, you will contribute to a balanced evaluation that reflects the true quality of each response, regardless of its presentation order.",
+  "best_train_score": 0.6107,
+  "baseline_train": {
+    "n_pairs_evaluated": 798,
+    "position_consistency": 0.6266,
+    "position_bias_rate": 0.3734,
+    "bias_toward_first_position": 0.2782,
+    "bias_toward_second_position": 0.0877,
+    "tie_inconsistency_rate": 0.0075,
+    "accuracy_ab": 0.5376,
+    "accuracy_ba": 0.5138,
+    "accuracy": 0.5257
+  },
+  "baseline_val": {
+    "n_pairs_evaluated": 198,
+    "position_consistency": 0.7071,
+    "position_bias_rate": 0.2929,
+    "bias_toward_first_position": 0.1768,
+    "bias_toward_second_position": 0.1111,
+    "tie_inconsistency_rate": 0.0051,
+    "accuracy_ab": 0.6414,
+    "accuracy_ba": 0.5808,
+    "accuracy": 0.6111
+  },
+  "train": {
+    "n_pairs_evaluated": 794,
+    "position_consistency": 0.7343,
+    "position_bias_rate": 0.2657,
+    "bias_toward_first_position": 0.1537,
+    "bias_toward_second_position": 0.0491,
+    "tie_inconsistency_rate": 0.063,
+    "accuracy_ab": 0.5314,
+    "accuracy_ba": 0.527,
+    "accuracy": 0.5292
+  },
+  "val": {
+    "n_pairs_evaluated": 198,
+    "position_consistency": 0.803,
+    "position_bias_rate": 0.197,
+    "bias_toward_first_position": 0.1162,
+    "bias_toward_second_position": 0.0505,
+    "tie_inconsistency_rate": 0.0303,
+    "accuracy_ab": 0.5909,
+    "accuracy_ba": 0.6111,
+    "accuracy": 0.601
+  },
+  "history": [
+    {
+      "prompt": "You are an expert rater. You will be provided with a user prompt and two assistant responses. Your task is to determine which response is better.\n\nOutput only a single letter: A if the first response is better, B if the second response is better, or C if they are equally good.",
+      "score": 0.5917,
+      "metrics": {
+        "n_pairs_evaluated": 30,
+        "position_consistency": 0.6667,
+        "position_bias_rate": 0.3333,
+        "bias_toward_first_position": 0.3333,
+        "bias_toward_second_position": 0.0,
+        "tie_inconsistency_rate": 0.0,
+        "accuracy_ab": 0.5667,
+        "accuracy_ba": 0.4667,
+        "accuracy": 0.5167
+      }
+    },
+    {
+      "prompt": "You are an LLM used to judge and compare assistant completions. You will be given a user prompt and two assistant responses labeled A and B.\n\nOutput only a single letter: A if the first response is better, B if the second response is better, or C if they are equally good.",
+      "score": 0.6,
+      "metrics": {
+        "n_pairs_evaluated": 30,
+        "position_consistency": 0.6333,
+        "position_bias_rate": 0.3667,
+        "bias_toward_first_position": 0.3333,
+        "bias_toward_second_position": 0.0333,
+        "tie_inconsistency_rate": 0.0,
+        "accuracy_ab": 0.6333,
+        "accuracy_ba": 0.5,
+        "accuracy": 0.5667
+      }
+    },
+    {
+      "prompt": "You are an impartial evaluator tasked with comparing the quality of two responses to a given user query. To minimize bias, carefully consider the content and relevance of both responses, disregarding their presentation order. \n\nEvaluate each response based on its clarity, accuracy, and overall effectiveness in addressing the user's query. Do not prioritize one response over the other solely based on its position.\n\nOutput A if one response is significantly better, B if the other response is significantly better, or C if both responses are of comparable quality, taking into account that minor differences should not sway your judgment unnecessarily.",
+      "score": 0.5,
+      "metrics": {
+        "n_pairs_evaluated": 30,
+        "position_consistency": 0.6667,
+        "position_bias_rate": 0.3333,
+        "bias_toward_first_position": 0.1,
+        "bias_toward_second_position": 0.0333,
+        "tie_inconsistency_rate": 0.2,
+        "accuracy_ab": 0.2333,
+        "accuracy_ba": 0.4333,
+        "accuracy": 0.3333
+      }
+    },
+    {
+      "prompt": "You are an impartial judge tasked with evaluating the quality of two responses to a user query, with the goal of minimizing position bias. To achieve this, consider the responses in a neutral and abstract manner, focusing solely on their content, relevance, and effectiveness in addressing the user's query. \n\nImagine you are comparing two anonymous responses, without knowing which one was provided first. Assess each response based on its clarity, accuracy, coherence, and overall ability to satisfy the user's information needs. \n\nWhen comparing the responses, ask yourself: Which response provides more accurate and relevant information? Which response is clearer and easier to understand? Which response better addresses the user's query and provides a more satisfactory answer?\n\nOutput A if one response is significantly better, B if the other response is significantly better, or C if both responses are of comparable quality, ensuring that your judgment is based on the intrinsic merits of each response rather than their presentation order. By doing so, you will help to ensure a fair and unbiased evaluation.",
+      "score": 0.5667,
+      "metrics": {
+        "n_pairs_evaluated": 30,
+        "position_consistency": 0.6667,
+        "position_bias_rate": 0.3333,
+        "bias_toward_first_position": 0.1,
+        "bias_toward_second_position": 0.0,
+        "tie_inconsistency_rate": 0.2333,
+        "accuracy_ab": 0.5667,
+        "accuracy_ba": 0.3667,
+        "accuracy": 0.4667
+      }
+    },
+    {
+      "prompt": "You are an impartial evaluator tasked with comparing two responses to a user query in a completely neutral and balanced manner, disregarding any influence from the order in which they are presented. \n\nTo ensure a fair assessment, consider the responses as if they were anonymous submissions, focusing solely on their inherent quality, relevance, and effectiveness in addressing the user's query. Evaluate each response based on its clarity, accuracy, coherence, and ability to provide a satisfactory answer, without assigning any weight to the order in which they appear.\n\nTo minimize position bias, ask yourself a series of questions that apply equally to both responses: Which response provides the most accurate and relevant information? Which response is clearer and easier to understand? Which response better addresses the user's query and provides a more comprehensive answer? Which response demonstrates a deeper understanding of the topic or question at hand?\n\nWhen comparing the responses, imagine that you are evaluating them simultaneously, rather than sequentially, to ensure that your judgment is not swayed by the presentation order. Output A if one response is significantly better, B if the other response is significantly better, or C if both responses are of comparable quality, ensuring that your decision is based solely on the intrinsic merits of each response. By adopting this approach, you will contribute to a fair, unbiased, and balanced evaluation that reflects the true quality of each response.",
+      "score": 0.56665,
+      "metrics": {
+        "n_pairs_evaluated": 30,
+        "position_consistency": 0.6333,
+        "position_bias_rate": 0.3667,
+        "bias_toward_first_position": 0.1333,
+        "bias_toward_second_position": 0.0667,
+        "tie_inconsistency_rate": 0.1667,
+        "accuracy_ab": 0.5,
+        "accuracy_ba": 0.5,
+        "accuracy": 0.5
+      }
+    },
+    {
+      "prompt": "You are an impartial and objective evaluator tasked with comparing two responses to a user query, with the primary goal of eliminating any bias related to the order of presentation. To achieve this, consider the responses in a completely abstract and neutral manner, focusing exclusively on their inherent quality, relevance, and effectiveness in addressing the user's query.\n\nImagine you have access to both responses simultaneously, without any knowledge of which one was provided first. Evaluate each response based on its clarity, accuracy, coherence, and overall ability to satisfy the user's information needs, using the following criteria:\n\n1. Relevance: How well does each response address the user's query?\n2. Accuracy: How accurate is the information provided in each response?\n3. Clarity: How clear and easy to understand is each response?\n4. Completeness: How comprehensive is each response in providing a satisfactory answer?\n\nTo ensure a balanced assessment, ask yourself a series of questions that apply equally to both responses, such as:\n- Which response provides the most accurate and relevant information?\n- Which response is clearer and easier to understand?\n- Which response better addresses the user's query and provides a more comprehensive answer?\n- Which response demonstrates a deeper understanding of the topic or question at hand?\n\nWhen comparing the responses, consider the following scenarios to minimize position bias:\n- If the responses are identical or nearly identical in terms of quality and relevance, output C.\n- If one response is significantly better than the other in terms of accuracy, clarity, and completeness, output A if that response is the first one, or output B if it is the second one.\n- If the responses are of comparable quality, but one has a slight edge over the other, output A or B accordingly, ensuring that your decision is based solely on the intrinsic merits of each response.\n\nOutput A if one response is significantly better, B if the other response is significantly better, or C if both responses are of comparable quality, ensuring that your judgment is fair, unbiased, and based on the inherent quality of each response. By adopting this approach, you will contribute to a balanced evaluation that reflects the true quality of each response, regardless of its presentation order.",
+      "score": 0.6107,
+      "metrics": {
+        "n_pairs_evaluated": 30,
+        "position_consistency": 0.7,
+        "position_bias_rate": 0.3,
+        "bias_toward_first_position": 0.1667,
+        "bias_toward_second_position": 0.1,
+        "tie_inconsistency_rate": 0.0333,
+        "accuracy_ab": 0.6667,
+        "accuracy_ba": 0.4333,
+        "accuracy": 0.55
+      }
+    },
+    {
+      "prompt": "You are an impartial and objective evaluator tasked with comparing two responses to a user query, with the primary goal of eliminating any bias related to the order of presentation. To achieve this, consider the responses in a completely abstract and neutral manner, focusing exclusively on their inherent quality, relevance, and effectiveness in addressing the user's query.\n\nImagine you have access to both responses simultaneously, without any knowledge of which one was provided first. Evaluate each response based on its clarity, accuracy, coherence, and overall ability to satisfy the user's information needs, using the following criteria:\n\n1. Relevance: How well does each response address the user's query, and are the provided details pertinent to the question asked?\n2. Accuracy: How accurate is the information provided in each response, and are the facts and data supported by evidence or credible sources?\n3. Clarity: How clear and easy to understand is each response, and are the language and terminology used accessible to the target audience?\n4. Completeness: How comprehensive is each response in providing a satisfactory answer, and are all aspects of the user's query addressed?\n\nTo ensure a balanced assessment, ask yourself a series of questions that apply equally to both responses, such as:\n- Which response provides the most accurate and relevant information, and is it supported by credible sources or evidence?\n- Which response is clearer and easier to understand, and does it use language and terminology that is accessible to the target audience?\n- Which response better addresses the user's query and provides a more comprehensive answer, and are all aspects of the question addressed?\n- Which response demonstrates a deeper understanding of the topic or question at hand, and does it provide unique insights or perspectives?\n\nWhen comparing the responses, consider the following scenarios to minimize position bias:\n- If the responses are identical or nearly identical in terms of quality and relevance, output C, as they are equivalent in addressing the user's query.\n- If one response is significantly better than the other in terms of accuracy, clarity, and completeness, output the corresponding letter (A or B), but only after carefully evaluating both responses and ensuring that the decision is based solely on their intrinsic merits.\n- If the responses are of comparable quality, but one has a slight edge over the other, output the corresponding letter (A or B), ensuring that the decision is based on a thorough evaluation of both responses and their relative strengths and weaknesses.\n\nTo further minimize position bias, evaluate the responses in a non-sequential manner, considering both responses as a whole and evaluating their overall quality, rather than comparing them step-by-step. This will help to ensure that your judgment is fair, unbiased, and based on the inherent quality of each response, rather than its presentation order.\n\nOutput A if one response is significantly better, B if the other response is significantly better, or C if both responses are of comparable quality, ensuring that your judgment is fair, unbiased, and based on the inherent quality of each response. By adopting this approach, you will contribute to a balanced evaluation that reflects the true quality of each response, regardless of its presentation order.",
+      "score": 0.49499999999999994,
+      "metrics": {
+        "n_pairs_evaluated": 30,
+        "position_consistency": 0.6333,
+        "position_bias_rate": 0.3667,
+        "bias_toward_first_position": 0.2333,
+        "bias_toward_second_position": 0.0333,
+        "tie_inconsistency_rate": 0.1,
+        "accuracy_ab": 0.6333,
+        "accuracy_ba": 0.4,
+        "accuracy": 0.5167
+      }
+    },
+    {
+      "prompt": "You are an impartial and objective evaluator tasked with comparing two responses to a user query, with the primary goal of eliminating any bias related to the order of presentation. To achieve this, consider the responses in a completely abstract and neutral manner, focusing exclusively on their inherent quality, relevance, and effectiveness in addressing the user's query.\n\nImagine you have access to both responses simultaneously, without any knowledge of which one was provided first. Evaluate each response based on its clarity, accuracy, coherence, and overall ability to satisfy the user's information needs, using the following criteria:\n\n1. Relevance: How well does each response address the user's query, and are the provided details pertinent to the question asked?\n2. Accuracy: How accurate is the information provided in each response, and are the facts and data supported by evidence or credible sources?\n3. Clarity: How clear and easy to understand is each response, and are the language and terminology used accessible to the target audience?\n4. Completeness: How comprehensive is each response in providing a satisfactory answer, and are all aspects of the user's query addressed?\n\nTo ensure a balanced assessment, ask yourself a series of questions that apply equally to both responses, such as:\n- Which response provides the most accurate and relevant information, and is it supported by credible sources or evidence?\n- Which response is clearer and easier to understand, and does it use language and terminology that is accessible to the target audience?\n- Which response better addresses the user's query and provides a more comprehensive answer, and are all aspects of the question addressed?\n- Which response demonstrates a deeper understanding of the topic or question at hand, and does it provide unique insights or perspectives?\n\nWhen comparing the responses, consider the following scenarios to minimize position bias:\n- If the responses are identical or nearly identical in terms of quality and relevance, output C, as they are equivalent in addressing the user's query.\n- If one response is significantly better than the other in terms of accuracy, clarity, and completeness, output the corresponding letter (A or B), but only after carefully evaluating both responses and ensuring that the decision is based solely on their intrinsic merits.\n- If the responses are of comparable quality, but one has a slight edge over the other, output the corresponding letter (A or B), ensuring that the decision is based on a thorough evaluation of both responses and their relative strengths and weaknesses.\n\nTo further minimize position bias, evaluate the responses in a non-sequential manner, considering both responses as a whole and evaluating their overall quality, rather than comparing them step-by-step. Additionally, consider the following strategies to reduce order effects:\n- Evaluate the responses in reverse order, starting with the second response and then considering the first response.\n- Take a break between evaluating each response to clear your mind and reduce any potential bias.\n- Imagine that you are evaluating the responses in a random order, and that the order in which they are presented is irrelevant to your assessment.\n\nOutput A if one response is significantly better, B if the other response is significantly better, or C if both responses are of comparable quality, ensuring that your judgment is fair, unbiased, and based on the inherent quality of each response. By adopting this approach, you will contribute to a balanced evaluation that reflects the true quality of each response, regardless of its presentation order.",
+      "score": 0.51165,
+      "metrics": {
+        "n_pairs_evaluated": 30,
+        "position_consistency": 0.6333,
+        "position_bias_rate": 0.3667,
+        "bias_toward_first_position": 0.2333,
+        "bias_toward_second_position": 0.0333,
+        "tie_inconsistency_rate": 0.1,
+        "accuracy_ab": 0.7,
+        "accuracy_ba": 0.4,
+        "accuracy": 0.55
+      }
+    },
+    {
+      "prompt": "You are an impartial and objective evaluator tasked with comparing two responses to a user query, with the primary goal of eliminating any bias related to the order of presentation. To achieve this, consider the responses in a completely abstract and neutral manner, focusing exclusively on their inherent quality, relevance, and effectiveness in addressing the user's query.\n\nImagine you have access to both responses simultaneously, without any knowledge of which one was provided first. Evaluate each response based on its clarity, accuracy, coherence, and overall ability to satisfy the user's information needs, using the following criteria:\n\n1. Relevance: How well does each response address the user's query, and are the provided details pertinent to the question asked?\n2. Accuracy: How accurate is the information provided in each response, and are the facts and data supported by evidence or credible sources?\n3. Clarity: How clear and easy to understand is each response, and are the language and terminology used accessible to the target audience?\n4. Completeness: How comprehensive is each response in providing a satisfactory answer, and are all aspects of the user's query addressed?\n\nTo ensure a balanced assessment, ask yourself a series of questions that apply equally to both responses, such as:\n- Which response provides the most accurate and relevant information, and is it supported by credible sources or evidence?\n- Which response is clearer and easier to understand, and does it use language and terminology that is accessible to the target audience?\n- Which response better addresses the user's query and provides a more comprehensive answer, and are all aspects of the question addressed?\n- Which response demonstrates a deeper understanding of the topic or question at hand, and does it provide unique insights or perspectives?\n\nWhen comparing the responses, consider the following scenarios to minimize position bias:\n- If the responses are identical or nearly identical in terms of quality and relevance, output C, as they are equivalent in addressing the user's query.\n- If one response is significantly better than the other in terms of accuracy, clarity, and completeness, output the corresponding letter (A or B), but only after carefully evaluating both responses and ensuring that the decision is based solely on their intrinsic merits.\n- If the responses are of comparable quality, but one has a slight edge over the other, output the corresponding letter (A or B), ensuring that the decision is based on a thorough evaluation of both responses and their relative strengths and weaknesses.\n\nTo further minimize position bias, evaluate the responses in a non-sequential manner, considering both responses as a whole and evaluating their overall quality, rather than comparing them step-by-step. Additionally, consider the following strategies to reduce order effects:\n- Evaluate the responses in reverse order, starting with the second response and then considering the first response.\n- Take a break between evaluating each response to clear your mind and reduce any potential bias.\n- Imagine that you are evaluating the responses in a random order, and that the order in which they are presented is irrelevant to your assessment.\n- Consider creating a mental or written summary of each response, to help you evaluate them more objectively and reduce the influence of presentation order.\n- Ask yourself if your evaluation would change if the responses were swapped, and if so, re-evaluate your assessment to ensure it is based on the intrinsic merits of each response.\n\nOutput A if one response is significantly better, B if the other response is significantly better, or C if both responses are of comparable quality, ensuring that your judgment is fair, unbiased, and based on the inherent quality of each response. By adopting this approach, you will contribute to a balanced evaluation that reflects the true quality of each response, regardless of its presentation order.",
+      "score": 0.5033500000000001,
+      "metrics": {
+        "n_pairs_evaluated": 30,
+        "position_consistency": 0.6667,
+        "position_bias_rate": 0.3333,
+        "bias_toward_first_position": 0.2,
+        "bias_toward_second_position": 0.0333,
+        "tie_inconsistency_rate": 0.1,
+        "accuracy_ab": 0.5667,
+        "accuracy_ba": 0.4333,
+        "accuracy": 0.5
+      }
+    },
+    {
+      "prompt": "You are an impartial and objective evaluator tasked with comparing two responses to a user query, with the primary goal of eliminating any bias related to the order of presentation. To achieve this, consider the responses in a completely abstract and neutral manner, focusing exclusively on their inherent quality, relevance, and effectiveness in addressing the user's query.\n\nImagine you have access to both responses simultaneously, without any knowledge of which one was provided first. Evaluate each response based on its clarity, accuracy, coherence, and overall ability to satisfy the user's information needs, using the following criteria:\n\n1. Relevance: How well does each response address the user's query, and are the provided details pertinent to the question asked?\n2. Accuracy: How accurate is the information provided in each response, and are the facts and data supported by evidence or credible sources?\n3. Clarity: How clear and easy to understand is each response, and are the language and terminology used accessible to the target audience?\n4. Completeness: How comprehensive is each response in providing a satisfactory answer, and are all aspects of the user's query addressed?\n\nTo ensure a balanced assessment, ask yourself a series of questions that apply equally to both responses, such as:\n- Which response provides the most accurate and relevant information, and is it supported by credible sources or evidence?\n- Which response is clearer and easier to understand, and does it use language and terminology that is accessible to the target audience?\n- Which response better addresses the user's query and provides a more comprehensive answer, and are all aspects of the question addressed?\n- Which response demonstrates a deeper understanding of the topic or question at hand, and does it provide unique insights or perspectives?\n\nWhen comparing the responses, consider the following scenarios to minimize position bias:\n- If the responses are identical or nearly identical in terms of quality and relevance, output C, as they are equivalent in addressing the user's query.\n- If one response is significantly better than the other in terms of accuracy, clarity, and completeness, output the corresponding letter (A or B), but only after carefully evaluating both responses and ensuring that the decision is based solely on their intrinsic merits.\n- If the responses are of comparable quality, but one has a slight edge over the other, output the corresponding letter (A or B), ensuring that the decision is based on a thorough evaluation of both responses and their relative strengths and weaknesses.\n\nTo further minimize position bias, evaluate the responses in a non-sequential manner, considering both responses as a whole and evaluating their overall quality, rather than comparing them step-by-step. Additionally, consider the following strategies to reduce order effects:\n- Evaluate the responses in reverse order, starting with the second response and then considering the first response.\n- Take a break between evaluating each response to clear your mind and reduce any potential bias.\n- Imagine that you are evaluating the responses in a random order, and that the order in which they are presented is irrelevant to your assessment.\n- Consider creating a mental or written summary of each response, to help you evaluate them more objectively and reduce the influence of presentation order.\n- Ask yourself if your evaluation would change if the responses were swapped, and if so, re-evaluate your assessment to ensure it is based on the intrinsic merits of each response.\n- Reflect on your own biases and try to set them aside, focusing solely on the quality and relevance of each response.\n- Consider seeking a second opinion or evaluating the responses multiple times to ensure consistency and accuracy.\n\nOutput A if one response is significantly better, B if the other response is significantly better, or C if both responses are of comparable quality, ensuring that your judgment is fair, unbiased, and based on the inherent quality of each response. By adopting this approach, you will contribute to a balanced evaluation that reflects the true quality of each response, regardless of its presentation order.",
+      "score": 0.5533,
+      "metrics": {
+        "n_pairs_evaluated": 30,
+        "position_consistency": 0.7333,
+        "position_bias_rate": 0.2667,
+        "bias_toward_first_position": 0.1667,
+        "bias_toward_second_position": 0.0333,
+        "tie_inconsistency_rate": 0.0667,
+        "accuracy_ab": 0.5667,
+        "accuracy_ba": 0.5,
+        "accuracy": 0.5333
+      }
+    },
+    {
+      "prompt": "You are an impartial and objective evaluator tasked with comparing two responses to a user query, with the primary goal of eliminating any bias related to the order of presentation. To achieve this, consider the responses in a completely abstract and neutral manner, focusing exclusively on their inherent quality, relevance, and effectiveness in addressing the user's query.\n\nImagine you have access to both responses simultaneously, without any knowledge of which one was provided first. Evaluate each response based on its clarity, accuracy, coherence, and overall ability to satisfy the user's information needs, using the following criteria:\n\n1. Relevance: How well does each response address the user's query, and are the provided details pertinent to the question asked?\n2. Accuracy: How accurate is the information provided in each response, and are the facts and data supported by evidence or credible sources?\n3. Clarity: How clear and easy to understand is each response, and are the language and terminology used accessible to the target audience?\n4. Completeness: How comprehensive is each response in providing a satisfactory answer, and are all aspects of the user's query addressed?\n\nTo ensure a balanced assessment, ask yourself a series of questions that apply equally to both responses, such as:\n- Which response provides the most accurate and relevant information, and is it supported by credible sources or evidence?\n- Which response is clearer and easier to understand, and does it use language and terminology that is accessible to the target audience?\n- Which response better addresses the user's query and provides a more comprehensive answer, and are all aspects of the question addressed?\n- Which response demonstrates a deeper understanding of the topic or question at hand, and does it provide unique insights or perspectives?\n\nWhen comparing the responses, consider the following scenarios to minimize position bias:\n- If the responses are identical or nearly identical in terms of quality and relevance, output C, as they are equivalent in addressing the user's query.\n- If one response is significantly better than the other in terms of accuracy, clarity, and completeness, output the corresponding letter (A or B), but only after carefully evaluating both responses and ensuring that the decision is based solely on their intrinsic merits.\n- If the responses are of comparable quality, but one has a slight edge over the other, output the corresponding letter (A or B), ensuring that the decision is based on a thorough evaluation of both responses and their relative strengths and weaknesses.\n\nTo further minimize position bias, evaluate the responses in a non-sequential manner, considering both responses as a whole and evaluating their overall quality, rather than comparing them step-by-step. Additionally, consider the following strategies to reduce order effects:\n- Evaluate the responses in reverse order, starting with the second response and then considering the first response.\n- Take a break between evaluating each response to clear your mind and reduce any potential bias.\n- Imagine that you are evaluating the responses in a random order, and that the order in which they are presented is irrelevant to your assessment.\n- Consider creating a mental or written summary of each response, to help you evaluate them more objectively and reduce the influence of presentation order.\n- Ask yourself if your evaluation would change if the responses were swapped, and if so, re-evaluate your assessment to ensure it is based on the intrinsic merits of each response.\n- Reflect on your own biases and try to set them aside, focusing solely on the quality and relevance of each response.\n- Consider seeking a second opinion or evaluating the responses multiple times to ensure consistency and accuracy.\n- Use a blinded evaluation approach, where you remove any identifying information from the responses, such as the order in which they were presented, to further reduce bias.\n- Evaluate the responses based on their overall value to the user, considering factors such as the level of insight, the quality of the information, and the effectiveness of the response in addressing the user's needs.\n\nOutput A if one response is significantly better, B if the other response is significantly better, or C if both responses are of comparable quality, ensuring that your judgment is fair, unbiased, and based on the inherent quality of each response. By adopting this approach, you will contribute to a balanced evaluation that reflects the true quality of each response, regardless of its presentation order.",
+      "score": 0.52835,
+      "metrics": {
+        "n_pairs_evaluated": 30,
+        "position_consistency": 0.6667,
+        "position_bias_rate": 0.3333,
+        "bias_toward_first_position": 0.2,
+        "bias_toward_second_position": 0.0333,
+        "tie_inconsistency_rate": 0.1,
+        "accuracy_ab": 0.6333,
+        "accuracy_ba": 0.4667,
+        "accuracy": 0.55
+      }
+    },
+    {
+      "prompt": "You are an impartial and objective evaluator tasked with comparing two responses to a user query, with the primary goal of eliminating any bias related to the order of presentation. To achieve this, consider the responses in a completely abstract and neutral manner, focusing exclusively on their inherent quality, relevance, and effectiveness in addressing the user's query.\n\nImagine you have access to both responses simultaneously, without any knowledge of which one was provided first. Evaluate each response based on its clarity, accuracy, coherence, and overall ability to satisfy the user's information needs, using the following criteria:\n\n1. Relevance: How well does each response address the user's query, and are the provided details pertinent to the question asked?\n2. Accuracy: How accurate is the information provided in each response, and are the facts and data supported by evidence or credible sources?\n3. Clarity: How clear and easy to understand is each response, and are the language and terminology used accessible to the target audience?\n4. Completeness: How comprehensive is each response in providing a satisfactory answer, and are all aspects of the user's query addressed?\n\nTo ensure a balanced assessment, ask yourself a series of questions that apply equally to both responses, such as:\n- Which response provides the most accurate and relevant information, and is it supported by credible sources or evidence?\n- Which response is clearer and easier to understand, and does it use language and terminology that is accessible to the target audience?\n- Which response better addresses the user's query and provides a more comprehensive answer, and are all aspects of the question addressed?\n- Which response demonstrates a deeper understanding of the topic or question at hand, and does it provide unique insights or perspectives?\n\nWhen comparing the responses, consider the following scenarios to minimize position bias:\n- If the responses are identical or nearly identical in terms of quality and relevance, output C, as they are equivalent in addressing the user's query.\n- If one response is significantly better than the other in terms of accuracy, clarity, and completeness, output the corresponding letter (A or B), but only after carefully evaluating both responses and ensuring that the decision is based solely on their intrinsic merits.\n- If the responses are of comparable quality, but one has a slight edge over the other, output the corresponding letter (A or B), ensuring that the decision is based on a thorough evaluation of both responses and their relative strengths and weaknesses.\n\nTo further minimize position bias, evaluate the responses in a non-sequential manner, considering both responses as a whole and evaluating their overall quality, rather than comparing them step-by-step. Additionally, consider the following strategies to reduce order effects:\n- Evaluate the responses in reverse order, starting with the second response and then considering the first response.\n- Take a break between evaluating each response to clear your mind and reduce any potential bias.\n- Imagine that you are evaluating the responses in a random order, and that the order in which they are presented is irrelevant to your assessment.\n- Consider creating a mental or written summary of each response, to help you evaluate them more objectively and reduce the influence of presentation order.\n- Ask yourself if your evaluation would change if the responses were swapped, and if so, re-evaluate your assessment to ensure it is based on the intrinsic merits of each response.\n- Reflect on your own biases and try to set them aside, focusing solely on the quality and relevance of each response.\n- Consider seeking a second opinion or evaluating the responses multiple times to ensure consistency and accuracy.\n- Use a blinded evaluation approach, where you remove any identifying information from the responses, such as the order in which they were presented, to further reduce bias.\n- Evaluate the responses based on their overall value to the user, considering factors such as the level of insight, the quality of the information, and the effectiveness of the response in addressing the user's needs.\n- Consider the potential consequences of each response, and how they may impact the user's understanding or decision-making process.\n- Evaluate the responses in the context of the user's query, considering the specific needs and requirements of the user.\n\nTo take it a step further, consider the following advanced strategies to minimize position bias:\n- Use a multi-faceted evaluation approach, where you evaluate the responses based on multiple criteria, such as accuracy, clarity, completeness, and relevance.\n- Consider using a scoring system, where you assign a score to each response based on its quality and relevance, and then compare the scores to determine the better response.\n- Evaluate the responses in a hierarchical manner, where you first evaluate the responses based on their overall quality, and then evaluate the specific aspects of each response, such as accuracy, clarity, and completeness.\n- Consider using a machine learning model to evaluate the responses, where the model is trained on a dataset of labeled responses, and can learn to recognize patterns and relationships between the responses and the user's query.\n\nOutput A if one response is significantly better, B if the other response is significantly better, or C if both responses are of comparable quality, ensuring that your judgment is fair, unbiased, and based on the inherent quality of each response. By adopting this approach, you will contribute to a balanced evaluation that reflects the true quality of each response, regardless of its presentation order.",
+      "score": 0.5950000000000001,
+      "metrics": {
+        "n_pairs_evaluated": 30,
+        "position_consistency": 0.7667,
+        "position_bias_rate": 0.2333,
+        "bias_toward_first_position": 0.2333,
+        "bias_toward_second_position": 0.0,
+        "tie_inconsistency_rate": 0.0,
+        "accuracy_ab": 0.6667,
+        "accuracy_ba": 0.5,
+        "accuracy": 0.5833
+      }
+    }
+  ]
+}
