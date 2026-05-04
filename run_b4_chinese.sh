@@ -1,42 +1,41 @@
 #!/usr/bin/env bash
 # ============================================================================
-# run_b3_baseline.sh
+# run_b4_chinese.sh
 # ----------------------------------------------------------------------------
-# B3 baseline: no-reasoning expert_rater template across the four difficulty
-# buckets. Used as the reference point for all other B3 templates
-# (reason_then_judge, structured_reasoning, tree_of_thoughts_judge,
-#  opro_llama, opro_llama_reason_then_judge — see their dedicated scripts).
+# Add the Chinese system-prompt variant to the B4 language sweep without
+# re-running PL/DE/IT (already collected by run_b4_languages.sh).
 #
 # Each bucket measures position bias (AB+BA) on 1500 pairs.
-# Total: 4 buckets × 1 template × 1500 × 2 = 12,000 judge calls.
+# Total: 4 buckets * 1 template * 1500 * 2 = 12,000 judge calls.
 #
 # Outputs land in:
-#     results/b3_by_difficulty/<bucket>/expert_rater_overall.jsonl
+#     results/b4_by_difficulty/<bucket>/expert_rater_zh_overall.jsonl
 #
 # Usage
 # -----
-#     ./run_b3_baseline.sh
+#     ./run_b4_chinese.sh
 # ============================================================================
 
 set -euo pipefail
 
 N_PAIRS=1500
-TEMPLATE=expert_rater
+TEMPLATE=expert_rater_zh
 BUCKETS=(easy medium hard tie)
 
 for bucket in "${BUCKETS[@]}"; do
     echo ""
     echo "============================================================"
-    echo "  B3 baseline — bucket: $bucket"
+    echo "  B4 — bucket: $bucket | template: $TEMPLATE"
     echo "============================================================"
 
     python run_b3_by_difficulty.py \
         --difficulty "$bucket" \
         --n-pairs "$N_PAIRS" \
         --run-name "$bucket" \
-        --templates "$TEMPLATE"
+        --templates "$TEMPLATE" \
+        --experiment-name b4_by_difficulty
 done
 
 echo ""
-echo "B3 baseline complete. Results in:"
-echo "  results/b3_by_difficulty/<bucket>/expert_rater_overall.jsonl"
+echo "B4 Chinese runs complete. Results in:"
+echo "  results/b4_by_difficulty/<bucket>/expert_rater_zh_overall.jsonl"

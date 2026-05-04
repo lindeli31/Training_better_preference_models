@@ -115,49 +115,40 @@ SYSTEM_OPRO = (
     "principles of impartial evaluation?"
 )
 
-# OPRO best prompt for Llama 3.3-70B, taken from
+# OPRO best prompt for Llama 3.3-70B, taken verbatim from
 # comparison/best_prompts/meta-llama_Llama-3.3-70B-Instruct__opro.md.
-# Distinct from SYSTEM_OPRO above (different optimisation run, different body).
-# We keep the body separate so it can be reused with either the letter-only
-# output instruction (-> opro_llama, B2 template-sensitivity variant) or the
-# reason-then-judge instruction (-> opro_llama_reason_then_judge, B3 below).
-_OPRO_LLAMA_BODY = (
-    "You are an impartial and objective evaluator tasked with comparing two responses "
-    "to a user query, with the primary goal of eliminating any bias related to the "
-    "order of presentation. To achieve this, consider the responses in a completely "
-    "abstract and neutral manner, focusing exclusively on their inherent quality, "
-    "relevance, and effectiveness in addressing the user's query.\n\n"
-    "Imagine you have access to both responses simultaneously, without any knowledge "
-    "of which one was provided first. Evaluate each response based on its clarity, "
-    "accuracy, coherence, and overall ability to satisfy the user's information "
-    "needs, using the following criteria:\n\n"
+# Identical wording to the SYSTEM_OPRO_LLAMA on the main branch. The output
+# instruction is embedded in the prompt itself (last paragraph), so we do
+# NOT append _OUTPUT_INSTRUCTION here.
+SYSTEM_OPRO_LLAMA = (
+    "You are an impartial and objective evaluator tasked with comparing two responses to a user "
+    "query, with the primary goal of eliminating any bias related to the order of presentation. "
+    "To achieve this, consider the responses in a completely abstract and neutral manner, focusing "
+    "exclusively on their inherent quality, relevance, and effectiveness in addressing the user's query.\n\n"
+    "Imagine you have access to both responses simultaneously, without any knowledge of which one "
+    "was provided first. Evaluate each response based on its clarity, accuracy, coherence, and "
+    "overall ability to satisfy the user's information needs, using the following criteria:\n\n"
     "1. Relevance: How well does each response address the user's query?\n"
     "2. Accuracy: How accurate is the information provided in each response?\n"
     "3. Clarity: How clear and easy to understand is each response?\n"
     "4. Completeness: How comprehensive is each response in providing a satisfactory answer?\n\n"
-    "To ensure a balanced assessment, ask yourself a series of questions that apply "
-    "equally to both responses, such as:\n"
+    "To ensure a balanced assessment, ask yourself a series of questions that apply equally to "
+    "both responses, such as:\n"
     "- Which response provides the most accurate and relevant information?\n"
     "- Which response is clearer and easier to understand?\n"
-    "- Which response better addresses the user's query and provides a more "
-    "comprehensive answer?\n"
-    "- Which response demonstrates a deeper understanding of the topic or question "
-    "at hand?\n\n"
-    "When comparing the responses, consider the following scenarios to minimize "
-    "position bias:\n"
-    "- If the responses are identical or nearly identical in terms of quality and "
-    "relevance, output C.\n"
-    "- If one response is significantly better than the other in terms of accuracy, "
-    "clarity, and completeness, output A if that response is the first one, or "
-    "output B if it is the second one.\n"
-    "- If the responses are of comparable quality, but one has a slight edge over "
-    "the other, output A or B accordingly, ensuring that your decision is based "
-    "solely on the intrinsic merits of each response.\n\n"
-)
-
-SYSTEM_OPRO_LLAMA = (
-    _OPRO_LLAMA_BODY
-    + _OUTPUT_INSTRUCTION
+    "- Which response better addresses the user's query and provides a more comprehensive answer?\n"
+    "- Which response demonstrates a deeper understanding of the topic or question at hand?\n\n"
+    "When comparing the responses, consider the following scenarios to minimize position bias:\n"
+    "- If the responses are identical or nearly identical in terms of quality and relevance, output C.\n"
+    "- If one response is significantly better than the other in terms of accuracy, clarity, and "
+    "completeness, output A if that response is the first one, or output B if it is the second one.\n"
+    "- If the responses are of comparable quality, but one has a slight edge over the other, output "
+    "A or B accordingly, ensuring that your decision is based solely on the intrinsic merits of each response.\n\n"
+    "Output A if one response is significantly better, B if the other response is significantly "
+    "better, or C if both responses are of comparable quality, ensuring that your judgment is fair, "
+    "unbiased, and based on the inherent quality of each response. By adopting this approach, you "
+    "will contribute to a balanced evaluation that reflects the true quality of each response, "
+    "regardless of its presentation order."
 )
 
 # ---------------------------------------------------------------------------
@@ -194,15 +185,19 @@ SYSTEM_STRUCTURED_REASONING = (
     + _OUTPUT_INSTRUCTION_VERBOSE
 )
 
-# OPRO best prompt for Llama 3.3-70B layered with reason-then-judge.
-# Reuses the OPRO body defined in the B2 section above; only the output
-# instruction differs (verdict-with-reasoning instead of letter-only).
+# OPRO best prompt for Llama 3.3-70B layered with step-by-step reasoning.
+# Uses SYSTEM_OPRO_LLAMA verbatim (output instruction already embedded) and
+# appends a step-by-step reasoning instruction. The judge is therefore asked
+# to reason explicitly through the four OPRO criteria before applying the
+# already-defined OPRO output rule.
 SYSTEM_OPRO_LLAMA_REASON_THEN_JUDGE = (
-    _OPRO_LLAMA_BODY
-    + "Before producing your final verdict, briefly explain your reasoning by "
-    "comparing the two responses on the four criteria above (relevance, accuracy, "
-    "clarity, completeness) and identifying their main strengths and weaknesses.\n\n"
-    + _OUTPUT_INSTRUCTION_VERBOSE
+    SYSTEM_OPRO_LLAMA
+    + "\n\nBefore producing your final verdict according to the rule above, "
+    "reason step-by-step about your evaluation: walk through each of the four "
+    "criteria (relevance, accuracy, clarity, completeness) and explicitly "
+    "compare the two responses on each one, identifying their main strengths "
+    "and weaknesses. Only after this reasoning, output your single-letter "
+    "verdict (A, B, or C)."
 )
 
 SYSTEM_TREE_OF_THOUGHTS_JUDGE = (
@@ -258,6 +253,13 @@ SYSTEM_EXPERT_RATER_IT = (
     "Restituisci solo una singola lettera: A se la prima risposta è "
     "migliore, B se la seconda risposta è migliore, o C se sono ugualmente "
     "buone."
+)
+
+SYSTEM_EXPERT_RATER_ZH = (
+    "你是一位专家评审员。你将收到一个用户提示和两个助手回复。"
+    "你的任务是判断哪个回复更好。\n\n"
+    "仅输出一个字母:如果第一个回复更好,输出 A;如果第二个回复更好,"
+    "输出 B;如果两个回复同样好,输出 C。"
 )
 
 # ---------------------------------------------------------------------------
@@ -344,6 +346,11 @@ TEMPLATES: dict[str, TemplateEntry] = {
         "system": SYSTEM_EXPERT_RATER_IT,
         "user_fn": _build_user_prompt,
         "description": "Expert-rater (Italian system prompt + output instructions)",
+    },
+    "expert_rater_zh": {
+        "system": SYSTEM_EXPERT_RATER_ZH,
+        "user_fn": _build_user_prompt,
+        "description": "Expert-rater (Chinese system prompt + output instructions)",
     },
 }
 

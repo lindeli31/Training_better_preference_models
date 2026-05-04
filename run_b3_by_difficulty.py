@@ -189,6 +189,7 @@ async def main(args):
         "expert_rater_pl": "Polish",
         "expert_rater_de": "German",
         "expert_rater_it": "Italian",
+        "expert_rater_zh": "Chinese",
     }
     header = ["Metric"] + [template_labels.get(t, t) for t, _ in templates_to_run]
     print("\n" + "".join(f"{c:<30}" if i == 0 else f"{c:<18}" for i, c in enumerate(header)))

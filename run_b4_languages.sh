@@ -27,7 +27,7 @@
 set -euo pipefail
 
 N_PAIRS=1500
-TEMPLATES=(expert_rater_pl expert_rater_de expert_rater_it)
+TEMPLATES=(expert_rater_pl expert_rater_de expert_rater_it expert_rater_zh)
 BUCKETS=(easy medium hard tie)
 
 for bucket in "${BUCKETS[@]}"; do
@@ -48,7 +48,7 @@ done
 
 echo ""
 echo "B4 language runs complete. Results in:"
-echo "  results/b4_by_difficulty/<bucket>/expert_rater_{pl,de,it}_overall.jsonl"
+echo "  results/b4_by_difficulty/<bucket>/expert_rater_{pl,de,it,zh}_overall.jsonl"
 echo ""
 echo "EN baseline already at:"
 echo "  results/b3_by_difficulty/<bucket>/expert_rater_overall.jsonl"
