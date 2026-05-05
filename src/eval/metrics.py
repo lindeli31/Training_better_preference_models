@@ -60,7 +60,6 @@ def load_results(path: Path) -> list[dict]:
 def compute_position_bias(
     results: list[dict],
     gold_labels: Optional[dict[str, str]] = None,  # prompt_id -> "A"/"B"/"C"
-    exclude_ties: bool = False,
 ) -> dict:
     """
     Measures if the model prefers responses based on their position (A or B)
@@ -399,8 +398,11 @@ def compute_repetition_stability(
 
 # ---------------------------------------------------------------------------
 # Accuracy breakdown (for run_evaluate_accuracy)
-# Uses the same "difficulty" buckets as dataset.py: hard (gap ≤ 0.33),
-# medium (0.33 < gap ≤ 1.0), easy (gap > 1.0). Score scale is 0-4.
+# Mirrors the 4-bucket scheme in dataset.py:
+#   tie:    gap < 0.05          (gap ≈ 0)
+#   hard:   gap < 0.95          (gap ∈ {1/3, 2/3})
+#   medium: gap < 5/3 - 0.05   (gap ∈ {1, 4/3})
+#   easy:   gap ≥ 5/3 - 0.05   (gap ∈ {5/3, ≥2})
 # ---------------------------------------------------------------------------
 
 def compute_accuracy_breakdown(results: list[dict], exclude_ties: bool = False) -> dict:
@@ -409,7 +411,12 @@ def compute_accuracy_breakdown(results: list[dict], exclude_ties: bool = False) 
     """
     if exclude_ties:
         results = [r for r in results if r.get("gold_label") != "C"]
-    buckets = [(0.33, "hard"), (1.0, "medium"), (float("inf"), "easy")]
+    buckets = [
+        (0.05,        "tie"),
+        (1.0 - 0.05,  "hard"),
+        (5/3 - 0.05,  "medium"),
+        (float("inf"), "easy"),
+    ]
     bucket_stats = {name: {"correct": 0, "total": 0} for _, name in buckets}
     confusion: dict = defaultdict(lambda: {"A": 0, "B": 0, "C": 0, "None": 0})
     label_dist = {"A": 0, "B": 0, "C": 0, "None": 0}
@@ -433,7 +440,7 @@ def compute_accuracy_breakdown(results: list[dict], exclude_ties: bool = False) 
             continue
 
         for upper, name in buckets:
-            if gap <= upper:
+            if gap < upper:
                 bucket_stats[name]["total"] += 1
                 if lbl == gold:
                     bucket_stats[name]["correct"] += 1
