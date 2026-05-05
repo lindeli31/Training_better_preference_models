@@ -1,8 +1,8 @@
 """
 run_b1_sweep.py
 ---------------
-Run B1 (position bias) for all 27 combinations of:
-  - difficulty  : easy / medium / hard
+Run B1 (position bias) for all 36 combinations of:
+  - difficulty  : easy / medium / hard / tie
   - model       : Apertus-70B, Llama-3.3-70B, GLM-4.7-Flash
   - template    : expert_rater / llm_judge / opro
 
@@ -57,7 +57,7 @@ MODELS = [
     "zai-org/GLM-4.7-Flash",
 ]
 TEMPLATES = ["expert_rater", "llm_judge", "opro"]
-DIFFICULTIES = ["easy", "medium", "hard"]
+DIFFICULTIES = ["easy", "medium", "hard", "tie"]
 CRITERION = "overall"
 BASE_URL = "https://api.swissai.cscs.ch/v1"
 OUTPUT_ROOT = Path("results/b1_sweep")
