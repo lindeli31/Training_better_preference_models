@@ -43,6 +43,10 @@ from eval.experiments import run_position_bias
 from core.inference_client import InferenceConfig, SwissAIClient
 from eval.metrics import compute_position_bias
 from core.templates import TEMPLATES as TEMPLATE_REGISTRY
+from config import (
+    MODELS, SWEEP_TEMPLATES as TEMPLATES, DIFFICULTIES, CRITERION,
+    BASE_URL, OUTPUT_ROOT, model_key, GENERIC_OPTIMISED_TEMPLATES,
+)
 
 load_dotenv()
 logging.basicConfig(
@@ -50,34 +54,6 @@ logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
 )
 logger = logging.getLogger(__name__)
-
-MODELS = [
-    "swiss-ai/Apertus-70B-Instruct-2509",
-    "meta-llama/Llama-3.3-70B-Instruct",
-    "zai-org/GLM-4.7-Flash",
-]
-TEMPLATES = ["expert_rater", "llm_judge", "opro"]
-DIFFICULTIES = ["easy", "medium", "hard", "tie"]
-CRITERION = "overall"
-BASE_URL = "https://api.swissai.cscs.ch/v1"
-OUTPUT_ROOT = Path("results/b1_sweep")
-
-
-def model_key(model: str) -> str:
-    name = model.split("/")[-1]
-    if "Apertus" in name:
-        return "apertus"
-    if "Llama-3.3" in name:
-        return "llama33"
-    if "GLM-4.7" in name:
-        return "glm47"
-    return name.lower()[:20]
-
-
-# Generic model-aware template names.  When one of these is requested,
-# resolve_template() picks the model-specific variant from TEMPLATE_REGISTRY
-# and falls back to the _llama version if none exists for the target model.
-GENERIC_OPTIMISED_TEMPLATES = {"gepa", "opro", "opro_tree"}
 
 
 def resolve_template(generic: str, mkey: str) -> str:

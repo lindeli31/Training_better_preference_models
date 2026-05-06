@@ -2,6 +2,20 @@
 
 Scripts for running and plotting the B1 (position bias) sweep.
 
+## Configuration — `config.py`
+
+All sweep dimensions and plot style constants live in `config.py`.
+Edit there to have the change propagate to the runner and all plot scripts:
+
+| Setting | What it controls |
+|---------|-----------------|
+| `MODELS` | Full model IDs run in the sweep |
+| `SWEEP_TEMPLATES` | Default templates (overridable via `--templates`) |
+| `DIFFICULTIES` | Difficulty buckets to sweep over |
+| `MODELS_ORDER` / `MODEL_LABELS` / `MODEL_COLORS` / `MODEL_HATCHES` | Plot style per model |
+| `TEMPLATES_ORDER` / `TEMPLATE_LABELS` / `TEMPLATE_HATCHES` | Plot style per template |
+| `BASELINE_TEMPLATES` / `OPTIMIZED_TEMPLATES` | Background shading in plots |
+
 ---
 
 ## B1 sweep — `run_b1_sweep.py`
@@ -10,7 +24,7 @@ Runs the position-bias experiment (B1) over all combinations of:
 
 | Axis | Values |
 |------|--------|
-| **Models** | `apertus` (Apertus-70B), `llama33` (Llama-3.3-70B), `glm47` (GLM-4.7-Flash) |
+| **Models** | `apertus` (Apertus-70B), `llama33` (Llama-3.3-70B), `qwen35` (GLM-4.7-Flash) |
 | **Templates** | `expert_rater`, `llm_judge`, `opro` |
 | **Difficulty buckets** | `easy`, `medium`, `hard`, `tie` |
 
@@ -73,7 +87,7 @@ python sweep_scripts/run_b1_sweep.py --out results/my_run
 
 ```
 results/b1_sweep/
-  <model>/               # apertus / llama33 / glm47
+  <model>/               # apertus / llama33 / qwen35
     <template>/          # expert_rater / llm_judge / opro
       <difficulty>/      # easy / medium / hard
         <template>_overall.jsonl   — raw judge-call records (one per call)

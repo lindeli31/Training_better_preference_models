@@ -9,7 +9,9 @@ Expects the directory layout written by run_b1_sweep.py:
 Figures saved to results/b1_sweep/figures/:
   1. accuracy_overview.png      — overall/ab/ba accuracy and accuracy gap
   2. position_bias_overview.png — consistency and directional bias rates
-  3. summary_heatmap.png        — 18-experiment heatmap (overall accuracy)
+  3. summary_heatmap_accuracy_<model>.png         — accuracy heatmap per model (overall/primacy/recency/tie)
+  4. summary_heatmap_bias_consistency_<model>.png — accuracy gap + position consistency per model
+  5. summary_heatmap_bias_rates_<model>.png       — bias rate + direction (toward A/B) per model
 
 Usage:
     python sweep_scripts/plot_b1_sweep.py
@@ -24,34 +26,11 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import numpy as np
 
-# ── colour / style constants ────────────────────────────────────────────────
-MODEL_COLORS = {
-    "apertus": "#b42828",
-    "llama33":  "#1f407a",
-    "glm47":   "#2e8b57",
-}
-MODEL_LABELS = {
-    "apertus": "Apertus-70B",
-    "llama33":  "Llama-3.3-70B",
-    "glm47":   "GLM-4.7-Flash",
-}
-TEMPLATE_HATCHES = {
-    "expert_rater": "",
-    "llm_judge":    "//",
-    "opro":         "xx",
-    "gepa":         "..",
-    "opro_tree":    "\\\\",
-}
-TEMPLATE_LABELS = {
-    "expert_rater": "expert_rater",
-    "llm_judge":    "llm_judge",
-    "opro":         "opro",
-    "gepa":         "gepa",
-    "opro_tree":    "opro_tree",
-}
-DIFFICULTIES = ["easy", "medium", "hard"]
-MODELS_ORDER = ["apertus", "llama33"]
-TEMPLATES_ORDER = ["expert_rater", "llm_judge", "opro", "gepa", "opro_tree"]
+from config import (
+    MODELS_ORDER, MODEL_LABELS, MODEL_COLORS, MODEL_HATCHES,
+    TEMPLATES_ORDER, TEMPLATE_LABELS, TEMPLATE_HATCHES,
+    DIFFICULTIES,
+)
 
 
 # ── loading ──────────────────────────────────────────────────────────────────
@@ -140,10 +119,10 @@ def plot_accuracy_overview(records: list[dict], out: Path) -> None:
     """
     metrics_info = [
         ("accuracy", "overall_accuracy", "Overall accuracy",          (0.0, 1.05)),
-        ("accuracy", "ab_accuracy",      "AB accuracy\n(correct in slot A)", (0.0, 1.05)),
-        ("accuracy", "ba_accuracy",      "BA accuracy\n(correct in slot B)", (0.0, 1.05)),
-        ("accuracy", "c_accuracy",       "C accuracy\n(gold = tie)",  (0.0, 1.05)),
-        ("accuracy", "accuracy_gap",     "Accuracy gap (AB − BA)",    (-0.5, 0.5)),
+        ("accuracy", "ab_accuracy",      "Primacy accuracy\n(correct in slot A)", (0.0, 1.05)),
+        ("accuracy", "ba_accuracy",      "Recency accuracy\n(correct in slot B)", (0.0, 1.05)),
+        ("accuracy", "c_accuracy",       "Tie accuracy\n(gold = tie)",  (0.0, 1.05)),
+        ("accuracy", "accuracy_gap",     "Accuracy gap (Primacy − Recency)",    (-0.5, 0.5)),
     ]
 
     # index records for quick lookup: (model, template, difficulty)
@@ -181,7 +160,7 @@ def plot_accuracy_overview(records: list[dict], out: Path) -> None:
                 group_data.append(group_row)
 
             bar_cols = [MODEL_COLORS[m] for m in MODELS_ORDER]
-            bar_hatch = ["", "//", "xx"]  # one per model
+            bar_hatch = [MODEL_HATCHES[m] for m in MODELS_ORDER]
             _grouped_bars(ax, group_data, template_xlabels, MODELS_ORDER,
                           bar_cols, bar_hatch, width=0.15, gap=0.65)
 
@@ -260,7 +239,7 @@ def plot_position_bias_overview(records: list[dict], out: Path) -> None:
 
             bar_cols = [MODEL_COLORS[m] for m in MODELS_ORDER]
             _grouped_bars(ax, group_data, template_xlabels, MODELS_ORDER,
-                          bar_cols, ["", "//", "xx"], width=0.15, gap=0.65)
+                          bar_cols, [MODEL_HATCHES[m] for m in MODELS_ORDER], width=0.15, gap=0.65)
 
             ax.set_ylim(*ylim)
             ax.grid(axis="y", alpha=0.25)
@@ -291,50 +270,29 @@ def plot_position_bias_overview(records: list[dict], out: Path) -> None:
 
 
 # ── Figure 3: summary heatmaps ───────────────────────────────────────────────
-def plot_summary_heatmaps(records: list[dict], out: Path) -> None:
-    """
-    Two side-by-side heatmaps:
-      left  — overall_accuracy
-      right — accuracy_gap
-    Rows: model × template (6 rows), Cols: difficulty (3 cols)
-    """
-    idx = {
-        (r["_meta"]["model_key"], r["_meta"]["template"], r["_meta"]["difficulty"]): r
-        for r in records
-    }
+def _render_heatmap_group(
+    idx: dict,
+    row_keys: list,
+    row_labels: list,
+    metrics: list,
+    title: str,
+    out_path: Path,
+) -> None:
+    """Render one summary heatmap file for a given list of metrics."""
+    cell_h = max(3.5, len(row_keys) * 0.6)
+    fig, axes = plt.subplots(1, len(metrics), figsize=(5 * len(metrics), cell_h))
+    if len(metrics) == 1:
+        axes = [axes]
+    fig.suptitle(title, fontsize=12, fontweight="bold")
 
-    resolved_map = _build_resolved_map(records)
-    row_labels = [
-        f"{MODEL_LABELS[m]} / {resolved_map.get((m, t), t)}"
-        for m in MODELS_ORDER for t in TEMPLATES_ORDER
-    ]
-    row_keys   = [(m, t) for m in MODELS_ORDER for t in TEMPLATES_ORDER]
-
-    metrics_to_plot = [
-        ("accuracy", "overall_accuracy", "Overall accuracy",      "Blues",   0.0, 1.0),
-        ("accuracy", "ab_accuracy",      "AB accuracy",            "Greens",  0.0, 1.0),
-        ("accuracy", "ba_accuracy",      "BA accuracy",            "Purples", 0.0, 1.0),
-        ("accuracy", "c_accuracy",       "C accuracy (tie gold)",  "Oranges", 0.0, 1.0),
-        ("accuracy", "accuracy_gap",     "Accuracy gap (AB−BA)",   "RdBu_r", -0.4, 0.4),
-        ("position_consistency", None,   "Position consistency",   "Greens",  0.0, 1.0),
-    ]
-
-    n_experiments = len(records)
-    fig, axes = plt.subplots(1, len(metrics_to_plot),
-                             figsize=(5 * len(metrics_to_plot), max(5.5, len(row_keys) * 0.45)))
-    fig.suptitle(f"B1 Summary — {n_experiments} Experiments", fontsize=12, fontweight="bold")
-
-    for ax, (top_key, sub_key, title, cmap, vmin, vmax) in zip(axes, metrics_to_plot):
+    for ax, (top_key, sub_key, panel_title, cmap, vmin, vmax) in zip(axes, metrics):
         mat = np.full((len(row_keys), len(DIFFICULTIES)), float("nan"))
         for r, (m, t) in enumerate(row_keys):
             for c, diff in enumerate(DIFFICULTIES):
                 rec = idx.get((m, t, diff))
                 if rec is None:
                     continue
-                if sub_key is None:
-                    mat[r, c] = get(rec, top_key)
-                else:
-                    mat[r, c] = get(rec, top_key, sub_key)
+                mat[r, c] = get(rec, top_key) if sub_key is None else get(rec, top_key, sub_key)
 
         im = ax.imshow(mat, cmap=cmap, vmin=vmin, vmax=vmax, aspect="auto")
         fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
@@ -343,7 +301,7 @@ def plot_summary_heatmaps(records: list[dict], out: Path) -> None:
         ax.set_xticklabels(DIFFICULTIES, fontsize=9)
         ax.set_yticks(range(len(row_labels)))
         ax.set_yticklabels(row_labels, fontsize=8)
-        ax.set_title(title, fontsize=9, fontweight="bold")
+        ax.set_title(panel_title, fontsize=9, fontweight="bold")
 
         for r in range(len(row_keys)):
             for c in range(len(DIFFICULTIES)):
@@ -353,10 +311,56 @@ def plot_summary_heatmaps(records: list[dict], out: Path) -> None:
                             fontsize=7.5, color="black", fontweight="bold")
 
     fig.tight_layout()
-    out_path = out / "summary_heatmap.png"
     fig.savefig(out_path, dpi=150, bbox_inches="tight")
     plt.close(fig)
     print(f"Saved {out_path}")
+
+
+def plot_summary_heatmaps(records: list[dict], out: Path) -> None:
+    """
+    Produces nine heatmap files split by metric category × model:
+      summary_heatmap_accuracy_<model>.png         — overall/primacy/recency/tie accuracy
+      summary_heatmap_bias_consistency_<model>.png — accuracy gap + position consistency
+      summary_heatmap_bias_rates_<model>.png       — bias rate + direction (toward A/B)
+
+    Rows: template (5), Cols: difficulty (4).
+    """
+    idx = {
+        (r["_meta"]["model_key"], r["_meta"]["template"], r["_meta"]["difficulty"]): r
+        for r in records
+    }
+    resolved_map = _build_resolved_map(records)
+
+    accuracy_metrics = [
+        ("accuracy", "overall_accuracy", "Overall accuracy",          "Blues",   0.0, 1.0),
+        ("accuracy", "ab_accuracy",      "Primacy accuracy",          "Greens",  0.0, 1.0),
+        ("accuracy", "ba_accuracy",      "Recency accuracy",          "Purples", 0.0, 1.0),
+        ("accuracy", "c_accuracy",       "Tie accuracy (gold = tie)", "Oranges", 0.0, 1.0),
+    ]
+    bias_consistency_metrics = [
+        ("accuracy", "accuracy_gap",  "Accuracy gap\n(Primacy − Recency)", "RdBu_r", -0.4, 0.4),
+        ("position_consistency", None, "Position consistency",              "Greens",  0.0, 1.0),
+    ]
+    bias_rate_metrics = [
+        ("position_bias_rate",          None, "Position bias rate",    "Reds",    0.0, 1.0),
+        ("bias_toward_first_position",  None, "Bias toward first (A)", "Oranges", 0.0, 1.0),
+        ("bias_toward_second_position", None, "Bias toward second (B)", "Blues",  0.0, 1.0),
+    ]
+
+    for mkey in MODELS_ORDER:
+        model_label = MODEL_LABELS[mkey]
+        row_keys   = [(mkey, t) for t in TEMPLATES_ORDER]
+        row_labels = [resolved_map.get((mkey, t), t) for t in TEMPLATES_ORDER]
+
+        _render_heatmap_group(idx, row_keys, row_labels, accuracy_metrics,
+                              f"B1 Accuracy — {model_label}",
+                              out / f"summary_heatmap_accuracy_{mkey}.png")
+        _render_heatmap_group(idx, row_keys, row_labels, bias_consistency_metrics,
+                              f"B1 Bias — Gap & Consistency — {model_label}",
+                              out / f"summary_heatmap_bias_consistency_{mkey}.png")
+        _render_heatmap_group(idx, row_keys, row_labels, bias_rate_metrics,
+                              f"B1 Bias — Rates — {model_label}",
+                              out / f"summary_heatmap_bias_rates_{mkey}.png")
 
 
 # ── Figure 4: model comparison ───────────────────────────────────────────────
@@ -367,9 +371,9 @@ def plot_model_comparison(records: list[dict], out: Path) -> None:
     """
     metrics_info = [
         ("accuracy", "overall_accuracy", "Overall\naccuracy"),
-        ("accuracy", "ab_accuracy",      "AB\naccuracy"),
-        ("accuracy", "ba_accuracy",      "BA\naccuracy"),
-        ("accuracy", "c_accuracy",       "C\naccuracy"),
+        ("accuracy", "ab_accuracy",      "Primacy\naccuracy"),
+        ("accuracy", "ba_accuracy",      "Recency\naccuracy"),
+        ("accuracy", "c_accuracy",       "Tie\naccuracy"),
         ("accuracy", "accuracy_gap",     "Accuracy\ngap"),
         ("position_consistency",  None,  "Position\nconsistency"),
         ("bias_toward_first_position", None, "Bias\ntoward A"),

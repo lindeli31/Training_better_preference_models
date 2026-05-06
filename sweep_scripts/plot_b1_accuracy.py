@@ -31,38 +31,11 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 import numpy as np
 
-# ── sweep dimensions ──────────────────────────────────────────────────────────
-MODELS_ORDER    = ["apertus", "llama33", "glm47"]
-TEMPLATES_ORDER = ["expert_rater", "llm_judge", "opro", "gepa", "opro_tree"]
-DIFFICULTIES    = ["easy", "medium", "hard"]
-ACC_TYPES       = ["ab", "ba", "c"]
-
-MODEL_LABELS = {
-    "apertus": "Apertus-70B",
-    "llama33": "Llama-3.3-70B",
-    "glm47":   "GLM-4.7-Flash",
-}
-TEMPLATE_LABELS = {
-    "expert_rater": "Expert Rater",
-    "llm_judge":    "LLM Judge",
-    "opro":         "OPRO",
-    "gepa":         "GEPA",
-    "opro_tree":    "OPRO Tree",
-}
-# Hatch patterns encode template across all plot types
-TEMPLATE_HATCHES = {
-    "expert_rater": "",
-    "llm_judge":    "///",
-    "opro":         "xxx",
-    "gepa":         "...",
-    "opro_tree":    "\\\\",
-}
-# Hatch patterns encode model in per-template plots
-MODEL_HATCHES = {
-    "apertus": "",
-    "llama33": "///",
-    "glm47":   "\\\\",
-}
+from config import (
+    MODELS_ORDER, MODEL_LABELS, MODEL_HATCHES,
+    TEMPLATES_ORDER, TEMPLATE_LABELS, TEMPLATE_HATCHES,
+    DIFFICULTIES, ACC_TYPES,
+)
 
 # ── accuracy colour scheme ────────────────────────────────────────────────────
 # Each acc type has 3 segment colours: [correct, error_key_1, error_key_2]
@@ -80,9 +53,9 @@ ACC_ERR_KEYS = {
     "c":  ["A", "B"],
 }
 ACC_YLABELS = {
-    "ab": "AB accuracy\n(correct in slot A)",
-    "ba": "BA accuracy\n(correct in slot B)",
-    "c":  "C accuracy\n(gold = tie)",
+    "ab": "Primacy accuracy\n(correct in slot A)",
+    "ba": "Recency accuracy\n(correct in slot B)",
+    "c":  "Tie accuracy\n(gold = tie)",
 }
 
 # ── bar layout ────────────────────────────────────────────────────────────────
@@ -243,7 +216,7 @@ def plot_per_difficulty(metrics: dict, out: Path) -> None:
     group_labels = [MODEL_LABELS[m] for m in MODELS_ORDER]
 
     for diff in DIFFICULTIES:
-        fig, axes = plt.subplots(3, 1, figsize=(9, 9), sharex=True)
+        fig, axes = plt.subplots(len(ACC_TYPES), 1, figsize=(9, 3 * len(ACC_TYPES)), sharex=True)
         fig.suptitle(f"B1 Accuracy — {diff.capitalize()} difficulty",
                      fontsize=13, fontweight="bold")
 
@@ -276,7 +249,7 @@ def plot_per_model(metrics: dict, out: Path,
     group_labels = [d.capitalize() for d in DIFFICULTIES]
 
     for model in MODELS_ORDER:
-        fig, axes = plt.subplots(3, 1, figsize=(9, 9), sharex=True)
+        fig, axes = plt.subplots(len(ACC_TYPES), 1, figsize=(9, 3 * len(ACC_TYPES)), sharex=True)
         fig.suptitle(f"B1 Accuracy — {MODEL_LABELS[model]}",
                      fontsize=13, fontweight="bold")
 
@@ -326,7 +299,7 @@ def plot_per_template(metrics: dict, out: Path,
         else:
             resolve_note = ""
 
-        fig, axes = plt.subplots(3, 1, figsize=(9, 9), sharex=True)
+        fig, axes = plt.subplots(len(ACC_TYPES), 1, figsize=(9, 3 * len(ACC_TYPES)), sharex=True)
         fig.suptitle(f"B1 Accuracy — {TEMPLATE_LABELS.get(template, template)}{resolve_note}",
                      fontsize=13, fontweight="bold")
 
@@ -357,7 +330,8 @@ def plot_combined(metrics: dict, out: Path) -> None:
     xs, centers = _group_positions(len(MODELS_ORDER), len(TEMPLATES_ORDER))
     group_labels = [MODEL_LABELS[m] for m in MODELS_ORDER]
 
-    fig, axes = plt.subplots(3, 3, figsize=(18, 12),
+    fig, axes = plt.subplots(len(ACC_TYPES), len(DIFFICULTIES),
+                             figsize=(6 * len(DIFFICULTIES), 4 * len(ACC_TYPES)),
                              sharex="col", sharey="row")
     fig.suptitle("B1 Accuracy — Combined Overview\n"
                  "(rows: accuracy type  |  cols: difficulty  |  "

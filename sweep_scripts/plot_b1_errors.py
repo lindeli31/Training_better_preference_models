@@ -28,27 +28,12 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 import numpy as np
 
-# ── dimensions ────────────────────────────────────────────────────────────────
-MODELS_ORDER       = ["apertus", "llama33", "glm47"]
-TEMPLATES_ORDER    = ["expert_rater", "llm_judge", "opro", "gepa", "opro_tree"]
-BASELINE_TEMPLATES = {"expert_rater", "llm_judge"}
-OPTIMIZED_TEMPLATES = {"opro", "gepa", "opro_tree"}
-DIFFICULTIES       = ["easy", "medium", "hard"]
-ACC_TYPES          = ["ab", "ba", "c"]
-
-MODEL_COLORS = {"apertus": "#b42828", "llama33": "#1f407a", "glm47": "#2e8b57"}
-MODEL_LABELS = {
-    "apertus": "Apertus-70B",
-    "llama33": "Llama-3.3-70B",
-    "glm47":   "GLM-4.7-Flash",
-}
-TEMPLATE_LABELS = {
-    "expert_rater": "expert_rater",
-    "llm_judge":    "llm_judge",
-    "opro":         "opro",
-    "gepa":         "gepa",
-    "opro_tree":    "opro_tree",
-}
+from config import (
+    MODELS_ORDER, MODEL_LABELS, MODEL_COLORS,
+    TEMPLATES_ORDER, TEMPLATE_LABELS,
+    BASELINE_TEMPLATES, OPTIMIZED_TEMPLATES,
+    DIFFICULTIES, ACC_TYPES,
+)
 
 # Error config: per acc-type, the two possible wrong labels and their colours
 # Each row uses two tones from the same hue family for a cohesive, gradient feel.
@@ -221,7 +206,7 @@ def plot_error_breakdown(idx: dict, out: Path) -> None:
                                       label=MODEL_LABELS[m])
                        for m in MODELS_ORDER]
             handles = model_h + [mpatches.Patch(fc="none", ec="none", label="")] + handles
-        axes[row][2].legend(
+        axes[row][-1].legend(
             handles=handles,
             loc="center left",
             bbox_to_anchor=(1.04, 0.5),
@@ -265,7 +250,7 @@ def plot_pc_accuracy(idx: dict, out: Path) -> None:
     opt_span  = (min(opt_cx)  - half_g, max(opt_cx)  + half_g)
     sep_x     = (max(base_cx) + min(opt_cx)) / 2
 
-    fig, axes = plt.subplots(1, 3, figsize=(20, 4.5), sharey=True,
+    fig, axes = plt.subplots(1, len(DIFFICULTIES), figsize=(6.5 * len(DIFFICULTIES), 4.5), sharey=True,
                              gridspec_kw={"wspace": 0.12})
     fig.suptitle("B1 — Overall accuracy  &  position consistency",
                  fontsize=11, fontweight="bold")
