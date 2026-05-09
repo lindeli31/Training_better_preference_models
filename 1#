@@ -1,0 +1,6 @@
+[transformers] `torch_dtype` is deprecated! Use `dtype` instead!
+[transformers] `torch_dtype` is deprecated! Use `dtype` instead!
+Loading weights:   0%|          | 0/146 [00:00<?, ?it/s]Loading weights:   0%|          | 0/146 [00:00<?, ?it/s]Loading weights:   1%|          | 1/146 [00:03<07:25,  3.07s/it]Loading weights:   1%|          | 1/146 [00:03<07:25,  3.07s/it]Loading weights:  70%|██████▉   | 102/146 [00:03<00:00, 45.06it/s]Loading weights:  70%|██████▉   | 102/146 [00:03<00:00, 45.06it/s]Loading weights: 100%|██████████| 146/146 [00:03<00:00, 40.87it/s]Loading weights: 100%|██████████| 146/146 [00:03<00:00, 40.87it/s]
+
+noise scales:   0%|          | 0/2 [00:00<?, ?it/s]noise scales:   0%|          | 0/2 [00:00<?, ?it/s]noise scales: 100%|██████████| 2/2 [00:00<00:00, 18.72it/s]noise scales: 100%|██████████| 2/2 [00:00<00:00, 18.72it/s]noise scales: 100%|██████████| 2/2 [00:00<00:00, 18.69it/s]noise scales: 100%|██████████| 2/2 [00:00<00:00, 18.69it/s]
+

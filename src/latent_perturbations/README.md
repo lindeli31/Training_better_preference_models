@@ -4,7 +4,7 @@
 
 Previous work using linear probes (diff_mean, PCA on contrastive differences) to find positional bias directions in LLM judge activations showed only weak causal attribution (+0.017 flip-rate difference over random baseline). The root cause: probing via random noise in a ~3072-dim space means <0.15% of perturbation energy lands in the 3-dim bias subspace — the model never actually experiences a meaningful push along the bias direction.
 
-This document proposes a gradient-based alternative, adapting the activation steering methodology from [TODO: cite paper] to the positional bias setting.
+This document proposes a gradient-based alternative, adapting the activation steering methodology from [\[TODO: cite paper\]](https://arxiv.org/html/2506.16078v1) to the positional bias setting.
 
 ---
 
@@ -21,7 +21,7 @@ g_l = ∇_{h_l} NLL(verdict=B)
 `g_l` is the direction in activation space at layer `l` that, if moved along, would most directly increase the probability of verdict B. This is the causally relevant direction for verdict switching — by construction.
 
 **Key advantage over diff_mean**: diff_mean finds where activations *statistically differ* between conditions. The gradient finds where activations *causally drive* the output. These are not the same thing.
-
+20.250.13.243
 ---
 
 ## Experiment 1: Layer-Wise Sensitivity Profile (LASR-style)
