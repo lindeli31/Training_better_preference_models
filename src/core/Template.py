@@ -3,8 +3,8 @@ from typing import List
 
 from pydantic import BaseModel
 
-from core.PermPair import PermPair
-from core.Prompt import Prompt
+from src.core.PermPair import PermPair
+from src.core.Prompt import Prompt
 
 
 class Template(BaseModel, ABC):

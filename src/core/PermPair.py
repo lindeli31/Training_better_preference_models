@@ -2,7 +2,7 @@ from typing import List
 
 from pydantic import BaseModel
 
-from core.Message import Message
+from src.core.Message import Message
 
 
 class PermPair(BaseModel):

@@ -7,3 +7,7 @@ dspy
 weave
 wandb
 pydantic
+instructor
+litellm
+typer
+huggingface-hub

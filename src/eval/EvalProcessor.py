@@ -1,10 +1,10 @@
 from typing import List
 
-from core.LLM import LLM
-from core.PermPair import PermPair
-from core.Prompt import Prompt
-from core.Template import Template
-from core.inference_client import extract_label
+from src.core.LLM import LLM
+from src.core.PermPair import PermPair
+from src.core.Prompt import Prompt
+from src.core.Template import Template
+from src.core.inference_client import extract_label
 
 
 class EvalProcessor:

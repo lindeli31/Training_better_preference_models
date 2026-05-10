@@ -1,9 +1,9 @@
 from typing import List
 
-from core.Message import Message
-from core.PermPair import PermPair
-from core.Prompt import Prompt
-from core.Template import Template
+from src.core.Message import Message
+from src.core.PermPair import PermPair
+from src.core.Prompt import Prompt
+from src.core.Template import Template
 
 
 class HumanTemplate(Template):

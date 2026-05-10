@@ -5,13 +5,13 @@ from datasets import disable_caching
 from dotenv import load_dotenv
 from huggingface_hub import login
 
-from core.LLM import LLM
-from core.Template import Template
-from eval.EvalProcessor import EvalProcessor
-from models.SwissAiLLM import SwissAiLLM
+from src.core.LLM import LLM
+from src.core.Template import Template
+from src.eval.EvalProcessor import EvalProcessor
+from src.models.SwissAiLLM import SwissAiLLM
+from src.scripts.util import dataset_exists
 from src.datasets.HelpSteer3 import get_help_steer_3
-from scripts.util import dataset_exists
-from templates.HumanTemplate import HumanTemplate
+from src.templates.HumanTemplate import HumanTemplate
 
 
 def evaluate_model(
@@ -24,7 +24,6 @@ def evaluate_model(
 ):
     load_dotenv()
     HF_TOKEN = os.environ['HF_TOKEN']
-    CSCS_SERVING_API = os.environ['CSCS_SERVING_API']
     login(token=HF_TOKEN)
     disable_caching()
 
@@ -40,8 +39,8 @@ def evaluate_model(
     if number_of_records is not None:
         dataset = dataset.select(range(number_of_records))
 
-    generation_llm: LLM = SwissAiLLM()
-    generation_template: Template = HumanTemplate()
+    generation_llm: LLM = SwissAiLLM(model_name)
+    generation_template: Template = HumanTemplate() #TODO: make it flexible, based on dataset_name
     processor = EvalProcessor(
         template=generation_template,
         generation_llm=generation_llm,
@@ -50,7 +49,7 @@ def evaluate_model(
     print(f"Using EvalProcessor with:\n- generation model: {model_name}\n- generation template: {generation_template.__class__.__name__}\n")
 
     if isinstance(generation_llm, SwissAiLLM):
-        num_proc = 8
+        num_proc = 1
     else:
         num_proc = 1
     print(f"Processing dataset with {num_proc} processes.")

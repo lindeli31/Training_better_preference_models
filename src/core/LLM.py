@@ -2,8 +2,8 @@ from abc import abstractmethod, ABC
 
 from pydantic import BaseModel
 
-from core import Response
-from core.Prompt import Prompt
+from src.core import Response
+from src.core.Prompt import Prompt
 
 
 class LLM(BaseModel, ABC):
