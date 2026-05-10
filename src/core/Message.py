@@ -21,9 +21,9 @@ class Message(BaseModel):
         self.content += f"{header}:\n" + content + "\n\n"
         return self
 
-    def add_context(self, context: List[dict[str]]) -> "Message":
+    def add_context(self, context: List["Message"]) -> "Message":
         history = ""
         for message in context:
-            history += f"ROLE: " + message["role"] + "\nCONTENT:\n" + message["content"] + "\n"
+            history += f"ROLE: " + message.role + "\nCONTENT:\n" + message.content + "\n"
         self.content += "CONTEXT:\n" + history + "\n"
         return self
