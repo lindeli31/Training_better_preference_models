@@ -1,103 +1,61 @@
-import asyncio
 import os
+from typing import cast
 
-from core.LLM import LLM
-from core.Prompt import Prompt
-from core.Response import Response
-from core.inference_client import InferenceConfig, SwissAIClient, extract_label, extract_thinking
+import instructor
+from litellm import completion
+from openai import OpenAI
+from openai.types.chat import ChatCompletionMessageParam
+from pydantic import BaseModel, Field
+
+from src.core.LLM import LLM
+from src.core.Prompt import Prompt
+from src.core.Response import Response
 
 
 class SwissAiLLM(LLM):
-    def __init__(self):
-        """Initialize SwissAiLLM with configuration from environment variables."""
+    api_key: str = ""
+    base_url: str = "https://api.swissai.cscs.ch/v1"
+    model_name: str = ""
+
+    def __init__(self, model_name: str):
         super().__init__()
-        self.config = InferenceConfig(
-            api_key=os.environ.get("SWISSAI_API_KEY", "SWISSAI_API_KEY"),
-            base_url=os.environ.get("SWISSAI_BASE_URL", "https://api.swissai.cscs.ch/v1"),
-        )
+        self.api_key: str = os.environ['SWISSAI_API_KEY']
+        self.model_name = model_name
 
     def generate(self, prompt: Prompt, reasoning: bool) -> Response:
-        """
-        Generate a response using the Swiss AI Stack API.
+        if reasoning:
+            return self._generate_with_reasoning(prompt)
+        else:
+            return self._generate_no_reasoning(prompt)
 
-        Args:
-            prompt: A Prompt object containing a list of Message objects
-            reasoning: Whether to include reasoning in the prompt (affects prompt construction)
-
-        Returns:
-            A Response object with the generated message and optional reasoning
-        """
-        # Convert prompt messages to API format
-        system_prompt = ""
-        user_prompt = ""
-
-        for message in prompt.messages:
-            if message.role == "developer" or message.role == "system":
-                system_prompt += message.content
-            else:  # "user" or default role
-                user_prompt += message.content
-
-        # Run the async API call synchronously
-        try:
-            loop = asyncio.get_event_loop()
-            if loop.is_running():
-                # If we're already in an async context, we need to use a different approach
-                # This shouldn't happen in the typical workflow, but we handle it gracefully
-                import nest_asyncio
-                nest_asyncio.apply()
-                response_text = loop.run_until_complete(
-                    self._call_api(system_prompt, user_prompt)
-                )
-            else:
-                response_text = loop.run_until_complete(
-                    self._call_api(system_prompt, user_prompt)
-                )
-        except RuntimeError:
-            # No event loop in current thread, create a new one
-            response_text = asyncio.run(self._call_api(system_prompt, user_prompt))
-
-        # Extract label and thinking from the response
-        label, parse_ok = extract_label(response_text)
-        thinking = extract_thinking(response_text)
-
-        # Return Response object with the full text as message
-        # The label extraction happens in EvalProcessor, so we return the full text
-        return Response(
-            message=response_text,
-            reasoning=thinking if reasoning else None,
+    def _generate_no_reasoning(self, prompt: Prompt) -> Response:
+        answer = completion(
+            model=f"openai/{self.model_name}",
+            messages=[{"role": m.role, "content": m.content} for m in prompt.messages],
+            base_url=self.base_url,
+            api_key=self.api_key,
+            n=1,
+            temperature=0.0
         )
+        message: str = answer.choices[0].message.content
+        return Response(message=message)
 
-    async def _call_api(self, system_prompt: str, user_prompt: str) -> str:
-        """
-        Call the Swiss AI Stack API asynchronously.
+    def _generate_with_reasoning(self, prompt: Prompt) -> Response:
+        # client = instructor.from_litellm(completion)
+        client = instructor.from_openai(OpenAI(
+            base_url=self.base_url,
+            api_key=self.api_key,
+        ))
 
-        Args:
-            system_prompt: System prompt for the model
-            user_prompt: User prompt for the model
+        answer: ReasonedAnswer = client.chat.completions.create(
+            model=self.model_name,
+            response_model=ReasonedAnswer,
+            messages=[{"role": m.role, "content": m.content} for m in prompt.messages],
+            temperature=0.0,
+        )
+        return Response(message=answer.answer, reasoning=answer.reasoning)
 
-        Returns:
-            The raw text response from the model
-        """
-        async with SwissAIClient(self.config) as client:
-            messages = [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt},
-            ]
 
-            url = f"{self.config.base_url}/chat/completions"
-            payload = {
-                "model": self.config.model,
-                "messages": messages,
-                "max_tokens": self.config.max_tokens,
-                "temperature": self.config.temperature,
-                "top_p": self.config.top_p,
-            }
-
-            # Use the internal _post method from the client
-            raw_response = await client._post(messages)
-
-            # Extract the content from the response
-            choice = raw_response["choices"][0]
-            response_text = choice["message"]["content"]
-
-            return response_text
+class ReasonedAnswer(BaseModel):
+    reasoning: str = Field(description="Step-by-step logic to solve the problem")
+    answer: str = Field(description="The final concise answer")
