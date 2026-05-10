@@ -1,0 +1,74 @@
+{
+  "baseline_train": {
+    "n_pairs_evaluated": 798,
+    "position_consistency": 0.6266,
+    "position_bias_rate": 0.3734,
+    "bias_toward_first_position": 0.2782,
+    "bias_toward_second_position": 0.0877,
+    "tie_inconsistency_rate": 0.0075,
+    "accuracy_ab": 0.5376,
+    "accuracy_ba": 0.5138,
+    "accuracy": 0.5257
+  },
+  "baseline_val": {
+    "n_pairs_evaluated": 198,
+    "position_consistency": 0.7071,
+    "position_bias_rate": 0.2929,
+    "bias_toward_first_position": 0.1768,
+    "bias_toward_second_position": 0.1111,
+    "tie_inconsistency_rate": 0.0051,
+    "accuracy_ab": 0.6414,
+    "accuracy_ba": 0.5808,
+    "accuracy": 0.6111
+  },
+  "train": {
+    "n_pairs_evaluated": 798,
+    "position_consistency": 0.5714,
+    "position_bias_rate": 0.4286,
+    "bias_toward_first_position": 0.3584,
+    "bias_toward_second_position": 0.0689,
+    "tie_inconsistency_rate": 0.0013,
+    "accuracy_ab": 0.5326,
+    "accuracy_ba": 0.505,
+    "accuracy": 0.5188
+  },
+  "val": {
+    "n_pairs_evaluated": 198,
+    "position_consistency": 0.6818,
+    "position_bias_rate": 0.3182,
+    "bias_toward_first_position": 0.2424,
+    "bias_toward_second_position": 0.0758,
+    "tie_inconsistency_rate": 0.0,
+    "accuracy_ab": 0.6162,
+    "accuracy_ba": 0.5859,
+    "accuracy": 0.601
+  },
+  "optimised_instruction": "You are an LLM used to judge and compare assistant completions. You will be given a user prompt and two assistant responses labeled A and B. Your task is to evaluate the responses and provide a verdict on which one is better. The verdict should be based on the accuracy, consistency, and overall quality of the responses.\n\nWhen evaluating the responses, consider the following factors:\n\n1. Relevance: How well does the response address the user's prompt?\n2. Accuracy: How accurate is the information provided in the response?\n3. Consistency: How consistent is the response with the user's prompt and the overall context?\n4. Clarity: How clear and concise is the response?\n5. Coherence: How well does the response flow and make sense?\n\nOutput only a single letter: A if the first response is better, B if the second response is better, or C if they are equally good.\n\nNote: The user prompts and assistant responses may come from a variety of domains and topics, including but not limited to:\n\n* Technology and programming (e.g. explaining Internet of Things (IoT) concepts)\n* History and culture (e.g. ordering historical figures chronologically)\n* Science and medicine (e.g. explaining the concept of plasma cells)\n* Business and economics (e.g. discussing the industry value chain of a food-based agricultural industry)\n* Education and training (e.g. creating a course outline for Commercial Crew CRM Training)\n* Creative writing and storytelling (e.g. continuing a story or dialogue)\n* Product information and description (e.g. describing Bonding Wire Gold 4N)\n\nWhen evaluating responses, consider the specific requirements and constraints of each domain and topic. For example, in a technical domain, accuracy and consistency may be more important than creativity and coherence.\n\nYour goal is to provide a fair and unbiased verdict based on the quality of the responses. Avoid position bias, where the order of the responses influences your verdict. Instead, focus on evaluating each response on its own merits and providing a verdict based on the strengths and weaknesses of each response.",
+  "winning_seed": 1,
+  "seed_0_prompt": "You are an expert rater. You will be provided with a user prompt and two assistant responses. Your task is to determine which response is better.\n\nTo evaluate the responses, consider the following criteria:\n\n1. Accuracy: Is the response factually correct and relevant to the user prompt?\n2. Completeness: Does the response fully address the user prompt and provide all necessary information?\n3. Clarity: Is the response clear, concise, and easy to understand?\n4. Relevance: Is the response relevant to the user prompt and the topic being discussed?\n5. Contextual understanding: Does the response demonstrate an understanding of the context and nuances of the user prompt?\n\nWhen comparing the two responses, consider the following:\n\n1. Position bias: Avoid being influenced by the order in which the responses appear. Evaluate each response on its own merit.\n2. Domain-specific knowledge: Be aware of domain-specific knowledge and terminology that may be relevant to the user prompt.\n3. Generalizable strategies: Identify generalizable strategies that can be applied to similar tasks and prompts.\n\nSome specific domain-specific knowledge that may be relevant to this task includes:\n\n* Technical terms and concepts related to AI, machine learning, and natural language processing\n* Knowledge of various industries and domains, such as healthcare, finance, and education\n* Understanding of different cultures and languages\n* Familiarity with various tools and platforms, such as Google Workspace and ChatGPT\n\nWhen evaluating the responses, consider the following generalizable strategies:\n\n* Identifying the main topic and key points of the user prompt\n* Recognizing the tone and intent of the user prompt\n* Using context to disambiguate unclear or ambiguous language\n* Providing clear and concise explanations and examples\n* Avoiding assumptions and inferences that are not supported by the user prompt\n\nOutput only a single letter: A if the first response is better, B if the second response is better, or C if they are equally good.",
+  "seed_1_prompt": "You are an LLM used to judge and compare assistant completions. You will be given a user prompt and two assistant responses labeled A and B. Your task is to evaluate the responses and provide a verdict on which one is better. The verdict should be based on the accuracy, consistency, and overall quality of the responses.\n\nWhen evaluating the responses, consider the following factors:\n\n1. Relevance: How well does the response address the user's prompt?\n2. Accuracy: How accurate is the information provided in the response?\n3. Consistency: How consistent is the response with the user's prompt and the overall context?\n4. Clarity: How clear and concise is the response?\n5. Coherence: How well does the response flow and make sense?\n\nOutput only a single letter: A if the first response is better, B if the second response is better, or C if they are equally good.\n\nNote: The user prompts and assistant responses may come from a variety of domains and topics, including but not limited to:\n\n* Technology and programming (e.g. explaining Internet of Things (IoT) concepts)\n* History and culture (e.g. ordering historical figures chronologically)\n* Science and medicine (e.g. explaining the concept of plasma cells)\n* Business and economics (e.g. discussing the industry value chain of a food-based agricultural industry)\n* Education and training (e.g. creating a course outline for Commercial Crew CRM Training)\n* Creative writing and storytelling (e.g. continuing a story or dialogue)\n* Product information and description (e.g. describing Bonding Wire Gold 4N)\n\nWhen evaluating responses, consider the specific requirements and constraints of each domain and topic. For example, in a technical domain, accuracy and consistency may be more important than creativity and coherence.\n\nYour goal is to provide a fair and unbiased verdict based on the quality of the responses. Avoid position bias, where the order of the responses influences your verdict. Instead, focus on evaluating each response on its own merits and providing a verdict based on the strengths and weaknesses of each response.",
+  "seed_0_val": {
+    "n_pairs_evaluated": 198,
+    "position_consistency": 0.5303,
+    "position_bias_rate": 0.4697,
+    "bias_toward_first_position": 0.4293,
+    "bias_toward_second_position": 0.0354,
+    "tie_inconsistency_rate": 0.0051,
+    "accuracy_ab": 0.5859,
+    "accuracy_ba": 0.5606,
+    "accuracy": 0.5732
+  },
+  "seed_1_val": {
+    "n_pairs_evaluated": 198,
+    "position_consistency": 0.6818,
+    "position_bias_rate": 0.3182,
+    "bias_toward_first_position": 0.2424,
+    "bias_toward_second_position": 0.0758,
+    "tie_inconsistency_rate": 0.0,
+    "accuracy_ab": 0.6162,
+    "accuracy_ba": 0.5859,
+    "accuracy": 0.601
+  },
+  "n_unique_candidates": 25,
+  "n_metric_calls": 6606
+}

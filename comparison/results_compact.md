@@ -1,0 +1,14 @@
+# Results (val split)
+
+| model                              | method    | stage                   |   position_consistency |   accuracy |   position_bias_rate |
+|:-----------------------------------|:----------|:------------------------|-----------------------:|-----------:|---------------------:|
+| swiss-ai/Apertus-70B-Instruct-2509 | -         | baseline (expert_rater) |                  0.157 |      0.450 |                0.843 |
+| swiss-ai/Apertus-70B-Instruct-2509 | -         | baseline (llm_judge)    |                  0.187 |      0.465 |                0.813 |
+| swiss-ai/Apertus-70B-Instruct-2509 | gepa      | optimised               |                  0.298 |      0.465 |                0.702 |
+| swiss-ai/Apertus-70B-Instruct-2509 | opro      | optimised               |                  0.651 |      0.543 |                0.348 |
+| swiss-ai/Apertus-70B-Instruct-2509 | opro_tree | optimised               |                  0.586 |      0.505 |                0.414 |
+| meta-llama/Llama-3.3-70B-Instruct  | -         | baseline (expert_rater) |                  0.717 |      0.609 |                0.283 |
+| meta-llama/Llama-3.3-70B-Instruct  | -         | baseline (llm_judge)    |                  0.722 |      0.604 |                0.278 |
+| meta-llama/Llama-3.3-70B-Instruct  | gepa      | optimised               |                  0.682 |      0.601 |                0.318 |
+| meta-llama/Llama-3.3-70B-Instruct  | opro      | optimised               |                  0.803 |      0.601 |                0.197 |
+| meta-llama/Llama-3.3-70B-Instruct  | opro_tree | optimised               |                  0.727 |      0.606 |                0.273 |

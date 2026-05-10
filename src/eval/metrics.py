@@ -60,7 +60,6 @@ def load_results(path: Path) -> list[dict]:
 def compute_position_bias(
     results: list[dict],
     gold_labels: Optional[dict[str, str]] = None,  # prompt_id -> "A"/"B"/"C"
-    exclude_ties: bool = False,
 ) -> dict:
     """
     Measures if the model prefers responses based on their position (A or B)
@@ -126,41 +125,79 @@ def compute_position_bias(
         "tie_inconsistency_rate": round(tie_inconsistency_count / total_pairs, 4) if total_pairs else 0,
     }
 
-    # Step 4: Accuracy against gold labels (optional)
+    # Step 4: Accuracy against gold labels, partitioned by where the correct
+    # answer sits physically in the presented pair (dataset partition, not
+    # experiment condition):
+    #
+    #   AB_bucket  — calls where the correct answer is in position A (first):
+    #                  AB-condition + gold="A"  (correct prediction: "A")
+    #                  BA-condition + gold="B"  (B moved to slot A, correct: "A")
+    #
+    #   BA_bucket  — calls where the correct answer is in position B (second):
+    #                  AB-condition + gold="B"  (correct prediction: "B")
+    #                  BA-condition + gold="A"  (A moved to slot B, correct: "B")
+    #
+    #   C_bucket   — calls where gold="C" regardless of condition
     if gold_labels is not None:
-        ab_correct, ab_total = 0, 0
-        ba_correct, ba_total = 0, 0
+        ab_bucket = {"correct": 0, "total": 0, "errors": {"B": 0, "C": 0}}
+        ba_bucket = {"correct": 0, "total": 0, "errors": {"A": 0, "C": 0}}
+        c_bucket  = {"correct": 0, "total": 0, "errors": {"A": 0, "B": 0}}
 
-        for prompt_id, ab_label in original_order_labels.items():
+        for result in results:
+            if result["label"] is None:
+                continue
+            prompt_id = result["prompt_id"]
             gold = gold_labels.get(prompt_id)
             if gold is None:
                 continue
-            if exclude_ties and gold == "C":
-                continue
-            ab_correct += int(ab_label == gold)
-            ab_total += 1
+            condition = result["condition"]
+            label = result["label"]
 
-        for prompt_id, ba_label in flipped_order_labels.items():
-            gold = gold_labels.get(prompt_id)
-            if gold is None:
-                continue
-            if exclude_ties and gold == "C":
-                continue
-            # Gold label is defined for the original order (better response = A).
-            # In BA the responses are swapped, so the correct verdict is flipped.
-            ba_correct += int(ba_label == flip_map[gold])
-            ba_total += 1
+            if gold == "C":
+                c_bucket["total"] += 1
+                if label == "C":
+                    c_bucket["correct"] += 1
+                elif label in c_bucket["errors"]:
+                    c_bucket["errors"][label] += 1
+            elif (condition == "AB" and gold == "A") or (condition == "BA" and gold == "B"):
+                # correct answer is in the first (A) slot
+                ab_bucket["total"] += 1
+                if label == "A":
+                    ab_bucket["correct"] += 1
+                elif label in ab_bucket["errors"]:
+                    ab_bucket["errors"][label] += 1
+            else:
+                # correct answer is in the second (B) slot
+                ba_bucket["total"] += 1
+                if label == "B":
+                    ba_bucket["correct"] += 1
+                elif label in ba_bucket["errors"]:
+                    ba_bucket["errors"][label] += 1
 
-        ab_acc = round(ab_correct / ab_total, 4) if ab_total else 0
-        ba_acc = round(ba_correct / ba_total, 4) if ba_total else 0
+        def _error_rates(bucket: dict, keys: list[str]) -> dict:
+            n_errors = bucket["total"] - bucket["correct"]
+            if n_errors == 0:
+                return {k: 0.0 for k in keys}
+            return {k: round(bucket["errors"][k] / n_errors, 4) for k in keys}
+
+        ab_acc = round(ab_bucket["correct"] / ab_bucket["total"], 4) if ab_bucket["total"] else 0
+        ba_acc = round(ba_bucket["correct"] / ba_bucket["total"], 4) if ba_bucket["total"] else 0
+        c_acc  = round(c_bucket["correct"]  / c_bucket["total"],  4) if c_bucket["total"]  else 0
+
+        total_all   = ab_bucket["total"] + ba_bucket["total"] + c_bucket["total"]
+        correct_all = ab_bucket["correct"] + ba_bucket["correct"] + c_bucket["correct"]
 
         metrics["accuracy"] = {
             "ab_accuracy": ab_acc,
+            "n_ab": ab_bucket["total"],
+            "ab_error_distribution": _error_rates(ab_bucket, ["B", "C"]),
             "ba_accuracy": ba_acc,
-            "n_AB_evaluated": ab_total,
-            "n_BA_evaluated": ba_total,
-            "overall_accuracy": round((ab_correct + ba_correct) / (ab_total + ba_total), 4)
-                                if (ab_total + ba_total) else 0,
+            "n_ba": ba_bucket["total"],
+            "ba_error_distribution": _error_rates(ba_bucket, ["A", "C"]),
+            "c_accuracy": c_acc,
+            "n_c": c_bucket["total"],
+            "c_error_distribution": _error_rates(c_bucket, ["A", "B"]),
+            "overall_accuracy": round(correct_all / total_all, 4) if total_all else 0,
             "accuracy_gap": round(ab_acc - ba_acc, 4),
         }
 
@@ -361,8 +398,11 @@ def compute_repetition_stability(
 
 # ---------------------------------------------------------------------------
 # Accuracy breakdown (for run_evaluate_accuracy)
-# Uses the same "difficulty" buckets as dataset.py: hard (gap ≤ 0.33),
-# medium (0.33 < gap ≤ 1.0), easy (gap > 1.0). Score scale is 0-4.
+# Mirrors the 4-bucket scheme in dataset.py:
+#   tie:    gap < 0.05          (gap ≈ 0)
+#   hard:   gap < 0.95          (gap ∈ {1/3, 2/3})
+#   medium: gap < 5/3 - 0.05   (gap ∈ {1, 4/3})
+#   easy:   gap ≥ 5/3 - 0.05   (gap ∈ {5/3, ≥2})
 # ---------------------------------------------------------------------------
 
 def compute_accuracy_breakdown(results: list[dict], exclude_ties: bool = False) -> dict:
@@ -371,7 +411,12 @@ def compute_accuracy_breakdown(results: list[dict], exclude_ties: bool = False) 
     """
     if exclude_ties:
         results = [r for r in results if r.get("gold_label") != "C"]
-    buckets = [(0.33, "hard"), (1.0, "medium"), (float("inf"), "easy")]
+    buckets = [
+        (0.05,        "tie"),
+        (1.0 - 0.05,  "hard"),
+        (5/3 - 0.05,  "medium"),
+        (float("inf"), "easy"),
+    ]
     bucket_stats = {name: {"correct": 0, "total": 0} for _, name in buckets}
     confusion: dict = defaultdict(lambda: {"A": 0, "B": 0, "C": 0, "None": 0})
     label_dist = {"A": 0, "B": 0, "C": 0, "None": 0}
@@ -395,7 +440,7 @@ def compute_accuracy_breakdown(results: list[dict], exclude_ties: bool = False) 
             continue
 
         for upper, name in buckets:
-            if gap <= upper:
+            if gap < upper:
                 bucket_stats[name]["total"] += 1
                 if lbl == gold:
                     bucket_stats[name]["correct"] += 1
