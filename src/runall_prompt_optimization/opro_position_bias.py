@@ -37,7 +37,7 @@ import logging
 import random
 from dataclasses import dataclass
 from pathlib import Path
-from src.datasets.dataset import PairRecord
+from src.dataset.dataset import PairRecord
 from src.core.inference_client import SwissAIClient
 from src.eval.metrics import compute_position_bias
 from src.core.templates import _build_user_prompt

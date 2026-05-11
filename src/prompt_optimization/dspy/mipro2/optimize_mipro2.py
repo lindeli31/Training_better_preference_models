@@ -6,12 +6,12 @@ import weave
 from datasets import disable_caching
 from dotenv import load_dotenv
 
-from prompt_optimization.dspy.adapt_dataset_for_dspy import adapt_dataset_for_dspy, get_train_test_split
-from src.datasets.HelpSteer3 import get_help_steer_3
+from src.dataset.HelpSteer2 import get_help_steer_2
+from src.prompt_optimization.dspy.adapt_dataset_for_dspy import adapt_dataset_for_dspy, get_train_test_split
+from src.dataset.HelpSteer3 import get_help_steer_3
 from src.prompt_optimization.dspy.JudgeModule import JudgeModule
 from src.prompt_optimization.dspy.PermbatchModule import PermbatchModule
-from src.prompt_optimization.dspy.metrics import eval_metric, metric_with_feedback, accuracy_score_metric, \
-    consistency_score_metric
+from src.prompt_optimization.dspy.mipro2.metrics_mipro2 import eval_metric, metric_with_feedback, accuracy_score_metric, consistency_score_metric
 
 disable_caching()
 load_dotenv()
@@ -22,7 +22,7 @@ load_dotenv()
 CSCS_SERVING_API = os.environ['CSCS_SERVING_API']
 base_url = "https://api.swissai.svc.cscs.ch/v1"
 task_lm = dspy.LM(
-    "openai/swiss-ai/Apertus-70B-Instruct-2509",
+    "openai/swiss-ai/Apertus-8B-Instruct-2509",
     temperature=1.0,
     api_key=CSCS_SERVING_API,
     api_base=base_url
@@ -36,8 +36,8 @@ reflection_lm = dspy.LM( # Strong model required for GEPA's reflection
 
 dspy.configure(lm=task_lm)
 
-dataset = get_help_steer_3()
-dataset = adapt_dataset_for_dspy(dataset)[:100]
+dataset = get_help_steer_2()
+dataset = adapt_dataset_for_dspy(dataset)[:1000]
 train_dataset, test_dataset = get_train_test_split(dataset)
 
 student_model = JudgeModule(reason=False)
@@ -51,10 +51,9 @@ print(f"Combined metric: {combine_metric_evaluate(wrapper_model).score}")
 print(f"\n\nAccuracy metric: {accuracy_metric_evaluate(wrapper_model).score}")
 print(f"\n\nConsistency metric: {consistency_metric_evaluate(wrapper_model).score}")
 
-optimizer = dspy.GEPA(
+optimizer = dspy.MIPROv2(
     metric=metric_with_feedback,
-    reflection_lm=reflection_lm,
-    auto="light",
+    auto="medium",
 )
 optimized_wrapper = optimizer.compile(
     student=wrapper_model,

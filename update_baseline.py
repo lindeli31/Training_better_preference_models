@@ -32,7 +32,7 @@ load_dotenv()
 
 from src.core.inference_client import InferenceConfig, SwissAIClient
 from src.core.templates import SYSTEM_EXPERT_RATER, SYSTEM_LLM_JUDGE
-from src.datasets.dataset import load_stratified_pairs
+from src.dataset.dataset import load_stratified_pairs
 from src.runall_prompt_optimization.opro_position_bias import evaluate_full_metrics
 
 logging.basicConfig(
