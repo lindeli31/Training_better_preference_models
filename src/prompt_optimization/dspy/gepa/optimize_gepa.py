@@ -1,17 +1,14 @@
 import os
 
 import dspy
-import wandb
-import weave
-from datasets import disable_caching
+from dataset import disable_caching
 from dotenv import load_dotenv
 
-from prompt_optimization.dspy.adapt_dataset_for_dspy import adapt_dataset_for_dspy, get_train_test_split
-from src.datasets.HelpSteer3 import get_help_steer_3
+from src.dataset.HelpSteer2 import get_help_steer_2
+from src.prompt_optimization.dspy.adapt_dataset_for_dspy import adapt_dataset_for_dspy, get_train_test_split
 from src.prompt_optimization.dspy.JudgeModule import JudgeModule
 from src.prompt_optimization.dspy.PermbatchModule import PermbatchModule
-from src.prompt_optimization.dspy.metrics import eval_metric, metric_with_feedback, accuracy_score_metric, \
-    consistency_score_metric
+from prompt_optimization.dspy.gepa.metrics_gepa import eval_metric, metric_with_feedback, accuracy_score_metric, consistency_score_metric
 
 disable_caching()
 load_dotenv()
@@ -22,7 +19,7 @@ load_dotenv()
 CSCS_SERVING_API = os.environ['CSCS_SERVING_API']
 base_url = "https://api.swissai.svc.cscs.ch/v1"
 task_lm = dspy.LM(
-    "openai/swiss-ai/Apertus-70B-Instruct-2509",
+    "openai/swiss-ai/Apertus-8B-Instruct-2509",
     temperature=1.0,
     api_key=CSCS_SERVING_API,
     api_base=base_url
@@ -36,7 +33,7 @@ reflection_lm = dspy.LM( # Strong model required for GEPA's reflection
 
 dspy.configure(lm=task_lm)
 
-dataset = get_help_steer_3()
+dataset = get_help_steer_2()
 dataset = adapt_dataset_for_dspy(dataset)[:100]
 train_dataset, test_dataset = get_train_test_split(dataset)
 
