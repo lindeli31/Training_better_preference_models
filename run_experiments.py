@@ -46,7 +46,7 @@ import time
 from dotenv import load_dotenv
 from pathlib import Path
 from core.inference_client import InferenceConfig, SwissAIClient
-from src.datasets.dataset import load_dataset_pairs, DIFFICULTY_LEVELS
+from src.dataset.dataset import load_dataset_pairs, DIFFICULTY_LEVELS
 from eval.experiments import (
     run_position_bias,
     run_template_sensitivity,

@@ -23,7 +23,7 @@ import threading
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 import dspy
-from src.datasets.dataset import PairRecord
+from src.dataset.dataset import PairRecord
 from src.runall_prompt_optimization.gepa_plots import plot_baseline_vs_optimised, plot_training_trajectory
 from src.core.inference_client import extract_label, InferenceConfig, SwissAIClient
 from src.eval.metrics import compute_position_bias

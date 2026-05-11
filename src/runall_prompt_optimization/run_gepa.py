@@ -35,7 +35,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Project imports
-from src.datasets.dataset import load_dataset_pairs, load_stratified_pairs
+from src.dataset.dataset import load_dataset_pairs, load_stratified_pairs
 from src.runall_prompt_optimization.gepa_position_bias import run_gepa
 
 # Console logging at INFO so we see baseline / GEPA progress / final numbers.

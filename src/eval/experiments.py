@@ -26,7 +26,7 @@ from pathlib import Path
 from typing import Optional
 from core.inference_client import SwissAIClient, JudgeResponse
 from core.templates import build_prompt, CRITERIA
-from src.datasets.dataset import PairRecord
+from src.dataset.dataset import PairRecord
 logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 # Helper: function to save results to JSONL 

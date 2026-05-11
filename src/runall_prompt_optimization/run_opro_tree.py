@@ -23,7 +23,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from src.core.inference_client import InferenceConfig, SwissAIClient
-from src.datasets.dataset import load_dataset_pairs, load_stratified_pairs
+from src.dataset.dataset import load_dataset_pairs, load_stratified_pairs
 from src.runall_prompt_optimization.opro_tree_position_bias import run_opro_tree
 from check_models import validate_model
 

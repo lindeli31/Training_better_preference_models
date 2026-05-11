@@ -24,7 +24,7 @@ import pandas as pd
 from dotenv import load_dotenv
 load_dotenv()
 
-from src.datasets.dataset import load_dataset_pairs, load_stratified_pairs
+from src.dataset.dataset import load_dataset_pairs, load_stratified_pairs
 from src.core.inference_client import InferenceConfig, SwissAIClient
 from src.runall_prompt_optimization.gepa_position_bias import run_gepa
 from src.runall_prompt_optimization.opro_position_bias import run_opro, evaluate_full_metrics

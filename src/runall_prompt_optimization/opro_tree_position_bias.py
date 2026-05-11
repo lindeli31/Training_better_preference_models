@@ -38,7 +38,7 @@ import random
 from dataclasses import dataclass
 from pathlib import Path
 
-from src.datasets.dataset import PairRecord
+from src.dataset.dataset import PairRecord
 from src.core.inference_client import SwissAIClient
 from src.runall_prompt_optimization.opro_position_bias import (
     META_SYSTEM,

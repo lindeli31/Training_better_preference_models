@@ -36,7 +36,7 @@ from dotenv import load_dotenv
 from pathlib import Path
 
 from core.inference_client import InferenceConfig, SwissAIClient
-from src.datasets.dataset import load_dataset_pairs
+from src.dataset.dataset import load_dataset_pairs
 from eval.experiments import run_evaluate_accuracy
 from eval.metrics import compute_accuracy_breakdown, print_summary
 from check_models import validate_model
