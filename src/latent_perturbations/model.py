@@ -16,8 +16,18 @@ Core function: compute_layer_outputs()
   activations) are in the backward graph.
 
 Perturbation: get_verdict_with_gradient_steer()
-  Replaces h_l with h_l + alpha * g/||g|| via forward hook, then reads
-  the verdict token from the next-token logits.
+  Replaces h_l with h_l + sign * alpha * g/||g|| via forward hook.
+    sign=-1 (default): h_l - alpha * g/||g||, g = ∇NLL(second_pos_token)
+      Subtracting the gradient moves toward second_pos_token being more likely.
+    sign=+1 (paper convention): h_l + alpha * g/||g||, g = ∇NLL(current_output)
+      Adding ∇NLL(current_output) makes the current output less likely.
+  Both steer away from the current verdict. Use sign=-1/target=second_pos_token
+  or sign=+1/target=current_output — they are equivalent in expectation.
+
+  normalize=True applies the LatentSafety distribution normalization:
+    δ' = μ(h) + (δ - μ(δ)) / (σ(δ) + ε) * σ(h)
+  where δ = h + sign * alpha * g/||g|| (the full perturbed vector).
+  This rescales δ to match h's mean and std, keeping activations in-distribution.
 """
 
 import numpy as np
@@ -35,6 +45,9 @@ def load_model(config: GradientProbeConfig):
 
     if config.load_in_4bit:
         kwargs["quantization_config"] = BitsAndBytesConfig(load_in_4bit=True)
+        kwargs["device_map"] = "auto"
+    elif config.load_in_8bit:
+        kwargs["quantization_config"] = BitsAndBytesConfig(load_in_8bit=True)
         kwargs["device_map"] = "auto"
     else:
         kwargs["device_map"] = config.device
@@ -193,9 +206,15 @@ def get_verdict_with_gradient_steer(
     gradient: np.ndarray,
     alpha: float,
     verdict_tokens: Optional[list[str]] = None,
+    normalize: bool = False,
+    sign: int = -1,
 ) -> tuple[str, float]:
     """
-    Perturb activation at layer_idx by alpha * g/||g||, return (verdict, new_nll).
+    Steer activation at layer_idx, return (verdict, new_nll).
+
+    sign=-1 (default): h' = h - alpha * g/||g||, g = ∇NLL(second_pos_token)
+    sign=+1:           h' = h + alpha * g/||g||, g = ∇NLL(current_output)
+    normalize=True: rescale h' to match h's mean/std (LatentSafety normalization).
     """
     if verdict_tokens is None:
         verdict_tokens = ["A", "B", "C"]
@@ -204,12 +223,19 @@ def get_verdict_with_gradient_steer(
     dtype = next(model.parameters()).dtype
     token_ids = [tokenizer.encode(t, add_special_tokens=False)[0] for t in verdict_tokens]
 
-    # Subtract gradient of NLL to decrease NLL → increase P(target_token).
-    # NLL gradient points away from target; we move against it to steer toward it.
     g_unit = gradient / (np.linalg.norm(gradient) + 1e-12)
-    patched = torch.tensor(
-        (activation - alpha * g_unit).astype(np.float32), device=device
-    ).to(dtype)
+    delta_raw = activation + sign * alpha * g_unit  # full perturbed vector
+
+    if normalize:
+        h_mean = float(activation.mean())
+        h_std  = float(activation.std())
+        d_mean = float(delta_raw.mean())
+        d_std  = float(delta_raw.std()) + 1e-12
+        patched_np = h_mean + (delta_raw - d_mean) / d_std * h_std
+    else:
+        patched_np = delta_raw
+
+    patched = torch.tensor(patched_np.astype(np.float32), device=device).to(dtype)
 
     enc = tokenizer(prompt, return_tensors="pt").to(device)
     last_pos = enc["input_ids"].shape[1] - 1

@@ -160,6 +160,8 @@ def _load_mixed_pairs(
 
     if uncached:
         print(f"  Screening {len(uncached)} pairs for positional bias...")
+        if bias_cache_path:
+            Path(bias_cache_path).parent.mkdir(parents=True, exist_ok=True)
         cache_file = open(bias_cache_path, "a") if bias_cache_path else None
         try:
             for sp in tqdm(uncached, desc="bias screening"):

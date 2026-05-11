@@ -74,29 +74,43 @@ def _clear_cache():
 # Experiment 1: Layer sweep — LASR
 # ---------------------------------------------------------------------------
 
-def run_experiment_1(config: GradientProbeConfig, model, tokenizer, swap_pairs) -> int:
+def run_experiment_1(
+    config: GradientProbeConfig, model, tokenizer, swap_pairs,
+    sanity_check: bool = False,
+) -> int:
     """
     For each layer l and each pair, steer by alpha * g/||g|| and record flip.
     LASR(l) = mean flip rate across pairs.
 
-    Returns the peak layer index (highest LASR).
+    sanity_check=True additionally runs the paper's sign convention:
+      h + α · ∇NLL(first_pos_token)   [makes current output less likely]
+    alongside our default:
+      h - α · ∇NLL(second_pos_token)  [makes target token more likely]
+    Both should cause the same flip direction if the gradient is a clean
+    position signal.  Results stored in lasr_alt per layer.
+
+    Returns the peak layer index (highest LASR from the default direction).
     """
     layer_indices = resolve_layer_indices(model, config)
     out = _out(config)
-    rng = np.random.default_rng(config.seed)
 
     print(f"\n=== Experiment 1: Layer Sweep ===")
     print(f"  layers: {layer_indices}")
     print(f"  pairs:  {len(swap_pairs)}, alpha: {config.alpha}")
+    if sanity_check:
+        print(f"  sanity_check=True: also running h + α·∇NLL(first_pos_token)")
+    if config.normalize:
+        print(f"  normalize=True: applying LatentSafety distribution normalization")
 
     lasr_per_layer = {}
 
     with open(out / "exp1_layer_sweep.jsonl", "w") as f:
         for layer_idx in tqdm(layer_indices, desc="layers"):
-            flips, grad_norms = [], []
+            flips, flips_alt, grad_norms = [], [], []
 
             for pair in tqdm(swap_pairs, desc=f"  layer={layer_idx}", leave=False):
                 try:
+                    # --- default: h - α · ∇NLL(second_pos_token) ---
                     data = compute_layer_outputs(
                         model, tokenizer,
                         pair.prompt_ab,
@@ -106,31 +120,61 @@ def run_experiment_1(config: GradientProbeConfig, model, tokenizer, swap_pairs) 
                     if layer_idx not in data or data[layer_idx]["gradient"] is None:
                         continue
 
-                    act  = data[layer_idx]["activation"]
-                    grad = data[layer_idx]["gradient"]
+                    act      = data[layer_idx]["activation"]
+                    grad_b   = data[layer_idx]["gradient"]
                     nll_orig = data[layer_idx]["nll"]
 
                     v_orig = get_verdict(model, tokenizer, pair.prompt_ab,
                                         config.verdict_tokens)
                     v_steered, _ = get_verdict_with_gradient_steer(
                         model, tokenizer, pair.prompt_ab,
-                        layer_idx, act, grad, config.alpha,
+                        layer_idx, act, grad_b, config.alpha,
                         config.verdict_tokens,
+                        normalize=config.normalize, sign=-1,
                     )
 
                     flipped = v_orig != v_steered
                     flips.append(int(flipped))
-                    grad_norms.append(float(np.linalg.norm(grad)))
+                    grad_norms.append(float(np.linalg.norm(grad_b)))
 
                     record = {
-                        "pair_id":      pair.pair_id,
-                        "layer_idx":    layer_idx,
-                        "verdict_orig": v_orig,
+                        "pair_id":         pair.pair_id,
+                        "layer_idx":       layer_idx,
+                        "verdict_orig":    v_orig,
                         "verdict_steered": v_steered,
-                        "flipped":      flipped,
-                        "nll_orig":     nll_orig,
-                        "grad_norm":    float(np.linalg.norm(grad)),
+                        "flipped":         flipped,
+                        "nll_orig":        nll_orig,
+                        "grad_norm":       float(np.linalg.norm(grad_b)),
                     }
+
+                    # --- sanity check: h + α · ∇NLL(first_pos_token) ---
+                    if sanity_check:
+                        first_token = next(
+                            t for t in config.verdict_tokens if t != pair.second_token_ab
+                        )
+                        try:
+                            data_alt = compute_layer_outputs(
+                                model, tokenizer,
+                                pair.prompt_ab,
+                                first_token,
+                                [layer_idx],
+                            )
+                            if (layer_idx in data_alt
+                                    and data_alt[layer_idx]["gradient"] is not None):
+                                grad_a = data_alt[layer_idx]["gradient"]
+                                v_steered_alt, _ = get_verdict_with_gradient_steer(
+                                    model, tokenizer, pair.prompt_ab,
+                                    layer_idx, act, grad_a, config.alpha,
+                                    config.verdict_tokens,
+                                    normalize=config.normalize, sign=+1,
+                                )
+                                flipped_alt = v_orig != v_steered_alt
+                                flips_alt.append(int(flipped_alt))
+                                record["verdict_steered_alt"] = v_steered_alt
+                                record["flipped_alt"] = flipped_alt
+                        except Exception as e:
+                            print(f"  [skip-alt] pair {pair.pair_id} layer {layer_idx}: {e}")
+
                     f.write(json.dumps(record) + "\n")
                     f.flush()
 
@@ -138,13 +182,17 @@ def run_experiment_1(config: GradientProbeConfig, model, tokenizer, swap_pairs) 
                     print(f"  [skip] pair {pair.pair_id} layer {layer_idx}: {e}")
 
             if flips:
-                lasr = float(np.mean(flips))
-                lasr_per_layer[layer_idx] = {
-                    "lasr":           lasr,
+                entry = {
+                    "lasr":           float(np.mean(flips)),
                     "mean_grad_norm": float(np.mean(grad_norms)),
                     "n_pairs":        len(flips),
                 }
-                print(f"  layer={layer_idx:3d}  LASR={lasr:.3f}  "
+                if flips_alt:
+                    entry["lasr_alt"] = float(np.mean(flips_alt))
+                lasr_per_layer[layer_idx] = entry
+                alt_str = (f"  LASR_alt={entry['lasr_alt']:.3f}"
+                           if "lasr_alt" in entry else "")
+                print(f"  layer={layer_idx:3d}  LASR={entry['lasr']:.3f}{alt_str}  "
                       f"grad_norm={np.mean(grad_norms):.2f}  n={len(flips)}")
 
             _clear_cache()
@@ -358,6 +406,7 @@ def run_experiment_4(config: GradientProbeConfig, model, tokenizer, swap_pairs,
                     v_grad, _ = get_verdict_with_gradient_steer(
                         model, tokenizer, pair.prompt_ab,
                         target_layer, act, grad, alpha, config.verdict_tokens,
+                        normalize=config.normalize, sign=-1,
                     )
                     grad_flip = int(v_orig != v_grad)
                     grad_flips.append(grad_flip)
@@ -416,8 +465,10 @@ if __name__ == "__main__":
     p = argparse.ArgumentParser()
     p.add_argument("--model",         default="meta-llama/Llama-3.1-70B-Instruct")
     p.add_argument("--device",        default="cuda")
-    p.add_argument("--4bit",          dest="load_in_4bit", action="store_true", default=True)
-    p.add_argument("--no-4bit",       dest="load_in_4bit", action="store_false")
+    quant = p.add_mutually_exclusive_group()
+    quant.add_argument("--4bit",   dest="quant", action="store_const", const="4bit", default="4bit")
+    quant.add_argument("--8bit",   dest="quant", action="store_const", const="8bit")
+    quant.add_argument("--no-4bit", dest="quant", action="store_const", const="none")
     p.add_argument("--dtype",         default="bfloat16", choices=["bfloat16", "float16"])
     p.add_argument("--n-pairs",       type=int, default=200)
     p.add_argument("--seed",          type=int, default=42)
@@ -441,15 +492,23 @@ if __name__ == "__main__":
                    help="Path to cache bias labels (JSONL) to avoid re-running verdicts")
     p.add_argument("--bias-ratio",    type=float, default=0.5,
                    help="Fraction of selected pairs that are biased (default 0.5 for balanced ROC)")
+    p.add_argument("--normalize",     action="store_true",
+                   help="Apply LatentSafety distribution normalization to perturbation "
+                        "(rescales perturbed activation to match hidden state mean/std)")
+    p.add_argument("--exp1-sanity",   action="store_true",
+                   help="Exp 1 sanity check: also run h + α·∇NLL(first_pos_token) "
+                        "alongside the default h - α·∇NLL(second_pos_token) and compare LASR")
     args = p.parse_args()
 
     config = GradientProbeConfig(
         model_name=args.model,
         device=args.device,
-        load_in_4bit=args.load_in_4bit,
+        load_in_4bit=(args.quant == "4bit"),
+        load_in_8bit=(args.quant == "8bit"),
         dtype=args.dtype,
         layer_sweep_step=args.layer_step,
         target_layer=args.target_layer,
+        normalize=args.normalize,
         alpha=args.alpha,
         alpha_scales=args.alpha_scales,
         n_pairs=args.n_pairs,
@@ -461,25 +520,45 @@ if __name__ == "__main__":
     print(f"Loading {config.model_name}...")
     model, tokenizer = load_model(config)
 
-    print(f"Loading {config.n_pairs} swap pairs...")
-    swap_pairs = load_swap_pairs(
-        tokenizer,
+    # Exp 1/2/4: all-biased pairs (maximise signal for layer sweep, antisymmetry, dose-response)
+    # Exp 3:     50/50 biased+unbiased pairs (need both groups for the classifier ROC)
+    _common = dict(
+        tokenizer=tokenizer,
         n=config.n_pairs,
         seed=config.seed,
         template_id=config.template_id,
         criterion=config.criterion,
+        pool_multiplier=args.pool_multiplier,
+    )
+
+    print(f"Loading {config.n_pairs} biased swap pairs (Exp 1/2/4)...")
+    swap_pairs_biased = load_swap_pairs(
+        **_common,
         filter_biased=args.filter_biased,
         model=model if args.filter_biased else None,
-        pool_multiplier=args.pool_multiplier,
         bias_cache_path=args.bias_cache,
-        bias_ratio=args.bias_ratio,
+        bias_ratio=1.0,   # all biased
     )
+
+    # Only load the mixed pool if Exp 3 is being run
+    swap_pairs_mixed = None
+    if args.experiment in ("3", "all"):
+        print(f"Loading {config.n_pairs} mixed swap pairs (Exp 3, 50/50)...")
+        swap_pairs_mixed = load_swap_pairs(
+            **_common,
+            filter_biased=args.filter_biased,
+            model=model if args.filter_biased else None,
+            bias_cache_path=args.bias_cache,
+            bias_ratio=args.bias_ratio,   # default 0.5
+        )
 
     target_layer = config.target_layer
 
     if args.experiment in ("1", "all"):
-        target_layer = run_experiment_1(config, model, tokenizer, swap_pairs)
-        # Write discovered peak layer so subsequent jobs can read it
+        target_layer = run_experiment_1(
+            config, model, tokenizer, swap_pairs_biased,
+            sanity_check=args.exp1_sanity,
+        )
         (_out(config) / "peak_layer.txt").write_text(str(target_layer))
 
     # Allow manual override for experiments 2-4 when running without exp 1
@@ -487,10 +566,10 @@ if __name__ == "__main__":
         target_layer = config.target_layer
 
     if args.experiment in ("2", "all"):
-        run_experiment_2(config, model, tokenizer, swap_pairs, target_layer)
+        run_experiment_2(config, model, tokenizer, swap_pairs_biased, target_layer)
 
     if args.experiment in ("3", "all"):
-        run_experiment_3(config, model, tokenizer, swap_pairs, target_layer)
+        run_experiment_3(config, model, tokenizer, swap_pairs_mixed, target_layer)
 
     if args.experiment in ("4", "all"):
-        run_experiment_4(config, model, tokenizer, swap_pairs, target_layer)
+        run_experiment_4(config, model, tokenizer, swap_pairs_biased, target_layer)

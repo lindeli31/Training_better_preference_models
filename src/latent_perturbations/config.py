@@ -16,6 +16,7 @@ class GradientProbeConfig:
     model_name: str = "meta-llama/Llama-3.1-70B-Instruct"
     device: str = "cuda"
     load_in_4bit: bool = True      # required for 70B on single H100
+    load_in_8bit: bool = False     # middle ground: half the noise of 4bit, 32B fits on H100
     dtype: str = "bfloat16"        # "bfloat16" or "float16"
 
     # --- Layer sweep (Experiment 1) ---
@@ -29,6 +30,7 @@ class GradientProbeConfig:
     target_layer: int = -1
 
     # --- Perturbation (Experiments 1 & 4) ---
+    normalize: bool = False        # apply LatentSafety distribution normalization to perturbation
     alpha: float = 1.0             # default perturbation scale for Experiment 1 LASR
     # Scales swept in Experiment 4 dose-response curve.
     alpha_scales: list[float] = field(
