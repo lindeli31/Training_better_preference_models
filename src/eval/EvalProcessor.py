@@ -1,5 +1,6 @@
 from typing import List
 
+from core.Response import Response
 from src.core.LLM import LLM
 from src.core.PermPair import PermPair
 from src.core.Prompt import Prompt
@@ -38,7 +39,9 @@ class EvalProcessor:
 
         answers = []
         for prompt in prompts:
-            answer = self.generation_llm.generate(prompt, self.reasoning)
+            response = self.generation_llm.generate(prompt, self.reasoning)
+            answer = response.message
+            reasoning = response.reasoning # TODO: do we need the reasoning?
             answers.append(answer)
 
         example["answers"] = answers
@@ -50,10 +53,22 @@ class EvalProcessor:
         extracted_labels = []
         parse_failures = 0
         for answer in answers:
-            label, parse_ok = extract_label(answer.message)
+            label, parse_ok = extract_label(answer)
             extracted_labels.append(label)
             if not parse_ok:
                 parse_failures += 1
+
+        example["extracted_labels"] = extracted_labels
+        example["parse_failures"] = parse_failures
+        if parse_failures > 0:
+            # Set default values for metrics when parsing failed
+            example["ab_correct"] = None
+            example["ba_correct"] = None
+            example["consistency"] = None
+            example["bias_toward_first_position"] = None
+            example["bias_toward_second_position"] = None
+            example["tie_inconsistency"] = None
+            return
 
         # sanity check
         if len(extracted_labels) != 2:
@@ -74,8 +89,6 @@ class EvalProcessor:
         ab_correct = extracted_labels[0] == gold_ab_label
         ba_correct = extracted_labels[1] == gold_ba_label
 
-        example["extracted_labels"] = extracted_labels
-        example["parse_failures"] = parse_failures
         example["ab_correct"] = ab_correct
         example["ba_correct"] = ba_correct
 
