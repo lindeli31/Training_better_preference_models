@@ -14,3 +14,4 @@ instructor
 litellm
 typer
 huggingface-hub
+tqdm
