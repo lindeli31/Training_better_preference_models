@@ -2,7 +2,7 @@ import dspy
 
 
 class JudgeSignature(dspy.Signature):
-    """Evaluate which of two responses better answers the conversation. You must choose 'A' for the first candidate, 'B' for the second, or 'C' if they are equal. Your judgment must be accurate and consistent regardless of the order the responses are presented."""
+    """Evaluate which of two responses better answers the conversation. You must choose 'A' for the first candidate, 'B' for the second, or 'C' if they are equal. Your judgment must be accurate and consistent regardless of the order the responses are presented. Give only one letter as the answer."""
 
     conversation_history = dspy.InputField(desc="Messages in conversation history")
     answer_candidate_a = dspy.InputField(desc="First possible answer")

@@ -59,5 +59,5 @@ def balance_groundtruth(dataset: Dataset):
     ]
 
     # Concatenate
-    result_dataset = concatenate_datasets(balanced_splits)
+    result_dataset = concatenate_datasets(balanced_splits).shuffle(seed=42)
     return result_dataset

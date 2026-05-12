@@ -22,21 +22,15 @@ load_dotenv()
 CSCS_SERVING_API = os.environ['CSCS_SERVING_API']
 base_url = "https://api.swissai.svc.cscs.ch/v1"
 task_lm = dspy.LM(
-    "openai/swiss-ai/Apertus-8B-Instruct-2509",
-    temperature=1.0,
-    api_key=CSCS_SERVING_API,
-    api_base=base_url
-)
-reflection_lm = dspy.LM( # Strong model required for GEPA's reflection
-    "openai/meta-llama/Llama-3.3-70B-Instruct",
-    temperature=1.0,
+    "openai/google/gemma-4-31B-it-EfvW",
+    temperature=0.0,
     api_key=CSCS_SERVING_API,
     api_base=base_url
 )
 
 dspy.configure(lm=task_lm)
 
-dataset = get_help_steer_2()
+dataset = get_help_steer_2().shuffle(seed=42)
 dataset = adapt_dataset_for_dspy(dataset)[:1000]
 train_dataset, test_dataset = get_train_test_split(dataset)
 
@@ -59,8 +53,26 @@ optimized_wrapper = optimizer.compile(
     student=wrapper_model,
     trainset=train_dataset,
     valset=test_dataset,
+    max_bootstrapped_demos=4,
+    max_labeled_demos=4,
 )
 
 print(f"Combined metric: {combine_metric_evaluate(optimized_wrapper).score}")
 print(f"\n\nAccuracy metric: {accuracy_metric_evaluate(optimized_wrapper).score}")
 print(f"\n\nConsistency metric: {consistency_metric_evaluate(optimized_wrapper).score}")
+
+print("Best instructions:")
+print(optimized_wrapper.evaluation_module.prog.signature.instructions)
+
+optimized_wrapper.save("optimized_wrapper.json")
+
+# Inspect ALL predictors MIPROv2 saw
+print("=" * 80)
+print("Predictors discovered by DSPy:")
+for name, predictor in optimized_wrapper.named_predictors():
+    print(f"\n--- {name} ---")
+    print(f"Instructions:\n{predictor.signature.instructions}")
+    print(f"\nNumber of demos: {len(predictor.demos)}")
+    for i, demo in enumerate(predictor.demos):
+        print(f"\nDemo {i}:")
+        print(demo)

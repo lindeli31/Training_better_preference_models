@@ -10,7 +10,8 @@ class HumanTemplate(Template):
     generation_instructions: str = (
         "Evaluate which of two responses better answers the conversation. "
         "You must choose 'A' for the first candidate, 'B' for the second, or 'C' if they are equal. "
-        "Your judgment must be accurate and consistent regardless of the order the responses are presented."
+        "Your judgment must be accurate and consistent regardless of the order the responses are presented. "
+        "Give only one letter as the answer."
     )
     
     def render(self, perm_pair: PermPair) -> List[Prompt]:
@@ -36,7 +37,7 @@ class HumanTemplate(Template):
             .add_context(context)
             .add_text("RESPONSES:\n")
             .add_text(f"answer candidate A: {answer_candidate_a}\n")
-            .add_text(f"answer candidate A: {answer_candidate_b}\n")
+            .add_text(f"answer candidate B: {answer_candidate_b}\n")
             .add_text("ANSWER:") # should we keep it?
         )
 
