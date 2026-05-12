@@ -5,6 +5,7 @@ def get_help_steer_2() -> Dataset:
     dataset = load_dataset('nvidia/HelpSteer2', split='train')
 
     processed_data = {
+        "id": [],
         "context": [],
         "answer_candidate_a": [],
         "answer_candidate_b": [],
@@ -44,6 +45,7 @@ def get_help_steer_2() -> Dataset:
         context_len = len(row_a['prompt']) + len(ans_a) + len(ans_b)
 
         # Append to our unified dictionary
+        processed_data["id"].append(i/2)
         processed_data["context"].append(context)
         processed_data["answer_candidate_a"].append(ans_a)
         processed_data["answer_candidate_b"].append(ans_b)

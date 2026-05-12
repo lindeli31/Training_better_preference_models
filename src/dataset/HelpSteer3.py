@@ -6,7 +6,7 @@ def _get_context_length(example: dict):
     total_length = len(context_str) + len(example['response1']) + len(example['response2'])
     return total_length
 
-def _process_record(example: dict):
+def _process_record(example: dict, id: int):
     score: int = example['overall_preference']
 
     match score:
@@ -20,17 +20,19 @@ def _process_record(example: dict):
             raise ValueError(f"Unexpected ground truth value: {score}")
 
     return {
+        'id': id,
         'context': example['context'],
         'answer_candidate_a': example['response1'],
         'answer_candidate_b': example['response2'],
         'ground_truth': ground_truth,
         'metadata': {
             'context_length': _get_context_length(example),
+            'history_length': len(example['context'])
         },
     }
 
 
 def get_help_steer_3() -> Dataset:
     dataset = load_dataset('nvidia/HelpSteer3', 'preference', split='train')
-    dataset = dataset.map(_process_record, remove_columns=dataset.column_names)
+    dataset = dataset.map(_process_record, with_indices=True, remove_columns=dataset.column_names)
     return dataset
