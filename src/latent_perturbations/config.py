@@ -31,6 +31,7 @@ class GradientProbeConfig:
 
     # --- Perturbation (Experiments 1 & 4) ---
     normalize: bool = False        # apply LatentSafety distribution normalization to perturbation
+    norm_type: str = "unit"        # gradient normalization: "unit" (g/||g||) or "sign" (FGSM sign(g))
     alpha: float = 1.0             # default perturbation scale for Experiment 1 LASR
     # Scales swept in Experiment 4 dose-response curve.
     alpha_scales: list[float] = field(

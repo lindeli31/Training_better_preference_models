@@ -131,6 +131,7 @@ def run_experiment_1(
                         layer_idx, act, grad_b, config.alpha,
                         config.verdict_tokens,
                         normalize=config.normalize, sign=-1,
+                        norm_type=config.norm_type,
                     )
 
                     flipped = v_orig != v_steered
@@ -167,6 +168,7 @@ def run_experiment_1(
                                     layer_idx, act, grad_a, config.alpha,
                                     config.verdict_tokens,
                                     normalize=config.normalize, sign=+1,
+                                    norm_type=config.norm_type,
                                 )
                                 flipped_alt = v_orig != v_steered_alt
                                 flips_alt.append(int(flipped_alt))
@@ -407,6 +409,7 @@ def run_experiment_4(config: GradientProbeConfig, model, tokenizer, swap_pairs,
                         model, tokenizer, pair.prompt_ab,
                         target_layer, act, grad, alpha, config.verdict_tokens,
                         normalize=config.normalize, sign=-1,
+                        norm_type=config.norm_type,
                     )
                     grad_flip = int(v_orig != v_grad)
                     grad_flips.append(grad_flip)
@@ -495,6 +498,9 @@ if __name__ == "__main__":
     p.add_argument("--normalize",     action="store_true",
                    help="Apply LatentSafety distribution normalization to perturbation "
                         "(rescales perturbed activation to match hidden state mean/std)")
+    p.add_argument("--norm-type",     default="unit", choices=["unit", "sign"],
+                   help="Gradient normalization: 'unit' = g/||g|| (default), "
+                        "'sign' = sign(g) FGSM-style (larger effective perturbation)")
     p.add_argument("--exp1-sanity",   action="store_true",
                    help="Exp 1 sanity check: also run h + α·∇NLL(first_pos_token) "
                         "alongside the default h - α·∇NLL(second_pos_token) and compare LASR")
@@ -509,6 +515,7 @@ if __name__ == "__main__":
         layer_sweep_step=args.layer_step,
         target_layer=args.target_layer,
         normalize=args.normalize,
+        norm_type=args.norm_type,
         alpha=args.alpha,
         alpha_scales=args.alpha_scales,
         n_pairs=args.n_pairs,

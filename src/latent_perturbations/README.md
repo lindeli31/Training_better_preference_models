@@ -35,9 +35,15 @@ Run the gradient-based perturbation at every layer and record how much the verdi
    - Complete forward pass from layer `l` onward → record ΔNLL(B) and verdict change
 2. Average ΔNLL across prompts per layer → **layer-wise sensitivity curve**
 
-`g_l = ∇_{h_l} NLL(B)`points in direction that decrasees the negative log-likelihood of B, making the verdict B more likely. We only do this procedure in positionally biased pairs, where the model wants to choose A despite A being wrong. So we perturb the activations towards verdict B more, and then record how much it moves.
+`g_l = ∇_{h_l} NLL(B)` points in the direction that decreases the negative log-likelihood of B, making verdict B more likely. We only do this procedure on positionally biased pairs, where the model wants to choose A despite A being wrong. So we perturb the activations towards verdict B and then record how much it moves.
 
-Note: we were supposed to normalise the perturbations to match the mean and std of hidden states, as the paper found this could cause degenerate ouptuts. Rerunning expeirments to find if this changes outputs.
+**Scoring**: LASR, PASR, and MASR are computed only over pairs where `verdict_orig = "A"` (slot_1-biased pairs), since steering toward "B" is meaningless for pairs where the model already picks "B". A flip from "A" to either "B" or "C" counts as a success — both indicate the model is no longer locked onto slot_1.
+
+- **LASR(l)** = fraction of slot_1-biased pairs that flip at layer l  
+- **PASR** = max LASR across all layers (most vulnerable layer)  
+- **MASR** = fraction of slot_1-biased pairs that flip at *any* layer (overall vulnerability)
+
+**Normalization**: We tested the LatentSafety normalization scheme (δ' = μ(h) + (δ − μ(δ))/σ(δ) · σ(h)) which rescales the perturbation to match the hidden state distribution. Empirically this slightly *hurts* LASR — see Run 4.
 
 **Expected shapes and interpretations**:
 
@@ -62,9 +68,9 @@ This is the key experiment to establish whether the gradient captures **position
 
 | Value | Interpretation |
 |---|---|
-| ≈ 1.0 | Pure position signal: both gradients point along the same axis regardless of content |
-| ≈ 0.5 | Mixed signal: gradient captures both position and content quality |
-| ≈ 0.0 | Content-driven: gradient tracks response quality, not position |
+| ≈ +1.0 | Positionally biased: model avoids slot_2 in both orderings → both gradients large, opposite content directions |
+| ≈ 0.0 | Content-driven (unbiased): model already picks slot_2 in one ordering → one gradient near-zero → cosine noisy |
+| ≈ −1.0 | Strongly unbiased: model confidently picks slot_2 in both orderings → both gradients small but correlated |
 
 ---
 
@@ -74,13 +80,15 @@ This is the key experiment to establish whether the gradient captures **position
 
 **Theory**:
 
-- **Non-positionally-biased pairs** (model judgment tracks content): `cosine(g_AB, -g_BA) ≈ 1.0`
-  The model's sensitivity to verdict switching is driven by position in both directions — it would flip for positional reasons symmetrically. The gradient is a pure position signal even when the model is *not* being biased, because the positional axis is always present — it's just not what's determining the verdict.
+The metric is driven by **gradient magnitude**, not directional geometry. The key question is whether the model is already predicting the slot-2 token in each ordering.
 
-- **Positionally biased pairs** (model picks A because it's first, not because it's better): `cosine(g_AB, -g_BA)` deviates from 1.0 (closer to 0.0)
-  The gradient for biased pairs is contaminated by content — because the model's "pressure" toward the correct answer also incorporates the quality signal it's suppressing. The position axis and the quality axis are entangled.
+- **Positionally biased pairs** (model picks slot_1 in *both* orderings): `cosine(g_AB, -g_BA) ≈ +1.0`
+  The model confidently avoids slot_2 in both AB and BA orderings, so NLL(slot_2 target) is high in both → both g_AB and g_BA are large. They happen to point in *opposite* content directions (slot_2 in AB contains resp_b; slot_2 in BA contains resp_a), so cosine(g_AB, g_BA) ≈ −1 → cosine(g_AB, −g_BA) ≈ **+1**.
 
-**Implication**: A pair where the model's verdict is positionally biased should show a *lower* antisymmetry score than a pair where the model judges correctly. We can operationalize this:
+- **Non-positionally-biased pairs** (model judgment tracks content): `cosine(g_AB, -g_BA) ≈ 0.0` or negative
+  The model consistently picks the better response regardless of slot. In one of the two orderings, the better response happens to be in slot_2, so the model *already* predicts slot_2 → NLL(slot_2 target) is low in that ordering → one gradient is near-zero and noise-dominated → cosine collapses toward 0 (or slightly negative due to the local gradient geometry).
+
+**Implication**: A pair where the model's verdict is positionally biased should show a *higher* antisymmetry score than a pair where the model judges correctly. We can operationalize this:
 
 1. Label pairs as positionally biased using the swap test (model picks A on (A,B) but picks A on (B,A) too → biased toward A regardless)
 2. Compute antisymmetry scores for biased vs. unbiased pairs
@@ -171,7 +179,15 @@ This would provide mechanistic evidence that **RLHF amplifies positional bias** 
 
 ### Exp 1 — Layer-wise LASR
 
-Peak sensitivity at **layer 28 / 48** (LASR = 0.16). Gradient norm also peaks at layers 24–28 (~2.8) and drops sharply to near-zero at layers 40–44. The bell-shaped curve is consistent with a localised positional bias representation — a single intervention point rather than a diffuse structural effect.
+N_A = 143 (pairs with verdict_orig = "A").
+
+| Metric | Value |
+|---|---|
+| Peak layer | **28 / 48** (58% depth) |
+| PASR | **0.140** |
+| MASR | **0.154** (22 pairs flipped at ≥1 layer) |
+
+Gradient norm peaks at layers 24–28 (~2.8) and drops sharply to near-zero at layers 40–44. The bell-shaped LASR curve is consistent with a localised positional bias representation — a single intervention point rather than a diffuse structural effect. MASR > PASR (0.154 vs 0.140) means 2 pairs are only flippable at off-peak layers.
 
 (Coralie notes: the way I understand this is peak sensitivity is at a later layer, meaning when cont)
 
@@ -225,7 +241,15 @@ Positional bias is causally encoded at a specific location (layer 28) in Qwen2.5
 
 ### Exp 1 — Layer-wise LASR
 
-Peak at **layer 40 / 64** (LASR = 0.045). The curve is almost flat across all layers (0.015–0.045) — a stark contrast to the 14B bell curve. Gradient norm increases monotonically to layer 40 then drops. Low LASR despite normalised perturbation direction confirms the 32B model is genuinely more robust to single-layer steering, not just a scaling artefact.
+N_A = 146 (pairs with verdict_orig = "A").
+
+| Metric | Value |
+|---|---|
+| Peak layer | **40 / 64** (63% depth) |
+| PASR | **0.055** |
+| MASR | **0.075** (11 pairs flipped at ≥1 layer) |
+
+The curve is almost flat across all layers (0.015–0.055) — a stark contrast to the 14B bell curve. Gradient norm increases monotonically to layer 40 then drops. MASR > PASR (0.075 vs 0.055) — 5 pairs flip only at off-peak layers, possibly due to 8-bit gradient noise spreading signal across layers.
 
 ### Exp 2 — Swap Antisymmetry
 
@@ -261,7 +285,15 @@ Not completed (job cancelled at time limit before alpha loop ran).
 
 ### Exp 1 — Layer-wise LASR
 
-Peak at **layer 40 / 64** (LASR = 0.055). Same peak location as Run 2 (32B 8-bit), slightly higher LASR, confirming the 4-bit NF4 gradient quality is better than 8-bit LLM.int8(). Curve is still much flatter than 14B.
+N_A = 151 (pairs with verdict_orig = "A").
+
+| Metric | Value |
+|---|---|
+| Peak layer | **40 / 64** (63% depth) |
+| PASR | **0.066** |
+| MASR | **0.066** (10 pairs flipped at ≥1 layer) |
+
+Same peak location as Run 2 (32B 8-bit), slightly higher PASR, confirming 4-bit NF4 gradient quality is better than 8-bit LLM.int8(). Curve is still much flatter than 14B. MASR = PASR exactly — every flippable pair flips at layer 40 and nowhere else. The 32B positional bias signal is entirely concentrated at layer 40.
 
 ### Exp 2 — Swap Antisymmetry
 
@@ -296,24 +328,56 @@ Gradient direction remains causally specific (random flat at ~0%) but flip rates
 
 ---
 
+## Run 4: Qwen-32B in 4-bit NF4 with LatentSafety normalization
+
+**Model**: Qwen/Qwen2.5-32B-Instruct, 4-bit NF4 (bitsandbytes), n=200 pairs, HelpSteer2 validation set.
+**Dataset**: Exp 1 only — all-biased pairs. Perturbation: `h' = h - α · g/||g||` with normalization δ' = μ(h) + (δ − μ(δ))/σ(δ) · σ(h).
+
+**Results directory**: `results/latent_perturbations/exp1_norm_subtract_b_32b/`
+
+### Exp 1 — Layer-wise LASR
+
+N_A = 145 (pairs with verdict_orig = "A").
+
+| Metric | Value |
+|---|---|
+| Peak layer | **40 / 64** (63% depth) |
+| PASR | **0.048** |
+| MASR | **0.048** (7 pairs flipped at ≥1 layer) |
+
+Normalization slightly *hurts* LASR vs the un-normalized 32B 4-bit run (PASR 0.048 vs 0.066). Peak location is identical (layer 40). MASR = PASR — same concentration pattern as Run 3. This suggests activations were not going significantly out-of-distribution without normalization; the normalization overhead adds no benefit and slightly reduces signal.
+
+### Takeaway
+
+The LatentSafety normalization scheme does not improve steering effectiveness for this setting. The un-normalized `h - α · g/||g||` perturbation (Run 3) is preferred.
+
+---
+
 ## Cross-run comparison
 
-| | Run 1: 14B 4-bit | Run 2: 32B 8-bit | Run 3: 32B 4-bit |
-|---|---|---|---|
-| Peak layer (% depth) | 28 / 48 (58%) | 40 / 64 (63%) | 40 / 64 (63%) |
-| Peak LASR | **0.160** | 0.045 | 0.055 |
-| Dose-response α=2.0 | **34%** | — | 13% |
-| Exp 2 cosine mean† | 0.189 | 0.296 | 0.302 |
-| Biased cosine (Exp 3) | 0.461 | 0.395 | 0.435 |
-| Unbiased cosine (Exp 3) | −0.083 | −0.181 | **−0.215** |
-| Gap | 0.544 | 0.576 | **0.650** |
-| Cohen's d | 1.76 | 1.83 | **1.93** |
+Exp 1 metrics use **N_A** (pairs with verdict_orig = "A") as denominator. Flips to B or C both count as success.
+
+| | Run 1: 14B 4-bit | Run 2: 32B 8-bit | Run 3: 32B 4-bit | Run 4: 32B 4-bit + norm |
+|---|---|---|---|---|
+| Peak layer (% depth) | 28 / 48 (58%) | 40 / 64 (63%) | 40 / 64 (63%) | 40 / 64 (63%) |
+| N_A | 143 | 146 | 151 | 145 |
+| PASR | **0.140** | 0.055 | 0.066 | 0.048 |
+| MASR | **0.154** | 0.075 | 0.066 | 0.048 |
+| MASR = PASR? | No (2 off-peak) | No (5 off-peak) | **Yes** | **Yes** |
+| Dose-response α=2.0 | **34%** | — | 13% | — |
+| Exp 2 cosine mean† | 0.189 | 0.296 | 0.302 | — |
+| Biased cosine (Exp 3) | 0.461 | 0.395 | 0.435 | — |
+| Unbiased cosine (Exp 3) | −0.083 | −0.181 | **−0.215** | — |
+| Gap | 0.544 | 0.576 | **0.650** | — |
+| Cohen's d | 1.76 | 1.83 | **1.93** | — |
 
 †Exp 2 dataset differs: Run 1 used 50/50 mixed pool (old code); Runs 2 & 3 used all-biased pool. Not directly comparable.
 
 **Key findings:**
-- **LASR is a model-size effect**: 32B resists single-layer steering regardless of quantisation method. Positional bias is encoded more redundantly in larger models.
+- **PASR/MASR is a model-size effect**: 32B resists single-layer steering regardless of quantisation method. Positional bias is encoded more redundantly in larger models.
+- **MASR = PASR for 32B**: every flippable pair flips at the peak layer only — the 32B signal is entirely concentrated at layer 40. The 14B and 32B 8-bit runs show some off-peak flips, suggesting more distributed vulnerability.
 - **The classifier improves with model size**: Cohen's d 1.76 → 1.93 as model scales from 14B to 32B. Gradient antisymmetry is a more reliable bias detector in larger models.
 - **Unbiased pairs become more negative**: Larger models' gradients point more strongly *away* from the position axis on unbiased pairs — content and position representations are more disentangled.
-- **4-bit NF4 > 8-bit LLM.int8()** for gradient quality: slight but consistent improvement in LASR and classifier performance.
+- **4-bit NF4 > 8-bit LLM.int8()** for gradient quality: slight but consistent improvement in PASR and classifier performance.
+- **Normalization hurts**: LatentSafety distribution normalization reduces PASR (0.066 → 0.048) with no benefit — activations do not go meaningfully out-of-distribution at α=1.
 

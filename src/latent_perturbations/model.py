@@ -208,12 +208,15 @@ def get_verdict_with_gradient_steer(
     verdict_tokens: Optional[list[str]] = None,
     normalize: bool = False,
     sign: int = -1,
+    norm_type: str = "unit",
 ) -> tuple[str, float]:
     """
     Steer activation at layer_idx, return (verdict, new_nll).
 
-    sign=-1 (default): h' = h - alpha * g/||g||, g = ∇NLL(second_pos_token)
-    sign=+1:           h' = h + alpha * g/||g||, g = ∇NLL(current_output)
+    sign=-1 (default): h' = h - alpha * g_norm, g = ∇NLL(second_pos_token)
+    sign=+1:           h' = h + alpha * g_norm, g = ∇NLL(current_output)
+    norm_type="unit":  g_norm = g/||g||  (unit vector, total magnitude = 1)
+    norm_type="sign":  g_norm = sign(g)  (FGSM-style, total magnitude = sqrt(hidden_dim))
     normalize=True: rescale h' to match h's mean/std (LatentSafety normalization).
     """
     if verdict_tokens is None:
@@ -223,8 +226,12 @@ def get_verdict_with_gradient_steer(
     dtype = next(model.parameters()).dtype
     token_ids = [tokenizer.encode(t, add_special_tokens=False)[0] for t in verdict_tokens]
 
-    g_unit = gradient / (np.linalg.norm(gradient) + 1e-12)
-    delta_raw = activation + sign * alpha * g_unit  # full perturbed vector
+    if norm_type == "sign":
+        g_normalized = np.sign(gradient)
+    else:
+        g_normalized = gradient / (np.linalg.norm(gradient) + 1e-12)
+
+    delta_raw = activation + sign * alpha * g_normalized  # full perturbed vector
 
     if normalize:
         h_mean = float(activation.mean())
