@@ -43,7 +43,7 @@ def setup_HF():
     disable_caching()
 
 def balance_groundtruth(dataset: Dataset):
-    choices = [0, 1, 2]
+    choices = set(dataset["ground_truth"])
 
     # Split by choice
     splits = {

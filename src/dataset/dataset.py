@@ -23,7 +23,7 @@ from collections import defaultdict
 from itertools import combinations
 from pathlib import Path
 from typing import Optional
-from dataset import load_dataset
+from datasets import load_dataset
 
 # Where to save processed data
 DATA_DIR = Path("data")

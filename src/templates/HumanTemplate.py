@@ -9,9 +9,11 @@ from src.core.Template import Template
 class HumanTemplate(Template):
     generation_instructions: str = (
         "Evaluate which of two responses better answers the conversation. "
-        "You must choose 'A' for the first candidate, 'B' for the second, or 'C' if they are equal. "
+        "The evaluation scale is from -2 (the first answer is much better) to +2 (the second answer is much better). "
+        "Return -1 if the first answer candidate is better, and +1 if the second answer candidate is better. "
+        "Return 0 if they are equal. "
         "Your judgment must be accurate and consistent regardless of the order the responses are presented. "
-        "Give only one letter as the answer."
+        "Give only one number as the answer."
     )
     
     def render(self, perm_pair: PermPair) -> List[Prompt]:
