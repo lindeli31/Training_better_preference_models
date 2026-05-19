@@ -2,13 +2,13 @@ import os
 
 import typer
 
-from dataset.dataset_catalog import dataset_catalog
-from dataset.util import dataset_exists, get_split_name_from_config, setup_HF
+from src.dataset.dataset_catalog import dataset_catalog
+from src.dataset.util import dataset_exists, get_split_name_from_config, setup_HF
 from src.core.LLM import LLM
 from src.core.Template import Template
 from src.eval.EvalProcessor import EvalProcessor
 from src.models.SwissAiLLM import SwissAiLLM
-from templates.templates_catalog import templates_catalog
+from src.templates.templates_catalog import templates_catalog
 
 
 def evaluate_model(

@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from core.Response import Response
+from src.core.Response import Response
 from src.core.LLM import LLM
 from src.core.PermPair import PermPair
 from src.core.Prompt import Prompt

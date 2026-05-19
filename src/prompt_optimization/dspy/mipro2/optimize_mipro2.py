@@ -22,7 +22,7 @@ load_dotenv()
 CSCS_SERVING_API = os.environ['CSCS_SERVING_API']
 base_url = "https://api.swissai.svc.cscs.ch/v1"
 task_lm = dspy.LM(
-    "openai/google/gemma-4-31B-it-EfvW",
+    "openai/google/gemma-4-31B-it-TEqd",
     temperature=0.0,
     api_key=CSCS_SERVING_API,
     api_base=base_url
@@ -30,7 +30,7 @@ task_lm = dspy.LM(
 
 dspy.configure(lm=task_lm)
 
-dataset = get_help_steer_2().shuffle(seed=42)
+dataset = get_help_steer_3().shuffle(seed=42)
 dataset = adapt_dataset_for_dspy(dataset)[:1000]
 train_dataset, test_dataset = get_train_test_split(dataset)
 

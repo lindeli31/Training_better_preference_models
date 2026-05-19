@@ -51,7 +51,7 @@ def analyze_run(
 
     return f"""
 ==================================================
-Run Analysis: {repo_id} | Split: {split_name}
+Run Analysis: {repo_id} | dataset: {dataset_name} | Split: {split_name}
 ==================================================
 
 [ Accuracy Metrics ]

@@ -78,6 +78,11 @@ Lists all models currently available on the Swiss AI Stack. Use the output to se
 
 ## Running Experiments
 
+Get info about the evaluation script:
+```bash
+python -m src.scripts.evaluate_model --help
+```
+
 ### All experiments (200 pairs, default settings)
 
 ```bash
@@ -127,24 +132,51 @@ python3 -m pytest tests/test_pipeline.py -v
 
 ## Experiments
 
-### B1 — Position Bias
+Every question has two answer candidates: let's call them A and B.
 
-Every pair is judged twice: once as (A=chosen, B=rejected) and once flipped (A=rejected, B=chosen). A consistent judge should flip its label accordingly.
+And three answer choices are given to an LLM:
+- "first answer candidate is better"
+- "second answer candidate is better"
+- "the answer candidates are equally good"
+Note, that the exact formulations can be different -- we also explore this as part of our work. (TODO: confirm this statement that we try different formulations)
 
-**Key metrics**:
+We also researched the case when the ties are excuded.
 
-| Metric | Description |
-|---|---|
-| `position_consistency` | Fraction of pairs where the verdict correctly flipped with order. `1.0` = no bias |
-| `position_bias_rate` | Fraction where it did not flip |
-| `bias_toward_first_position` | Fraction of inconsistent pairs where the judge always picked position A |
-| `bias_toward_second_position` | Same but always picked position B |
-| `tie_inconsistency_rate` | Fraction where a tie in one condition became a non-tie in the other |
-| `accuracy.ab_accuracy` | Fraction correct when the better response is in position A |
-| `accuracy.ba_accuracy` | Fraction correct when the better response is in position B |
-| `accuracy.overall_accuracy` | Accuracy pooled across both conditions |
-| `accuracy.accuracy_gap` | AB accuracy − BA accuracy. A large positive gap means the judge is right in AB partly due to position preference, not quality recognition |
-| *(with `--exclude-ties`)* | Pairs where `gold_label=C` are excluded from all accuracy counts. Necessary for hard-difficulty subsets where all gold labels are ties. |
+The core idea of this project is to explore how the order of the answer candidates can influence the LLM answer (the B1 section).
+We also explore ways how we can mitigate the impact of the ordering on an LLM by:
+- changing the LLM instructions (B2 section)
+- allowing it to reason (B3 section)
+We also look at how minor, semantically preserving changes to the question (TODO: specify, if it is changes to the LLM instructions, answer candidates, or question context) influence the LLM's performance.
+
+We have two sets of metrics:
+- The metrics that are used to describe the model's performance on the question level (local) across two permutation of the answer candidates (AB and BA)
+- The metrics that are used to describe the model's performance across the questions (global)
+
+NOTE:
+- A, B -- slots for answer candidates
+
+### B1 — influence of the answer candidates order on the LLM answer
+
+**Local metrics**
+
+| Metric        | Description                                                                                                              |
+|---------------|--------------------------------------------------------------------------------------------------------------------------|
+| `consistency` | Is 1 if a model give its preference to the same answer candidate, irrelently of the answer candidate order. 0 otherwise. |
+| `accuracy`    | Is 1 if a model selects the correct answer under both answer candidate orders. 0 otherwise.                              |
+
+**Global metrics**
+
+| Metric                        | Description                                                                                                                                |
+|-------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------|
+| `consistency`                 | Fraction of questions where the model was consistent in selection across both answer candidate orders. 1.0 = no bias.                      | TODO: better formulation!
+| `bias_toward_first_position`  | Fraction of questions where the model always picked answer candidate that goes first.                                                      |
+| `bias_toward_second_position` | Fraction of questions where the model always picked answer candidate that goes second.                                                     |
+| `tie_inconsistency_rate`      | Fraction of questions where a tie in one condition became a non-tie in the other.                                                          |
+| `hard_accuracy`               | Fraction of questions where the model chosed correct answers under both permutations.                                                      |
+| `soft_accuracy`               | Fraction of questions where the model chosed correct answers in at least one of the permutations.                                          |
+| `ab_accuracy`                 | Fraction of questions where the model chosed correct answer when it was in the first position.                                             |
+| `ba_accuracy`                 | Fraction of questions where the model chosed correct answer when it was in the second position.                                            |
+| `accuracy_gap`                | AB accuracy − BA accuracy. A large positive gap means the judge is right in AB partly due to position preference, not quality recognition. |
 
 **Result file**: `results/position_bias/<template>_<criterion>.jsonl`
 

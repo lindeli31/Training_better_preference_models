@@ -3,9 +3,9 @@ from typing import List
 import typer
 from tqdm.contrib import itertools
 
-from analysis.analyze_run import analyze_run
-from dataset.util import setup_HF, get_split_name_from_config
-from scripts.evaluate_model import evaluate_model
+from src.analysis.analyze_run import analyze_run
+from src.dataset.util import setup_HF, get_split_name_from_config
+from src.scripts.evaluate_model import evaluate_model
 
 
 def evaluate_config(
